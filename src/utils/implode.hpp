@@ -33,4 +33,18 @@ std::string implode(InputIt first, InputIt last, const std::string_view glue)
    return implode(first, last, glue, f);
 }
 
+namespace range {
+template<typename Range, typename F>
+std::string implode(Range&& range, const std::string_view glue, F&& f)
+{
+   return ::giraffe::implode(begin(range), end(range), glue, std::forward<F&&>(f));
+}
+
+template<typename Range>
+std::string implode(Range&& range, const std::string_view glue)
+{
+   return ::giraffe::implode(begin(range), end(range), glue);
+}
+}
+
 } // namespace giraffe

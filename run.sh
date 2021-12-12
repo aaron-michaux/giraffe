@@ -7,7 +7,7 @@ PPWD="$(cd "$(dirname "$0")"; pwd)"
 # ------------------------------------------------------------ Parse Commandline
 
 CONFIG=asan
-TARGET_FILE0=sail
+TARGET_FILE0=giraffe
 TOOLCHAIN=gcc-11
 FEEDBACK=0
 NO_BUILD=0

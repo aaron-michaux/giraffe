@@ -33,8 +33,8 @@ struct lex_params_t
    int lex_state;           //!< The current state of the lex
    int n_concurrent_states; //!< Number of states on the state stack
    struct shell_stack_type* stack; //!< End 'heredoc' delimiter, if any
-   void* lex;                      //!< Unmanaged pointer back to the (flex) lex
-   void* scanner_worker; //!< Unmanaged pointer back to (cpp) scanner_worker
+   void* lex;               //!< Unmanaged pointer back to the (flex) lex
+   void* scanner_worker;    //!< Unmanaged pointer back to (cpp) scanner_worker
 };
 
 /** Create (and initialize) a new lex */

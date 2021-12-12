@@ -28,6 +28,20 @@ int execute(Context& context) noexcept // once set upt
 
    // read_eval_print_loop(context, interface);
 
+   auto print_token = [] (auto& os, const Token& token) {
+      os << format("{:15s} {:15s} {}\n",
+                   str(token.location()),
+                   token_id_to_str(token.id()),
+      encode_string(token.text()));
+   };
+   
+   auto& scanner = context.scanner();
+   while(scanner.has_next()) {
+      print_token(cout, scanner.consume());
+   }
+   print_token(cout, scanner.current());
+
+
    return true; // we're winners
 }
 

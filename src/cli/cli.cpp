@@ -56,28 +56,38 @@ void print_range(ostream& os, auto delim, auto&& input_range, auto f) {
    }
 }
 
-ostream& operator<<(const CliConfig& conf, ostream& os)
+ostream& operator<<(ostream& os, const CliConfig& conf)
 {   
    os << format(R"V0G0N(
 show-help:      {}
 has-error:      {}
+dump-tokens:    {}
 filename:       {}
 compiler-opts
    color-diag:  {}
    w-error:     {}
-include_paths:  ')V0G0N",
+   inc-dirs:    {}
+   defines:     {}
+)V0G0N",
                 conf.show_help,
                 conf.has_error,
+                conf.dump_tokens,
                 conf.filename,
                 conf.driver_opts.color_diagnostics,
-                conf.driver_opts.w_error);
-   print_range(os, "', '", conf.include_paths, [] (auto& x) { return x; });
-   os << "\ndefines:   '";   
-   print_range(os, ", ", conf.defines, [] (auto& x) {
-         if(x.second.empty()) return x.first;
-         return format("{}={}", x.first, x.second);
-      });
-   os << '\n';
+                conf.driver_opts.w_error,
+                range::implode(conf.driver_opts.include_paths, ", "),
+                range::implode(conf.driver_opts.defines, ", ", [] (auto& x) {
+                      if(x.second.empty()) return x.first;
+                      return format("{}={}", x.first, x.second);
+                   }));
+   
+   // print_range(os, "', '", conf.include_paths, [] (auto& x) { return x; });
+   // os << "\ndefines:   '";   
+   // print_range(os, ", ", conf.defines, [] (auto& x) {
+   //       if(x.second.empty()) return x.first;
+   //       return format("{}={}", x.first, x.second);
+   //    });
+   // os << '\n';
    return os;
 }
 
@@ -127,12 +137,15 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
             no_color_diagnostics = true;
          else if(arg == "-fcolor-diagnostics-always")
             color_diagnostics_always = true;
+         else if(arg == "--dump-tokens")
+            config.dump_tokens = true;
          else if(arg.starts_with("-D"))
-            add_define(config.defines, string_view(begin(arg)+2, end(arg)));
+            add_define(config.driver_opts.defines,
+                       string_view(begin(arg)+2, end(arg)));
          else if(arg.starts_with("-I"))
-            config.include_paths.emplace_back(begin(arg)+2, end(arg));
+            config.driver_opts.include_paths.emplace_back(begin(arg)+2, end(arg));
          else if(arg.starts_with("-isystem"))
-            config.include_paths.emplace_back(begin(arg)+8, end(arg));
+            config.driver_opts.include_paths.emplace_back(begin(arg)+8, end(arg));
          else if(is_regular_file(arg) && config.filename.empty())
             config.filename = string(begin(arg), end(arg));
          else if(arg == "-" && config.filename.empty()) // i.e., stdin
@@ -194,12 +207,14 @@ int run(int argc, char** argv) noexcept
       return EXIT_SUCCESS;
    }
 
+   cout<< config << endl;
+   
    auto context = init_compiler_context(config);
    if(context == nullptr) {
       cout << "Aborting due to previous errors." << endl;
       return EXIT_FAILURE;
    }
-
+   
    const auto success = execute(*context);
    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }

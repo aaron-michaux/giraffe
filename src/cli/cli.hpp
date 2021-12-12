@@ -8,13 +8,13 @@ namespace giraffe
 struct CliConfig final
 {
    bool show_help                        = false;
-   bool has_error                        = false;   
-   string filename                       = ""s;
-   vector<string> include_paths          = {};
-   unordered_map<string, string> defines = {};
-   DriverOptions driver_opts             = {};
+   bool has_error                        = false;
 
-   friend ostream& operator<<(const CliConfig&, ostream&);
+   bool dump_tokens                      = false;
+   string filename                       = ""s;
+   DriverOptions driver_opts             = {};
+   
+   friend ostream& operator<<(ostream&, const CliConfig&);
 };
 
 CliConfig parse_command_line(int argc, char** argv) noexcept;

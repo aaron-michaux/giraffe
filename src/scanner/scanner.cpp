@@ -35,33 +35,6 @@ static bool is_token_of_interest(const Token& token,
    return true;
 }
 
-// ----------------------------------------------------------------- parse token
-
-static std::pair<size_t, Token> parse_token(vector<Token>& buffer,
-                                            const size_t pos0) noexcept
-{
-   /**
-    * Parse the token buffer according to the rules below:
-    * - We're allowed to look ahead tokens, and collapse them into other
-    *   tokens.
-    * - We can only look ahead to a newline character.
-    * - Slice operator (..) requires variables/numbers on the left side.
-    *   Otherwise it's an INLINE_STRING.
-    * - Dot operator is always DOT after a variable or ']' or ')' or '}'
-    * or STRING If after a number, then it's DOT only if the next token is
-    * a SYMBOL. Otherwise it's an INLINE_STRING.
-    * - If we can match a number followed by an operator, then we do NOT
-    *   match an INLINE_STRING.
-    * - Inline-strings MUST have an alpha-numeric character in them
-    * - Otherwise a sequence of flush letters is an INLINE_STRING.
-    */
-   assert(pos0 < buffer.size());
-   Token& token0 = buffer[pos0];
-   size_t next_pos = pos0 + 1;
-
-   return {next_pos, std::move(token0)};
-}
-
 // ---------------------------------------------------------------------- Worker
 
 struct Scanner::Worker
@@ -249,17 +222,9 @@ bool This::Worker::produce_tokens() noexcept
       assert(token_buffer_.size() != 0);
 
       size_t pos = 0;
-      while(pos < token_buffer_.size()) {
-         auto [next_pos, token] = parse_token(token_buffer_, pos);
-         assert(token_id_can_by_zero_length(token.id()) || token.length() > 0);
-
-         // What does our string look like?
+      for(auto& token: token_buffer_)
          if(is_token_of_interest(token, opts_))
             tokens_.push_back(std::move(token));
-
-         assert(next_pos > pos);
-         pos = next_pos;
-      }
 
       token_buffer_.clear();
    }

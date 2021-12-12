@@ -11,13 +11,24 @@
 /* occurs ONCE after all inputs have been processed */
 #define TEOF 2
 
+#define TWHITESPACE 3
+
+#define TNEWLINE 4
+#define TNEWLINE_ESC 5
+
+#define TIN_COMMENT_NEWLINE 6
+#define TCOMMENT 7
+#define TCOMMENT_DELIM 8
+#define TCOMMENT_END_DELIM 9
+#define TCOMMENT_PART 10
+
 /* ----------------------------- Keywords */
-#define TIF 10
-#define TIFDEF 11
-#define TIFNDEF 12
-#define TELIF 13
-#define TELSE 14
-#define TENDIF 15
+#define TIF 13
+#define TIFDEF 14
+#define TIFNDEF 15
+#define TELIF 16
+#define TELSE 17
+#define TENDIF 18
 
 #define TINCLUDE 20
 #define TDEFINE 21
@@ -49,15 +60,12 @@
 
 #define TLPAREN 60
 #define TRPAREN 61
+#define TSEMICOLON 62
 
-#define TNEWLINE 70
-#define TNEWLINE_ESC 71
-#define TWHITESPACE 72
-#define TCOMMENT 73
-#define TCOMMENT_DELIM 74
-#define TCOMMENT_END_DELIM 75
-#define TIN_COMMENT_NEWLINE 76
-#define TCOMMENT_PART 77
+#define TMODULE 70
+#define TIMPORT 71
+#define TEXPORT 72
+#define TMODULENAME 73
 
 // Probably going to ignore all this
 #define TLINE 80

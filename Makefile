@@ -1,6 +1,6 @@
 
 # These will be set from the outside
-TARGET?=sail
+TARGET?=giraffe
 SOURCES?=$(shell find src -type f -name '*.cpp')
 #SOURCES:=main.cpp
 TOOLCHAIN_NAME?=gcc-11
@@ -50,9 +50,9 @@ $(COMP_DATABASE): $(COMPDBS)
 	$(SED) -i '$$d' $@
 	echo "]" >> $@
 
-$(BUILDDIR)/src/scanner/gen-token-types_c.o: src/scanner/token-types.h src/scanner/gen-token-types_c.sh
+$(BUILDDIR)/src/scanner/gen-token-types_cpp.o: src/scanner/token-types.h src/scanner/gen-token-types_cpp.sh
 	@echo "$(BANNER)gen-token-types $^$(BANEND)"
-	src/scanner/gen-token-types_c.sh | $(CC) -x c $(CFLAGS_F) -c - -o $@
+	src/scanner/gen-token-types_cpp.sh | $(CXX) -x c++ $(CXXFLAGS_F) -c - -o $@
 	@$(RECIPETAIL)
 
 $(BUILDDIR)/src/scanner/lexer.o: src/scanner/lexer.l
@@ -76,7 +76,7 @@ $(BUILDDIR)/%.comp-db.json: %.cpp
 	printf ",\n" >> $@
 	@$(RECIPETAIL)
 
-$(TARGETDIR)/$(TARGET): $(OBJECTS) $(BUILDDIR)/src/scanner/gen-token-types_c.o $(BUILDDIR)/src/scanner/lexer.o
+$(TARGETDIR)/$(TARGET): $(OBJECTS) $(BUILDDIR)/src/scanner/gen-token-types_cpp.o $(BUILDDIR)/src/scanner/lexer.o
 	@echo "$(BANNER)link $(TARGET)$(BANEND)"
 	mkdir -p $(dir $@)
 	$(CC) -o $@ $^ $(LDFLAGS_F)

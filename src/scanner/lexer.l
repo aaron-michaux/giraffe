@@ -11,16 +11,12 @@
 #define TOKEN(TOK_ID)  (lexx_token((TOK_ID), yyextra, yytext, yyleng))
 
 static int lexx_token(int token_id,
-               struct lex_params_t* params,
-               const char* text,
-               int text_len);
+                      struct lex_params_t* params,
+                      const char* text,
+                      int text_len);
 
 static void push_lex_state(struct lex_params_t* params, int state);
 static void pop_lex_state(struct lex_params_t* params);
-
-static void push_shell_stack(struct lex_params_t* params, int state);
-static int pop_shell_stack(struct lex_params_t* params);
-static void decrement_paren_count(struct lex_params_t* params);
 
 #define PUSH_STATE(val) { push_lex_state(yyextra, (val)); }
 #define POP_STATE()     { pop_lex_state(yyextra); }
@@ -41,6 +37,8 @@ NL      ((\r\n)|(\n\r)|([\r\n]))
 WS      (([\t ])|(\\{NL}))
 L	[@_a-zA-Z]
 D	[@_\-\./\\a-zA-Z0-9]
+ML      [_a-zA-Z]
+MD      [_\x2ea-zA-Z0-9]
 DIGIT   [0-9]
 A       ([\x01-\x09])|([\x20-\x7f])|{WS}|{NL}
 NQ      ([\x21-\x21])|([\x23-\x7f])|{WS}
@@ -79,6 +77,11 @@ PP      ^{WS}*#{WS}*
 "\""{NQ}*"\""	               { return TOKEN(TSTRING); }
 "<"{NA}*">"	               { return TOKEN(TSTRING); }
 
+"import"                       { return TOKEN(TIMPORT); }
+"export"                       { return TOKEN(TEXPORT); }
+"module"                       { return TOKEN(TMODULE); }
+{ML}{MD}*                      { return TOKEN(TMODULENAME); }
+
 {L}{D}*                        { return TOKEN(TIDENTIFIER); }
 {DIGIT}*                       { return TOKEN(TDIGIT); }
 
@@ -102,57 +105,23 @@ PP      ^{WS}*#{WS}*
 "!"                            { return TOKEN(TSHOUT); }
 "&&"                           { return TOKEN(TANDAND); }
 "||"                           { return TOKEN(TOROR); }
+";"                            { return TOKEN(TSEMICOLON); }
 
 "\\"{WS}*{NL}                  { return TOKEN(TNEWLINE_ESC); }
 {WS}+			       { return TOKEN(TWHITESPACE); }
 {NL}                           { return TOKEN(TNEWLINE); }
 
-[\x00-\xff]		       { /* skip this token! */ }
+[\x00-\xff]		       { TOKEN(TBADCHAR); }
 
 %%
 
 
-static void push_shell_stack(struct lex_params_t* params, int new_state)
-{
-    struct shell_stack_type * ptr = malloc(sizeof(struct shell_stack_type));
-    memset(ptr, 0, sizeof(struct shell_stack_type));
-    ptr->next = params->stack;
-    if(params->stack != NULL) // Push if we're not the sentinal
-        push_lex_state(params, new_state);
-    params->stack = ptr;
-}
-
-static int pop_shell_stack(struct lex_params_t* params)
-{
-    struct shell_stack_type * ptr = params->stack;
-    struct shell_stack_type * next = NULL;
-    if(ptr != NULL) {
-       next = ptr->next;
-       free(ptr->heredoc_delim);
-       free(ptr);
-       params->stack = next;
-       if(params->stack != NULL) // There's a sentinal value
-           pop_lex_state(params);
-       return 1; // i.e., we actually popped something
-    }
-    return 0;
-}
-
-static void decrement_paren_count(struct lex_params_t* params)
-{
-    if(params->stack->paren_count > 0)
-        params->stack->paren_count--;
-    assert(params->stack->paren_count >= 0);
-    if(params->stack->paren_count == 0 && params->stack->next != NULL)
-        pop_shell_stack(params);    
-}
 
 static void lex_params_init(struct lex_params_t* params,
                             void * lex,
                             void * scanner_worker)
 {
     memset(params, 0, sizeof(struct lex_params_t));
-    push_shell_stack(params, INITIAL);
     params->lex = lex;
     params->scanner_worker = scanner_worker;
 }
@@ -173,8 +142,6 @@ static void push_lex_state(struct lex_params_t* params, int state)
 
 static void lex_params_destroy(struct lex_params_t* params)
 {
-    while(params->stack != NULL)
-        pop_shell_stack(params);
     free(params);
 }
 
@@ -222,16 +189,14 @@ static void update_token(int token_id,
 }
 
 static int start_token(int token_id,
-                        struct lex_params_t* params,
-                        const char* text,
-                        int text_len,
-                        int use_more_text_list // store text in linked-list
-                        )
+                       struct lex_params_t* params,
+                       const char* text,
+                       int text_len)
 {
     params->token_id = token_id;
     assert(params->token_id == token_id);
 
-    params->text = (use_more_text_list == 0) ? text : NULL; 
+    params->text = text;
     params->text_len = 0;
     params->last_line_no = params->line_no;
     params->last_column_no = params->column_no;
@@ -248,5 +213,5 @@ static int lexx_token(int token_id,
                       int text_len)
 {
     // printf("\nH tok=%03d 0x%02x\n", token_id, (text)[0]);
-    return start_token(token_id, params, text, text_len, 0);
+    return start_token(token_id, params, text, text_len);
 }
