@@ -177,8 +177,7 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
 
 // ---------------------------------------------------------------- init context
 
-static unique_ptr<Context>
-init_compiler_context(const CliConfig& config) noexcept
+static unique_ptr<Context> init_compiler_context(const CliConfig& config) noexcept
 {
    if(config.has_error) return nullptr;
    
@@ -206,8 +205,6 @@ int run(int argc, char** argv) noexcept
       show_help(argv[0]);
       return EXIT_SUCCESS;
    }
-
-   cout<< config << endl;
    
    auto context = init_compiler_context(config);
    if(context == nullptr) {
