@@ -1,9 +1,6 @@
 
 #pragma once
 
-#include <stropts.h>
-#include <unistd.h>
-
 namespace giraffe
 {
 class ScannerInputInterface
