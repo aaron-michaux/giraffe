@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <unistd.h>
+
 namespace giraffe
 {
 class ScannerInputInterface
@@ -69,7 +71,7 @@ class FILE_ScannerInput final : public ScannerInputInterface
    {
       assert(max_size > 0);
       if(interactive_) {
-         int c = fgetc_unlocked(fp_);
+         int c = getc_unlocked(fp_);
          return (c == EOF) ? 0 : (buffer[0] = char(c), 1);
       }
       return fread(buffer, 1, max_size, fp_);

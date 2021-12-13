@@ -8,6 +8,7 @@
 #include <ostream>
 
 #include <unistd.h>
+#include <libgen.h>
 
 #include "cli.hpp"
 
