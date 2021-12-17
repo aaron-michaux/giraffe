@@ -2,27 +2,44 @@
 # These will be set from the outside
 TARGET?=giraffe
 SOURCES?=$(shell find src -type f -name '*.cpp')
-#SOURCES:=main.cpp
 TOOLCHAIN_NAME?=gcc-11
 TOOLCHAIN_CONFIG?=asan
 STATIC_LIBCPP?=0
 VERBOSE?=0
 LTO?=0
+BUILD_TESTS?=0
+BUILD_EXAMPLES?=0
+BENCHMARK?=0
+
+# -------------------------------------------------------------------------- Configure build options
+
+ifneq ("$(BUILD_TESTS)", "0")
+  CPPFLAGS+= -DCATCH_BUILD
+endif
+
+ifneq ("$(BUILD_EXAMPLES)", "0")
+  SOURCES+= $(shell find examples -type f -name '*.cpp' -o '*.c')
+  CPPFLAGS+= -DBUILD_EXAMPLES
+endif
+
+ifneq ("$(BENCHMARK)", "0")
+  SOURCES+= $(shell find benchmark -type f -name '*.cpp' -o '*.c')
+  CPPFLAGS+= -DBENCHMARK_BUILD
+  LDFLAGS+= -lpthread -L/usr/local/lib -lbenchmark
+endif
 
 # Configure includes
 INCDIRS:=-Isrc
 CXX_CONTRIB_INC:=-isystemcontrib/include
-CFLAGS:=$(CFLAGS) $(INCDIRS)
-CXXFLAGS:=$(CXXFLAGS) -DFMT_HEADER_ONLY $(INCDIRS) $(CXX_CONTRIB_INC)
-
-SED:=gsed
+CFLAGS+= $(INCDIRS)
+CXXFLAGS+= -DFMT_HEADER_ONLY $(INCDIRS) $(CXX_CONTRIB_INC)
 
 # -------------------------------------------------------- Check that we're in the correct directory
 # Every shell command is executed in the same invocation
 MKFILE_PATH:=$(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR:=$(patsubst %/,%,$(dir $(MKFILE_PATH)))
 ifneq ("$(MKFILE_DIR)", "$(CURDIR)")
-$(error Should run from $(MKFILE_DIR) not $(CURDIR))
+  $(error Should run from $(MKFILE_DIR) not $(CURDIR))
 endif
 
 # -------------------------------------------------- Include makefile environment and standard rules
@@ -57,7 +74,10 @@ $(BUILDDIR)/src/scanner/gen-token-types_cpp.o: src/scanner/token-types.h src/sca
 
 $(BUILDDIR)/src/scanner/lexer.o: src/scanner/lexer.l
 	@echo "$(BANNER)flex $^$(BANEND)"
-	flex -t $< | $(CC) -x c $(CFLAGS_F) -Wno-unused-value -Wno-unused-function -c - -o $@
+	mkdir -p $(dir $@)
+	flex -t $< | $(CC) -x c $(CFLAGS_F) \
+                           -Wno-sign-compare -Wno-unused-value -Wno-unused-function \
+                           -c - -o $@
 	@$(RECIPETAIL)
 
 $(BUILDDIR)/%.o: %.cpp

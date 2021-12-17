@@ -97,40 +97,16 @@ export STATIC_LIBCPP="0"
 export VERBOSE="${FEEDBACK}"
 export LTO="${LTO}"
 
+export BUILD_TESTS="${BUILD_TESTS}"
+export BUILD_EXAMPLES="${BUILD_EXAMPLES}"
+export BENCHMARK="${BENCHMARK}"
+
 export SRC_DIRECTORIES="src"
 
-# if [ "$TOOLCHAIN" = "emcc" ] ; then
-#     export SRC_DIRECTORIES="src/niggly/utils contrib"
-#     export EXTRA_LINK="\$emcc_link_extra"
-# else
-#     export EXTRA_LINK="\$cli_link_extra"
-# fi
-# mkdir -p "$(dirname "$TARGET")"
-
-if [ "$BUILD_TESTS" = "1" ] ; then
-    export SRC_DIRECTORIES="${SRC_DIRECTORIES} testcases"
-    export CFLAGS="${CFLAGS} -DCATCH_BUILD"
-    export CXXFLAGS="${CXXFLAGS} -DCATCH_BUILD"
-fi
-
-if [ "$BUILD_EXAMPLES" = "1" ] ; then
-    export SRC_DIRECTORIES="${SRC_DIRECTORIES} examples"
-    export CFLAGS="$CFLAGS -Wno-unused-function "
-    export CXXFLAGS="$CXXFLAGS -Wno-unused-function "
-fi
-
-if [ "$BENCHMARK" = "1" ] ; then
-    export SRC_DIRECTORIES="${SRC_DIRECTORIES} benchmark"
-    export CFLAGS="${CFLAGS} -DBENCHMARK_BUILD"
-    export CXXFLAGS="${CXXFLAGS} -DBENCHMARK_BUILD"
-    export LDFLAGS="-lpthread -L/usr/local/lib -lbenchmark ${LDFLAGS}"
-fi
-
-export VERSION_HASH="$(git log | grep commit | head -n 1 | awk '{ print $2 }')"
-export VERSION_CRC32="$(echo -n $VERSION_HASH | gzip -c | tail -c8 | hexdump -n4 -e '"%u"')"
-export VERSION_DEFINES="-DVERSION_HASH=\"\\\"$VERSION_HASH\"\\\" -DVERSION_CRC32=${VERSION_CRC32}u"
-export CFLAGS="$CFLAGS $VERSION_DEFINES"
-export CXXFLAGS="$CXXFLAGS $VERSION_DEFINES"
+# export VERSION_HASH="$(git log | grep commit | head -n 1 | awk '{ print $2 }')"
+# export VERSION_CRC32="$(echo -n $VERSION_HASH | gzip -c | tail -c8 | hexdump -n4 -e '"%u"')"
+# export VERSION_DEFINES="-DVERSION_HASH=\"\\\"$VERSION_HASH\"\\\""
+# export CPPFLAGS="$CPPFLAGS $VERSION_DEFINES"
 
 # ---- Run Mobius
 
