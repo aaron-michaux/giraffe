@@ -50,12 +50,15 @@ include project-config/env.inc.makefile
 
 # -------------------------------------------------------------------------------------------- Rules
 # Standard Rules
-.PHONY: clean info deps test-scan module-deps
+.PHONY: clean info test deps test-scan module-deps
 
 #include /tmp/build-amichaux/gcc-11.2.0-asan/sail/src/main.o.d
 #include test1.o.d
 
 all: $(TARGETDIR)/$(TARGET)
+
+test: | all
+	$(TARGETDIR)/$(TARGET) src/main.cpp
 
 comp-database: | $(COMP_DATABASE)
 

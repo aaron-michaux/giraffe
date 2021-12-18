@@ -20,24 +20,24 @@ struct SourceLocation final
    constexpr SourceLocation& operator=(const SourceLocation&) = default;
 
    // NEED TESTCASES
-   bool operator==(const SourceLocation& o) const noexcept
+   constexpr bool operator==(const SourceLocation& o) const noexcept
    {
       return (offset == o.offset);
    }
-   bool operator!=(const SourceLocation& o) const noexcept
+   constexpr bool operator!=(const SourceLocation& o) const noexcept
    {
       return !(*this == o);
    }
-   bool operator<(const SourceLocation& o) const noexcept
+   constexpr bool operator<(const SourceLocation& o) const noexcept
    {
       return (offset < o.offset);
    }
-   bool operator<=(const SourceLocation& o) const noexcept
+   constexpr bool operator<=(const SourceLocation& o) const noexcept
    {
       return !(o < *this);
    }
-   bool operator>(const SourceLocation& o) const noexcept { return o < *this; }
-   bool operator>=(const SourceLocation& o) const noexcept
+   constexpr bool operator>(const SourceLocation& o) const noexcept { return o < *this; }
+   constexpr bool operator>=(const SourceLocation& o) const noexcept
    {
       return !(*this < o);
    }
@@ -52,7 +52,7 @@ inline string str(SourceLocation loc) noexcept
 
 using SourceRange = std::pair<SourceLocation, SourceLocation>; // [start..end)
 
-inline bool is_empty(const SourceRange& s) noexcept
+constexpr inline bool is_empty(const SourceRange& s) noexcept
 {
    return !(s.first < s.second);
 }

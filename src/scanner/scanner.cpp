@@ -54,9 +54,9 @@ struct Scanner::Worker
    string line_buffer_ = ""s;
    struct InternalLineData
    {
-      String line              = {};
-      uint32_t offset          = 0;
-      uint32_t logical_line_no = 0; // Escaped newlines to increase this
+      string line              = {}; // All tokens ultimately point to a 'line'
+      uint32_t offset          = 0;  //
+      uint32_t logical_line_no = 0;  // Escaped newlines to increase this
       bool is_newline_escaped  = false;
       uint32_t end() const noexcept { return uint32_t(line.size()) + offset; }
    };
@@ -245,7 +245,6 @@ This::LineData This::Worker::line_data(uint32_t line_no) const noexcept
               lines_.back().logical_line_no
                   + (lines_.back().is_newline_escaped ? 0 : 1)};
    }
-
    return This::LineData{"", 0, 0};
 }
 
