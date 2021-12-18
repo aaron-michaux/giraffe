@@ -1,6 +1,6 @@
 
-#ifndef GAFFS__STDINC_HPP__INCLUDE_GUARD__
-#define GAFFS__STDINC_HPP__INCLUDE_GUARD__
+#ifndef GIRAFFE__STDINC_HPP__INCLUDE_GUARD__
+#define GIRAFFE__STDINC_HPP__INCLUDE_GUARD__
 
 #include <cassert>
 #include <cstddef>
@@ -19,6 +19,10 @@
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+
+#ifdef CATCH_BUILD
+#include <unistd.h>
+#endif
 
 #include "fmt/format.h"
 

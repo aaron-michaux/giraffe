@@ -43,5 +43,13 @@ concept constructible_from = destructible<T>&& is_constructible_v<T, Args...>;
 template<class T>
 concept move_constructible = constructible_from<T, T>&& convertible_to<T, T>;
 
+
+namespace ranges {
+template<class T> concept range = requires(T& t) {
+   ranges::begin(t); // equality-preserving for forward iterators
+   ranges::end  (t);
+};
+} // namespace ranges
+
 } // namespace std
 #endif

@@ -1,7 +1,7 @@
 
 # These will be set from the outside
 TARGET?=giraffe
-SOURCES?=$(shell find src -type f -name '*.cpp')
+SOURCES?=$(shell find src -type f -name '*.cpp' -o -name '*.c')
 TOOLCHAIN_NAME?=gcc-11
 TOOLCHAIN_CONFIG?=asan
 STATIC_LIBCPP?=0
@@ -14,16 +14,17 @@ BENCHMARK?=0
 # -------------------------------------------------------------------------- Configure build options
 
 ifneq ("$(BUILD_TESTS)", "0")
-  CPPFLAGS+= -DCATCH_BUILD
+  SOURCES+= $(shell find tests -type f -name '*.cpp' -o -name '*.c')
+  CPPFLAGS+= -DCATCH_BUILD -DCATCH_CONFIG_PREFIX_ALL -DCATCH_CONFIG_COLOUR_ANSI -isystemtests
 endif
 
 ifneq ("$(BUILD_EXAMPLES)", "0")
-  SOURCES+= $(shell find examples -type f -name '*.cpp' -o '*.c')
+  SOURCES+= $(shell find examples -type f -name '*.cpp' -o -name '*.c')
   CPPFLAGS+= -DBUILD_EXAMPLES
 endif
 
 ifneq ("$(BENCHMARK)", "0")
-  SOURCES+= $(shell find benchmark -type f -name '*.cpp' -o '*.c')
+  SOURCES+= $(shell find benchmark -type f -name '*.cpp' -o -name '*.c')
   CPPFLAGS+= -DBENCHMARK_BUILD
   LDFLAGS+= -lpthread -L/usr/local/lib -lbenchmark
 endif

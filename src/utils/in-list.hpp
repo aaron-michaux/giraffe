@@ -5,7 +5,7 @@
 
 namespace giraffe
 {
-template<typename T> bool in_list(int id, T&& list) noexcept
+template<typename T> constexpr bool in_list(int id, T&& list) noexcept
 {
    if constexpr(std::is_integral<std::remove_reference_t<T>>::value) {
       return id == int(list);
