@@ -63,6 +63,11 @@ PP      ^{WS}*#{WS}*
 
 %{ /* ------------------------------------------------------- Preprocessor */ %}
 
+{PP}"pragma"                   { return TOKEN(TPRAGMA); }
+{PP}"line"                     { return TOKEN(TPRAGMA); }
+{PP}"error"                    { return TOKEN(TPRAGMA); }
+{PP}"warn"                     { return TOKEN(TPRAGMA); }
+
 {PP}"ifdef"                    { return TOKEN(TIFDEF); }
 {PP}"ifndef"                   { return TOKEN(TIFNDEF); }
 {PP}"if"                       { return TOKEN(TIF); }
@@ -80,10 +85,10 @@ PP      ^{WS}*#{WS}*
 "import"                       { return TOKEN(TIMPORT); }
 "export"                       { return TOKEN(TEXPORT); }
 "module"                       { return TOKEN(TMODULE); }
-{ML}{MD}*                      { return TOKEN(TMODULENAME); }
 
 {L}{D}*                        { return TOKEN(TIDENTIFIER); }
 {DIGIT}*                       { return TOKEN(TDIGIT); }
+{ML}{MD}*                      { return TOKEN(TMODULENAME); }
 
 "##"                           { return TOKEN(TSTRINGIFY); }
 
