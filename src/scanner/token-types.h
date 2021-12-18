@@ -22,6 +22,10 @@
 #define TCOMMENT_END_DELIM 9
 #define TCOMMENT_PART 10
 
+#define TLINE_PART 11
+
+#define THASH 12
+
 /* ----------------------------- Keywords */
 #define TIF 13
 #define TIFDEF 14
@@ -38,8 +42,11 @@
 
 #define TIDENTIFIER 30
 #define TSTRING 31
-#define TSTRINGIFY 32
-#define TDIGIT 33
+#define TSTR_PART 32
+#define TSTR_DELIM 33
+#define TCSTRING 34
+#define TSTRINGIFY 35
+#define TDIGIT 36
 
 #define TLT 40
 #define TGT 41
@@ -65,7 +72,6 @@
 #define TMODULE 70
 #define TIMPORT 71
 #define TEXPORT 72
-#define TMODULENAME 73
 
 // Probably going to ignore all this
 #define TLINE 80
@@ -111,6 +117,7 @@ constexpr bool token_id_can_by_zero_length(auto id)
 {
    return id == TEOF || id == TSTART;
 }
+
 
 } // namespace giraffe
 #endif

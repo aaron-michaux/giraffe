@@ -1,6 +1,12 @@
 # giraffe
 Scanning dependencies
 
+## TODO
+
+ * We can use [https://github.com/gcc-mirror/gcc/tree/releases/gcc-11.2.0/gcc/testsuite/gcc.dg/cpp](https://github.com/gcc-mirror/gcc/tree/releases/gcc-11.2.0/gcc/testsuite/gcc.dg/cpp)
+ * Run each testcase through gcc -E
+ * Use some bash magic to turn this into a set of tests that can be run through catch
+
 ``` c++
 # if     constant-expression NL
 # ifdef  identifier NL

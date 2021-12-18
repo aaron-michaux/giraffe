@@ -13,7 +13,12 @@ constexpr static const char * test_text_dump_tokens_1 = R"V0G0N(
 
 #pragma once
 
-#include <type_traits>
+// C++ comment
+/* A 
+   C
+comment */
+
+  #include /* a comment */ <type_traits>
 
 #if(defined __GLIBCXX__ && __GLIBCXX__ <= 20200422) || defined _LIBCPP_VERSION
 #define USE_CONCEPT_FILLER__
@@ -38,8 +43,11 @@ CATCH_TEST_CASE("dump tokens", "[dump-tokens]")
       encode_string(token.text()));
    };
 
-   CATCH_SECTION("some section") {   
-      Scanner scanner("test-text-dump-tokens-1", test_text_dump_tokens_1);   
+   CATCH_SECTION("some section") {
+
+      ScannerOptions opts;
+      opts.skip_newlines = true;
+      Scanner scanner("test-text-dump-tokens-1", test_text_dump_tokens_1, opts);   
       while(scanner.has_next()) {
          print_token(cout, scanner.consume());
       }

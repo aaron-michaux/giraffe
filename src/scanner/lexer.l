@@ -37,36 +37,41 @@ NL      ((\r\n)|(\n\r)|([\r\n]))
 WS      (([\t ])|(\\{NL}))
 L	[@_a-zA-Z]
 D	[@_\-\./\\a-zA-Z0-9]
-ML      [_a-zA-Z]
-MD      [_\x2ea-zA-Z0-9]
 DIGIT   [0-9]
+HEXD    [0-9a-fA-F]
+HEXQUAD {HEXD}{HEXD}{HEXD}{HEXD}
 A       ([\x01-\x09])|([\x20-\x7f])|{WS}|{NL}
-NQ      ([\x21-\x21])|([\x23-\x7f])|{WS}
+NQ      ([\x21-\x21])|([\x23-\x7f])|([\t ])
 NA      ([\x21-\x3d])|([\x3f-\x7f])|{WS}
-
-PP      ^{WS}*#{WS}*
-
+NNL     ([^\n\r\\])                                    
+DQUOTE  [\x22]
+                        
+PP      {WS}*#{WS}*
+                        
 %x MLC
+%x PREPROC
+%x CSTR                       
 
 %%
 
 <<EOF>>			       { return TOKEN(TEOF); }
 
 %{ /* ----------------------------------------------------------- Comments */ %}
-"/*"		{ PUSH_STATE(MLC); return TOKEN(TCOMMENT_DELIM); }
+"/*"{NNL}*{NL}?                { PUSH_STATE(MLC); yyless(2); return TOKEN(TCOMMENT_DELIM); }
 <MLC>{
-"*/"            { POP_STATE(); return TOKEN(TCOMMENT_END_DELIM); }
-{NL}            { return TOKEN(TIN_COMMENT_NEWLINE); }
-[^*\n]+         { return TOKEN(TCOMMENT_PART); }
-"*"             { return TOKEN(TCOMMENT_PART); }
+"*/"                           { POP_STATE(); return TOKEN(TCOMMENT_END_DELIM); }
+{NL}                           { return TOKEN(TIN_COMMENT_NEWLINE); }
+[^*\n]+                        { return TOKEN(TCOMMENT_PART); }
+"*"                            { return TOKEN(TCOMMENT_PART); }
 }
+"//".*			       { return TOKEN(TCOMMENT); }
 
 %{ /* ------------------------------------------------------- Preprocessor */ %}
 
-{PP}"pragma"                   { return TOKEN(TPRAGMA); }
-{PP}"line"                     { return TOKEN(TPRAGMA); }
-{PP}"error"                    { return TOKEN(TPRAGMA); }
-{PP}"warn"                     { return TOKEN(TPRAGMA); }
+{PP}{NNL}*{NL}                 { PUSH_STATE(PREPROC); yyless(0); }
+<PREPROC>{
+
+"/*"{NNL}*{NL}                 { PUSH_STATE(MLC); yyless(2); return TOKEN(TCOMMENT_DELIM); }
 
 {PP}"ifdef"                    { return TOKEN(TIFDEF); }
 {PP}"ifndef"                   { return TOKEN(TIFNDEF); }
@@ -78,8 +83,11 @@ PP      ^{WS}*#{WS}*
 {PP}"include"                  { return TOKEN(TINCLUDE); }
 {PP}"define"                   { return TOKEN(TDEFINE); }
 {PP}"undef"                    { return TOKEN(TUNDEF); }
+{PP}"line"                     { return TOKEN(TLINE); }
+{PP}"error"                    { return TOKEN(TERROR); }
+{PP}"pragma"                   { return TOKEN(TPRAGMA); }
 
-"\""{NQ}*"\""	               { return TOKEN(TSTRING); }
+"\""                           { PUSH_STATE(CSTR); return TOKEN(TSTR_DELIM); }
 "<"{NA}*">"	               { return TOKEN(TSTRING); }
 
 "import"                       { return TOKEN(TIMPORT); }
@@ -88,11 +96,9 @@ PP      ^{WS}*#{WS}*
 
 {L}{D}*                        { return TOKEN(TIDENTIFIER); }
 {DIGIT}*                       { return TOKEN(TDIGIT); }
-{ML}{MD}*                      { return TOKEN(TMODULENAME); }
 
 "##"                           { return TOKEN(TSTRINGIFY); }
-
-"//".*			       { return TOKEN(TCOMMENT); }
+"#"                            { return TOKEN(THASH); }
 
 "("                            { return TOKEN(TLPAREN); }
 ")"                            { return TOKEN(TRPAREN); }
@@ -112,15 +118,38 @@ PP      ^{WS}*#{WS}*
 "||"                           { return TOKEN(TOROR); }
 ";"                            { return TOKEN(TSEMICOLON); }
 
-"\\"{WS}*{NL}                  { return TOKEN(TNEWLINE_ESC); }
+"\\"{NL}                       { return TOKEN(TNEWLINE_ESC); }
 {WS}+			       { return TOKEN(TWHITESPACE); }
-{NL}                           { return TOKEN(TNEWLINE); }
+{NL}                           { POP_STATE(); return TOKEN(TNEWLINE); }
 
 [\x00-\xff]		       { TOKEN(TBADCHAR); }
+}
+
+<CSTR>{
+[^\"\r\n\\]+                   { return TOKEN(TSTR_PART); }
+"\\\n"                         { return TOKEN(TSTR_PART); }
+"\\\r\n"                       { return TOKEN(TSTR_PART); }
+"\\\""                         { return TOKEN(TSTR_PART); }
+"\\"[\'\"?abfnrtv\\]           { return TOKEN(TSTR_PART); }
+"\\"[0-7]{1,3}                 { return TOKEN(TSTR_PART); }
+"\\x"{HEXD}+                   { return TOKEN(TSTR_PART); }
+"\\u"{HEXQUAD}                 { return TOKEN(TSTR_PART); }
+"\\U"{HEXQUAD}{HEXQUAD}        { return TOKEN(TSTR_PART); }
+{DQUOTE}                       { POP_STATE(); return TOKEN(TSTR_DELIM); }
+
+[\x00-\xff]		       { TOKEN(TBADCHAR); }
+}
+
+{NNL}+                         { return TOKEN(TLINE_PART); }
+
+"\\"{NL}                       { return TOKEN(TNEWLINE_ESC); }
+{NL}                           { return TOKEN(TNEWLINE); }
+
+"\\"                           { return TOKEN(TLINE_PART); }
 
 %%
 
-
+// [\x00-\xff]		       { TOKEN(TBADCHAR); }
 
 static void lex_params_init(struct lex_params_t* params,
                             void * lex,
