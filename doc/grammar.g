@@ -18,7 +18,7 @@ PreprocCommand:
    | '#undef' IDENTIFIER
    | '#error' token-string
    | '#pragma' token-string
-   | if-part elif-part* else-part? '#endif'
+   | IfPart ElifPart* ElsePart? '#endif'
    ;
 
 PathSpec:
@@ -26,17 +26,17 @@ PathSpec:
    | '<' PATHSPEC '>'
    ;
 
-if-part:
-   | '#if' constant-expression
+IfPart:
+   | '#if' ConstantExpression
    | '#ifdef' IDENTIFIER
    | '#ifndef' IDENTIFIER
    ;
       
-elif-part:
-   | '#elif' constant-expression
+ElifPart:
+   | '#elif' ConstantExpression
    ;
 
-else-part:
+ElsePart:
    | '#else' text
    ;      
 
@@ -51,12 +51,7 @@ Expression: UnaryExpression (BinaryOperator Expression)? ;
 
 UnaryExpression: UnaryOperator? PrimaryExpression ;
 
-PrimaryExpression:
-   | IDENTIFIER
-   | INTEGER
-   | HEX_INTEGER
-   | '(' Expression ')'
-   ;
+PrimaryExpressiion: IDENTIFIER | INTEGER | '(' Expression ')' ;
 
 UnaryOperator: '+' | '-' | '!' | '~' ;
 
