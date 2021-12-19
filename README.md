@@ -7,6 +7,10 @@ Scanning dependencies
  * Run each testcase through gcc -E
  * Use some bash magic to turn this into a set of tests that can be run through catch
 
+A Grammar
+
+ * https://docs.microsoft.com/en-us/cpp/preprocessor/grammar-summary-c-cpp?view=msvc-170
+
 ``` c++
 # if     constant-expression NL
 # ifdef  identifier NL

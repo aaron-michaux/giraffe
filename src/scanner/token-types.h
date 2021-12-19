@@ -46,7 +46,7 @@
 #define TSTR_DELIM 33
 #define TCSTRING 34
 #define TSTRINGIFY 35
-#define TDIGIT 36
+#define TINTEGER 36
 
 #define TLT 40
 #define TGT 41
@@ -61,24 +61,32 @@
 #define TDIV 53
 #define TREMAINDER 54
 #define TSHOUT 55
+#define TTILDE 56
 
-#define TANDAND 56
-#define TOROR 57
+#define TANDAND 57
+#define TOROR 58
 
 #define TLPAREN 60
 #define TRPAREN 61
 #define TSEMICOLON 62
+#define TCOLON 63
 
-#define TMODULE 70
-#define TIMPORT 71
-#define TEXPORT 72
+#define TAND 70
+#define TOR 71
+#define TCARROT 72
+#define TLTLT 73
+#define TGTGT 74
+
+#define TMODULE 170
+#define TIMPORT 171
+#define TEXPORT 172
 
 // Probably going to ignore all this
-#define TLINE 80
-#define TERROR 81
-#define TPRAGMA 82
+#define TLINE 180
+#define TERROR 181
+#define TPRAGMA 182
 
-#define TBADCHAR 99
+#define TBADCHAR 199
 
 #ifdef __cplusplus
 extern "C" {

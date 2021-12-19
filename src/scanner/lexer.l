@@ -35,11 +35,12 @@ static void pop_lex_state(struct lex_params_t* params);
 
 NL      ((\r\n)|(\n\r)|([\r\n]))
 WS      (([\t ])|(\\{NL}))
-L	[@_a-zA-Z]
-D	[@_\-\./\\a-zA-Z0-9]
-DIGIT   [0-9]
-HEXD    [0-9a-fA-F]
+L	[_\.a-zA-Z]
+D	[_\./\\a-zA-Z0-9]
+DIGIT   [0-9']
+HEXD    [0-9a-fA-F']
 HEXQUAD {HEXD}{HEXD}{HEXD}{HEXD}
+SUFFIX  ([uU])|([zZ])|([lL])
 A       ([\x01-\x09])|([\x20-\x7f])|{WS}|{NL}
 NQ      ([\x21-\x21])|([\x23-\x7f])|([\t ])
 NA      ([\x21-\x3d])|([\x3f-\x7f])|{WS}
@@ -95,34 +96,49 @@ PP      {WS}*#{WS}*
 "module"                       { return TOKEN(TMODULE); }
 
 {L}{D}*                        { return TOKEN(TIDENTIFIER); }
-{DIGIT}*                       { return TOKEN(TDIGIT); }
+{DIGIT}+{SUFFIX}*              { return TOKEN(TINTEGER); }
+"0x"{HEXD}+{SUFFIX}*           { return TOKEN(TINTEGER); }
 
 "##"                           { return TOKEN(TSTRINGIFY); }
 "#"                            { return TOKEN(THASH); }
 
 "("                            { return TOKEN(TLPAREN); }
 ")"                            { return TOKEN(TRPAREN); }
+";"                            { return TOKEN(TSEMICOLON); }
+":"                            { return TOKEN(TCOLON); }
+
+%{ /* Comparison */ %}
 "<="                           { return TOKEN(TLE); }
 ">="                           { return TOKEN(TGE); }
 "<"                            { return TOKEN(TLT); }
 ">"                            { return TOKEN(TGT); }
 "=="                           { return TOKEN(TEQEQ); }
 "!="                           { return TOKEN(TNE); }
+
+%{ /* Unary */ %}
 "+"                            { return TOKEN(TPLUS); }
 "-"                            { return TOKEN(TMINUS); }
+"!"                            { return TOKEN(TSHOUT); }
+"~"                            { return TOKEN(TTILDE); }
+
+%{ /* Binary (but not unary) */ %}
 "*"                            { return TOKEN(TMULT); }
 "/"                            { return TOKEN(TDIV); }
 "%"                            { return TOKEN(TREMAINDER); }
-"!"                            { return TOKEN(TSHOUT); }
+"&"                            { return TOKEN(TAND); }
+"|"                            { return TOKEN(TOR); }
+"^"                            { return TOKEN(TCARROT); }
 "&&"                           { return TOKEN(TANDAND); }
 "||"                           { return TOKEN(TOROR); }
-";"                            { return TOKEN(TSEMICOLON); }
+"<<"                           { return TOKEN(TLTLT); }
+">>"                           { return TOKEN(TGTGT); }
 
 "\\"{NL}                       { return TOKEN(TNEWLINE_ESC); }
 {WS}+			       { return TOKEN(TWHITESPACE); }
 {NL}                           { POP_STATE(); return TOKEN(TNEWLINE); }
 
-[\x00-\xff]		       { TOKEN(TBADCHAR); }
+[\x00-\xff]		       { return TOKEN(TLINE_PART); }
+
 }
 
 <CSTR>{
