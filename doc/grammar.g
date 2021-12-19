@@ -2,8 +2,7 @@
 // Note: all imports must appear before declaraions, #include aside.
 TranslationUnit:
    | PreprocCommand*
-   | 'export' 'module' ModuleName ';'
-   | 'export'? 'import' ModuleName ';'
+   | 'export'? ('import' | 'module') ModuleName ';'
    ;
 
 ModuleName:
@@ -48,18 +47,9 @@ ConstantExpression:
    ;
 
 // Note: uses precidence climbing on operators
-Expression:
-   | UnaryExpression
-   | UnaryExpression BinaryOperator Expression
-   ;
+Expression: UnaryExpression (BinaryOperator Expression)? ;
 
-UnaryExpression:
-   | UnaryOperator PrimaryExpression
-   | PrimaryExpression
-   ;
-
-BinaryExpression:
-      
+UnaryExpression: UnaryOperator? PrimaryExpression ;
 
 PrimaryExpression:
    | IDENTIFIER
