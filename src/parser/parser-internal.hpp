@@ -18,6 +18,9 @@ bool recover_to_next_rule(Scanner& tokens) noexcept;
 bool skip_past_element(Scanner& tokens) noexcept;
 
 // Accept functions
+
+
+
 // GrammarNode* accept_grammar(CompilerContext&) noexcept;
 // RuleNode* accept_rule(CompilerContext&) noexcept;
 // ElementListNode* accept_element_list(CompilerContext&) noexcept;

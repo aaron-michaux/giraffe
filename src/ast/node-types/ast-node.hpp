@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "ast/scope.hpp"
 #include "scanner/token.hpp"
 
 namespace giraffe
@@ -9,14 +8,22 @@ namespace giraffe
 // ---------------------------------------------------------- Predfine All Nodes
 
 class AstNode;
-class GrammarNode;
-class RuleNode;
-class ElementListNode;
-class ElementNode;
+class TranslationUnitNode;
+class ModuleNode;     // export? import? module
+class IfThenNode;     // if-...-endif
+class CommandNode;    // define, undef, line, error, pragma include
+class ExpressionNode; // Expression, Primary, Unary, Binary
 
 // --------------------------------------------------------------- NodeType Enum
 
-enum class NodeType : uint8_t { NONE = 0, GRAMMAR, RULE, ELEMENTLIST, ELEMENT };
+enum class NodeType : uint8_t {
+   NONE = 0,
+   TRANSLATION_UNIT,
+   MODULE,
+   IFTHEN,
+   COMMAND,
+   EXPRESSION
+};
 
 const char* str(NodeType) noexcept;
 
@@ -24,8 +31,37 @@ const char* str(NodeType) noexcept;
 // to assist in printing
 namespace detail
 {
-   using AstNodeSV = std::pair<const AstNode*, const TokenTextFunctor&>;
+
+using AstNodeSV = std::pair<const AstNode*, const TokenTextFunctor&>;
+
+template<std::derived_from<AstNode> T>
+T* cast_ast_node_helper_(AstNode * o, NodeType type) noexcept
+{
+#define ELSE_IF_(S, N)                                        \
+   else if constexpr(std::is_same_v<std::decay_t<T>, N>)      \
+   {                                                          \
+      if(type == NodeType::S) ret = reinterpret_cast<T*>(o);  \
+   }
+   
+   T* ret = nullptr;
+   if constexpr(std::is_same_v<std::decay_t<T>, AstNode>) {
+      ret = o; // not a cast
+   }
+   ELSE_IF_(TRANSLATION_UNIT, TranslationUnitNode)
+   ELSE_IF_(MODULE, ModuleNode)
+   ELSE_IF_(IFTHEN, IfThenNode)
+   ELSE_IF_(COMMAND, CommandNode)
+   ELSE_IF_(EXPRESSION, ExpressionNode)
+   else {
+      FATAL("missing case");
+      assert(false);
+   }
+   return ret;
+   
+   #undef ELSE_IF_
 }
+
+} // detail
 
 // --------------------------------------------------------------------- AstNode
 
@@ -36,14 +72,30 @@ class AstNode
    vector<AstNode*> children_ = {};
    size_t index_in_parent_    = 0;
    NodeType type_             = NodeType::NONE;
-
+   SourceRange loc_           = {};
+   
  protected:
    using PP = detail::AstNodeSV;
 
+   vector<AstNode*> release_children_() noexcept
+   {
+      vector<AstNode*> ret = std::move(children_);
+      children_ = {};
+      return ret;
+   }
+   
    template<typename T> T* cast_child_(size_t index) const noexcept
    {
       assert(index < children_.size());
-      return reinterpret_cast<T*>(children_[index]);
+      auto o = children_[index];
+      return detail::cast_ast_node_helper_<T>(o, o->node_type());
+   }
+
+   void set_location_(SourceRange loc) noexcept { loc_ = loc; }
+
+   void set_location_(SourceLocation loc0, SourceLocation loc1) noexcept
+   {
+      set_location_(SourceRange{loc0, loc1});
    }
 
  public:
@@ -81,43 +133,29 @@ class AstNode
       }
    }
 
-   NodeType type() const noexcept { return type_; }
+   NodeType node_type() const noexcept { return type_; }
    size_t size() const noexcept { return children_.size(); }
    bool empty() const noexcept { return children_.empty(); }
 
-   virtual std::ostream& stream(std::ostream&,
-                                const TokenTextFunctor&) const noexcept = 0;
+   virtual std::ostream& stream(std::ostream&, const int) const noexcept = 0;
 };
 
 // ------------------------------------------------------------------ operator<<
 
-inline std::ostream& operator<<(std::ostream& ss, detail::AstNodeSV pp)
-{
-   if(pp.first == nullptr)
-      ss << "<nullptr>";
-   else
-      pp.first->stream(ss, pp.second);
-   return ss;
-}
+// inline std::ostream& operator<<(std::ostream& ss, detail::AstNodeSV pp)
+// {
+//    if(std::get<0>(pp) == nullptr)
+//       ss << "<nullptr>";
+//    else
+//       std::get<0>(pp)->stream(ss, std::get<1>(pp));
+//    return ss;
+// }
 
 // -------------------------------------------------- safely downcast an AstNode
 
 template<std::derived_from<AstNode> T> T* cast_ast_node(AstNode* o) noexcept
 {
-   T* ret = nullptr;
-   if constexpr(std::is_same_v<std::decay_t<T>, AstNode>) {
-      ret = o; // not a cast
-   } else if constexpr(std::is_same_v<std::decay_t<T>, GrammarNode>) {
-      if(o->type() == NodeType::GRAMMAR) ret = reinterpret_cast<T*>(o);
-   } else if constexpr(std::is_same_v<std::decay_t<T>, RuleNode>) {
-      if(o->type() == NodeType::RULE) ret = reinterpret_cast<T*>(o);
-   } else if constexpr(std::is_same_v<std::decay_t<T>, ElementListNode>) {
-      if(o->type() == NodeType::ELEMENTLIST) ret = reinterpret_cast<T*>(o);
-   } else if constexpr(std::is_same_v<std::decay_t<T>, ElementNode>) {
-      if(o->type() == NodeType::ELEMENT) ret = reinterpret_cast<T*>(o);
-   }
-   if(ret == nullptr) FATAL(format("cast ast mismatch"));
-   return ret;
+   return detail::cast_ast_node_helper_<T>(o, o->node_type());
 }
 
 template<std::derived_from<AstNode> T>

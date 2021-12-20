@@ -44,7 +44,6 @@ CATCH_TEST_CASE("dump tokens", "[dump-tokens]")
    };
 
    CATCH_SECTION("some section") {
-
       ScannerOptions opts;
       opts.skip_newlines = true;
       Scanner scanner("test-text-dump-tokens-1", test_text_dump_tokens_1, opts);   
