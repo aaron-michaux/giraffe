@@ -18,13 +18,11 @@ bool recover_to_next_rule(Scanner& tokens) noexcept;
 bool skip_past_element(Scanner& tokens) noexcept;
 
 // Accept functions
-
-
-
-// GrammarNode* accept_grammar(CompilerContext&) noexcept;
-// RuleNode* accept_rule(CompilerContext&) noexcept;
-// ElementListNode* accept_element_list(CompilerContext&) noexcept;
-// ElementNode* accept_element(CompilerContext&) noexcept;
+TranslationUnitNode * accept_translation_unit(Context& context) noexcept;
+ModuleNode * accept_module(Context& context) noexcept;
+IfThenNode * accept_if_then(Context& context) noexcept;
+CommandNode * accept_command(Context& context) noexcept;
+ExpressionNode * accept_expression(Context& context) noexcept;
 
 //
 //

@@ -5,33 +5,20 @@
 
 namespace giraffe
 {
-// --------------------------------------------------------------------- grammar
-// constexpr auto first_set_grammar  = to_array<int>({TSTART});
-// constexpr auto final_set_grammar  = to_array<int>({TEOF});
-// constexpr auto follow_set_grammar = array<int, 0>{};
+// --------------------------------------------------------------------- modules
+constexpr auto first_set_module = to_array<int>({ TMODULE, TEXPORT, TIMPORT });
 
-// // ------------------------------------------------------------------------ rule
-// constexpr auto first_set_rule    = to_array<int>({TIDENTIFIER});
-// constexpr auto final_set_rule    = to_array<int>({TSEMICOLON});
-// constexpr auto follow_set_rule   = to_array<int>({TEOF, TIDENTIFIER});
-// constexpr auto recovery_seq_rule = to_array<int>({TIDENTIFIER, TCOLON});
+constexpr auto first_set_command = to_array<int>({
+      TDEFINE, TINCLUDE, TLINE, TUNDEF, TERROR
+   });
 
-// // ---------------------------------------------------------------- element-list
-// constexpr auto first_set_element_list
-//     = to_array<int>({TIDENTIFIER, TSTRING, TLPAREN});
-// constexpr auto final_set_element_list
-//     = to_array<int>({TIDENTIFIER, TSTRING, TRPAREN, TSTAR, TPLUS, TQUESTION});
-// constexpr auto follow_set_element_list
-//     = to_array<int>({TPIPE, TSEMICOLON, TRPAREN});
+constexpr auto first_set_ifthen = to_array<int>({
+      TIF, TIFDEF, TIFNDEF
+   });
 
-// // --------------------------------------------------------------------- element
-// constexpr auto first_set_element
-//     = to_array<int>({TIDENTIFIER, TSTRING, TLPAREN});
-// constexpr auto final_set_element
-//     = to_array<int>({TIDENTIFIER, TSTRING, TRPAREN, TSTAR, TPLUS, TQUESTION});
-// constexpr auto follow_set_element
-//     = to_array<int>({TIDENTIFIER, TSTRING, TLPAREN, TPIPE, TSEMICOLON});
+constexpr auto stray_ifthen_parts = to_array<int>({
+      TELIF, TELSE, TENDIF
+   });
 
-// constexpr auto token_suffix_list = to_array<int>({TSTAR, TPLUS, TQUESTION});
 
 } // namespace giraffe

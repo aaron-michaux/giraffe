@@ -24,6 +24,12 @@ comment */
 #define USE_CONCEPT_FILLER__
 #endif
 
+export module foo;
+import <stdio>;
+export import foo:A;
+export import foo:B;
+module bar;
+
 #ifdef USE_CONCEPT_FILLER__
 namespace std {
 template<class T> concept integral        = is_integral_v<T>;
@@ -34,7 +40,7 @@ template<class T> concept integral        = is_integral_v<T>;
 
 // ----------------------------------------------------------------- dump-tokens
 
-CATCH_TEST_CASE("dump tokens", "[dump-tokens]")
+CATCH_TEST_CASE("parser dump", "[parser-dump]")
 {
    auto print_token = [] (auto& os, const Token& token) {
       os << format("{:15s} {:15s} {}\n",
@@ -48,10 +54,9 @@ CATCH_TEST_CASE("dump tokens", "[dump-tokens]")
       opts.skip_newlines = true;
       Scanner scanner("test-text-dump-tokens-1", test_text_dump_tokens_1, opts);   
       while(scanner.has_next()) {
-         scanner.consume();
-         // print_token(cout, scanner.current());
+         print_token(cout, scanner.consume());
       }
-      // print_token(cout, scanner.current());
+      print_token(cout, scanner.current());
 
       CATCH_REQUIRE(scanner.found_eof());
       CATCH_REQUIRE(scanner.reached_eof());

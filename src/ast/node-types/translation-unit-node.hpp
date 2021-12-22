@@ -11,19 +11,17 @@ namespace giraffe
  */
 class TranslationUnitNode final : public AstNode
 {
-private:
-
-
 public:
+
+   static TranslationUnitNode * make(vector<AstNode*>&& children) noexcept;
+   
    TranslationUnitNode()
       : AstNode(NodeType::TRANSLATION_UNIT)
    {}
    virtual ~TranslationUnitNode() = default;
 
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
-
-   //@{ Getters
-   //@}
 };
+
 }
 

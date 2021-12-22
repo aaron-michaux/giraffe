@@ -35,8 +35,10 @@ static void pop_lex_state(struct lex_params_t* params);
 
 NL      ((\r\n)|(\n\r)|([\r\n]))
 WS      (([\t ])|(\\{NL}))
-L	[_\.a-zA-Z]
-D	[_\./\\a-zA-Z0-9]
+L	[_a-zA-Z]
+D	[_a-zA-Z0-9]
+ML	[_\.\:a-zA-Z]
+MD	[_\.\:a-zA-Z0-9]
 DIGIT   [0-9']
 HEXD    [0-9a-fA-F']
 HEXQUAD {HEXD}{HEXD}{HEXD}{HEXD}
@@ -51,7 +53,8 @@ PP      {WS}*#{WS}*
                         
 %x MLC
 %x PREPROC
-%x CSTR                       
+%x CSTR
+%x MODULE                                        
 
 %%
 
@@ -90,10 +93,6 @@ PP      {WS}*#{WS}*
 
 "\""                           { PUSH_STATE(CSTR); return TOKEN(TSTR_DELIM); }
 "<"{NA}*">"	               { return TOKEN(TSTRING); }
-
-"import"                       { return TOKEN(TIMPORT); }
-"export"                       { return TOKEN(TEXPORT); }
-"module"                       { return TOKEN(TMODULE); }
 
 {L}{D}*                        { return TOKEN(TIDENTIFIER); }
 {DIGIT}+{SUFFIX}*              { return TOKEN(TINTEGER); }
@@ -138,7 +137,6 @@ PP      {WS}*#{WS}*
 {NL}                           { POP_STATE(); return TOKEN(TNEWLINE); }
 
 [\x00-\xff]		       { return TOKEN(TLINE_PART); }
-
 }
 
 <CSTR>{
@@ -154,6 +152,22 @@ PP      {WS}*#{WS}*
 {DQUOTE}                       { POP_STATE(); return TOKEN(TSTR_DELIM); }
 
 [\x00-\xff]		       { TOKEN(TBADCHAR); }
+}
+
+"import"({WS}{NNL}*)?          { yyless(6); PUSH_STATE(MODULE); return TOKEN(TIMPORT); }
+"export"({WS}{NNL}*)?          { yyless(6); PUSH_STATE(MODULE); return TOKEN(TEXPORT); }
+"module"({WS}{NNL}*)?          { yyless(6); PUSH_STATE(MODULE); return TOKEN(TMODULE); }
+
+<MODULE>{
+"import"                       { return TOKEN(TIMPORT); }
+"export"                       { return TOKEN(TEXPORT); }
+"module"                       { return TOKEN(TMODULE); }
+{ML}{MD}*                      { return TOKEN(TIDENTIFIER); }
+{WS}+			       { return TOKEN(TWHITESPACE); }
+";"                            { return TOKEN(TSEMICOLON); }
+"\\"{NL}                       { return TOKEN(TNEWLINE_ESC); }
+{NL}                           { POP_STATE(); return TOKEN(TNEWLINE); }
+[\x00-\xff]		       { return TOKEN(TBADCHAR); }
 }
 
 {NNL}+                         { return TOKEN(TLINE_PART); }

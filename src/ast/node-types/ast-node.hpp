@@ -71,7 +71,7 @@ class AstNode
    AstNode* parent_           = nullptr;
    vector<AstNode*> children_ = {};
    size_t index_in_parent_    = 0;
-   NodeType type_             = NodeType::NONE;
+   NodeType node_type_        = NodeType::NONE;
    SourceRange loc_           = {};
    
  protected:
@@ -100,7 +100,7 @@ class AstNode
 
  public:
    AstNode(NodeType type)
-       : type_(type)
+       : node_type_(type)
    {}
    AstNode(AstNode&&)      = default;
    AstNode(const AstNode&) = delete;
@@ -133,7 +133,7 @@ class AstNode
       }
    }
 
-   NodeType node_type() const noexcept { return type_; }
+   NodeType node_type() const noexcept { return node_type_; }
    size_t size() const noexcept { return children_.size(); }
    bool empty() const noexcept { return children_.empty(); }
 

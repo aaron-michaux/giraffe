@@ -4,18 +4,16 @@
 
 namespace giraffe
 {
-unique_ptr<AstNode> parse(Context& context) noexcept
+unique_ptr<TranslationUnitNode> parse(Context& context) noexcept
 {
-   return nullptr;
-   // if(!expect(context.scanner(), first_set_grammar)) {
-   //    context.push_error("expected start token");
+   auto& scanner = context.scanner();
 
-   //    // recovery
-   //    skip_to_sequence(context.scanner(), first_set_grammar);
-   // }
+   // Don't worry about TSTART token
+   if(scanner.current().id() == TSTART) scanner.consume();
 
-   // if(expect(context.scanner(), first_set_grammar))
-   //    return unique_ptr<GrammarNode>(accept_grammar(context));
-   // return make_unique<GrammarNode>();
+   // Accept and return
+   TranslationUnitNode * node = accept_translation_unit(context);
+   assert(node != nullptr);
+   return unique_ptr<TranslationUnitNode>(node);
 }
 } // namespace giraffe
