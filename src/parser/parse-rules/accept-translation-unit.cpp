@@ -23,16 +23,16 @@ TranslationUnitNode * accept_translation_unit(Context& context) noexcept
       children.push_back(child);
    };
    
-   while(true) {
+   while(!scanner.current().is_eof()) {
       const auto id = scanner.current().id();
       if(in_list(id, first_set_module)) {
          //push_child(accept_module(context));
 
       } else if(in_list(id, first_set_command)) {
-         //push_child(accept_command(context));
+         push_child(accept_command(context));
 
       } else if(in_list(id, first_set_ifthen)) {
-         push_child(accept_if_then(context));
+         // push_child(accept_if_then(context));
 
       } else if(in_list(id, stray_ifthen_parts)) {
          // We have a diagnostic here
