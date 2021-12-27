@@ -14,10 +14,8 @@ PreprocCommand:
    | '#define' IDENTIFIER token-string?
    | '#define' IDENTIFIER (IDENTIFIER?, ..., IDENTIFIER?) token-string?
    | '#include' PathSpec
-   | '#line' DIGITS ('"' PATHSPEC '"')?
    | '#undef' IDENTIFIER
    | '#error' token-string
-   | '#pragma' token-string
    | IfPart ElifPart* ElsePart? '#endif'
    ;
 
@@ -41,8 +39,6 @@ ElsePart:
    ;      
 
 ConstantExpression:
-   | 'defined' '(' IDENTIFIER ')'
-   | 'defined'  IDENTIFIER
    | Expression
    ;
 
@@ -51,9 +47,10 @@ Expression: UnaryExpression (BinaryOperator Expression)? ;
 
 UnaryExpression: UnaryOperator? PrimaryExpression ;
 
-PrimaryExpressiion: IDENTIFIER | INTEGER | '(' Expression ')' ;
+PrimaryExpressiion: IDENTIFIER | INTEGER | '(' Expression ')'
+   ;
 
-UnaryOperator: '+' | '-' | '!' | '~' ;
+UnaryOperator: '+' | '-' | '!' | '~' | DEFINED;
 
 BinaryOperator:
    | '%' | '*' | '/' | '+' | '-'

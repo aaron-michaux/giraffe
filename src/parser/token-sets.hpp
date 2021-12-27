@@ -24,10 +24,12 @@ constexpr auto first_set_else_elif_parts = to_array<int>({
       TELSE, TELIF, TELIFDEF, TELIFNDEF
    });
 
-
 constexpr auto stray_ifthen_parts = to_array<int>({
       TELIF, TELSE, TELIFDEF, TELIFNDEF, TENDIF
    });
 
+constexpr auto first_set_expressions = to_array<int>({
+      TPLUS, TMINUS, TSHOUT, TTILDE, TINTEGER, TIDENTIFIER, TLPAREN, TDEFINED
+   });
 
 } // namespace giraffe

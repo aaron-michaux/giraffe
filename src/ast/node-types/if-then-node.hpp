@@ -41,7 +41,6 @@ public:
 
    static IfThenNode * make_if_part(IfThenType type,
                                     vector<AstNode *>&& children) noexcept;
-   static IfThenNode * make_else_part(StmtListNode * stmt_list) noexcept;
    static IfThenNode * make_elif_part(IfThenType type,
                                       ExpressionNode * condition,
                                       StmtListNode * stmt_list) noexcept;

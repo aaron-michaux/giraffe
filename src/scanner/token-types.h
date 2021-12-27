@@ -49,6 +49,7 @@
 #define TCSTRING 34
 #define TSTRINGIFY 35
 #define TINTEGER 36
+#define TDEFINED 37
 
 #define TLT 40
 #define TGT 41

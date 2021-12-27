@@ -96,6 +96,7 @@ PP      {WS}*#{WS}*
 "\""                           { PUSH_STATE(CSTR); return TOKEN(TSTR_DELIM); }
 "<"{NA}*">"	               { return TOKEN(TSTRING); }
 
+"defined"                      { return TOKEN(TDEFINED); }
 {L}{D}*                        { return TOKEN(TIDENTIFIER); }
 {DIGIT}+{SUFFIX}*              { return TOKEN(TINTEGER); }
 "0x"{HEXD}+{SUFFIX}*           { return TOKEN(TINTEGER); }

@@ -22,19 +22,6 @@ IfThenNode * This::make_if_part(IfThenType type,
    return node.release();
 }
 
-// -------------------------------------------------------------- make-else-part
-
-IfThenNode * This::make_else_part(StmtListNode * stmt_list) noexcept
-{
-   auto node = unique_ptr<IfThenNode>(new IfThenNode(IfThenType::ELSE));
-   vector<AstNode *> children;
-   children.reserve(2);
-   children.push_back(ExpressionNode::make_empty());
-   children.push_back(stmt_list);
-   node->set_children(std::move(children));
-   return node.release();
-}
-
 // -------------------------------------------------------------- make-elif-part
 
 IfThenNode * This::make_elif_part(IfThenType type,
@@ -43,7 +30,6 @@ IfThenNode * This::make_elif_part(IfThenType type,
 {
    auto node = unique_ptr<IfThenNode>(new IfThenNode(type));
    assert(!node->is_if());
-   assert(node->has_condition());   
    vector<AstNode *> children;
    children.reserve(2);
    children.push_back(condition);
