@@ -19,14 +19,13 @@ public:
    virtual ~ExpressionNode() = default;
 
    static ExpressionNode * make_empty() noexcept { return new ExpressionNode{}; }
-   static ExpressionNode * make_identifier(const SourceLocation op_loc,
+   static ExpressionNode * make_identifier(const SourceRange expr_range,
                                            string&& identifier) noexcept;
-   static ExpressionNode * make_integer(const SourceLocation op_loc,
+   static ExpressionNode * make_integer(const SourceRange expr_range,
                                         string&& integer_str) noexcept;
    static ExpressionNode * make_subexpr(const SourceRange expr_range,
                                         ExpressionNode * subexpr) noexcept;
    static ExpressionNode * make_unary(const int op,
-                                      const SourceLocation op_loc,
                                       const SourceRange expr_range,
                                       ExpressionNode* expr) noexcept;
    static ExpressionNode * make_binary(const int op,

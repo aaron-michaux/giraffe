@@ -45,7 +45,7 @@ ConstantExpression:
 // Note: uses precidence climbing on operators
 Expression: UnaryExpression (BinaryOperator Expression)? ;
 
-UnaryExpression: UnaryOperator? PrimaryExpression ;
+UnaryExpression: UnaryOperator* PrimaryExpression ;
 
 PrimaryExpressiion: IDENTIFIER | INTEGER | '(' Expression ')'
    ;

@@ -32,4 +32,12 @@ constexpr auto first_set_expressions = to_array<int>({
       TPLUS, TMINUS, TSHOUT, TTILDE, TINTEGER, TIDENTIFIER, TLPAREN, TDEFINED
    });
 
+constexpr auto first_set_unary_op = to_array<int>({
+      TPLUS, TMINUS, TSHOUT, TTILDE, TDEFINED
+   });
+
+constexpr auto first_set_primary_expr = to_array<int>({
+      TIDENTIFIER, TINTEGER, TLPAREN
+   });
+
 } // namespace giraffe

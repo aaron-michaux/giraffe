@@ -132,6 +132,9 @@ class AstNode
    auto parent() const noexcept { return parent_; }
    const auto& children() const noexcept { return children_; }
    auto index_in_parent() const noexcept { return index_in_parent_; }
+   const auto location() const noexcept { return loc_; }
+   const auto loc0() const noexcept { return loc_.first; }
+   const auto loc1() const noexcept { return loc_.second; }
 
    auto begin() const noexcept { return children_.begin(); }
    auto rbegin() const noexcept { return children_.rbegin(); }
