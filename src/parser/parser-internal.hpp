@@ -19,6 +19,7 @@ bool skip_past_element(Scanner& tokens) noexcept;
 
 // Accept functions -- could return `EmptyNode`
 TranslationUnitNode * accept_translation_unit(Context& context) noexcept;
+StmtListNode * accept_stmt_list(Context& context) noexcept;
 
 AstNode * accept_module(Context& context) noexcept;
 AstNode * accept_if_then(Context& context) noexcept;

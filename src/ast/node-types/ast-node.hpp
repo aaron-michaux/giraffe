@@ -9,21 +9,25 @@ namespace giraffe
 
 class AstNode;
 class EmptyNode;      // a placeholder for parse errors
+class StmtListNode;
+
 class TranslationUnitNode;
 class ModuleNode;     // export? import? module
 class IfThenNode;     // if-...-endif
-class ExpressionNode; // Expression, Primary, Unary, Binary
 
 class DefineNode;
 class UndefNode;
 class IncludeNode;
 class ErrorNode;
 
+class ExpressionNode; // Expression, Primary, Unary, Binary
+
 // --------------------------------------------------------------- NodeType Enum
 
 enum class NodeType : uint8_t {
    NONE = 0,
    EMPTY,      // a placeholder for parse errors
+   STMT_LIST,  // A list of statements (!)
    TRANSLATION_UNIT,
    MODULE,     // export? import? module IDENTIFIER
    IFTHEN,     // #if #ifdef #ifndef #elif #endif
@@ -57,6 +61,7 @@ T* cast_ast_node_helper_(AstNode * o, NodeType type) noexcept
       ret = o; // not a cast
    }
    ELSE_IF_(EMPTY, EmptyNode)
+   ELSE_IF_(STMT_LIST, StmtListNode)
    ELSE_IF_(TRANSLATION_UNIT, TranslationUnitNode)
    ELSE_IF_(MODULE, ModuleNode)
    ELSE_IF_(IFTHEN, IfThenNode)

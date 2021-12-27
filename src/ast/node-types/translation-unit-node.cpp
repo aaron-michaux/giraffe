@@ -1,24 +1,27 @@
 #include "stdinc.hpp"
 
+#include "ast/ast.hpp"
 #include "translation-unit-node.hpp"
 
 #define This TranslationUnitNode
 
 namespace giraffe {
 
-std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
+This::This(StmtListNode * stmts)
+      : AstNode(NodeType::TRANSLATION_UNIT)
 {
-   for(auto child: children())
-      child->stream(ss, indent);
-   return ss;
+   assert(stmts != nullptr);
+   vector<AstNode *> children;
+   children.reserve(1);
+   children.push_back(stmts); 
+   set_children(std::move(children));
 }
 
 
-TranslationUnitNode * This::make(vector<AstNode*>&& children) noexcept
+std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
 {
-   auto node = std::make_unique<TranslationUnitNode>();
-   node->set_children(std::move(children));
-   return node.release();
+   stmts()->stream(ss, indent);
+   return ss;
 }
 
 }

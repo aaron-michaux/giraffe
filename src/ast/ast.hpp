@@ -4,6 +4,8 @@
 #include "node-types/ast-node.hpp"
 
 #include "node-types/empty-node.hpp"
+#include "node-types/stmt-list-node.hpp"
+
 #include "node-types/translation-unit-node.hpp"
 #include "node-types/module-node.hpp"
 #include "node-types/if-then-node.hpp"

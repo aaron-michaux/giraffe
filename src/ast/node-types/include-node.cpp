@@ -19,3 +19,4 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
 }
 
 }
+#undef This

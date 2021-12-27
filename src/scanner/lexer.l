@@ -81,6 +81,8 @@ PP      {WS}*#{WS}*
 {PP}"ifndef"                   { return TOKEN(TIFNDEF); }
 {PP}"if"                       { return TOKEN(TIF); }
 {PP}"elif"                     { return TOKEN(TELIF); }
+{PP}"elifdef"                  { return TOKEN(TELIFDEF); }
+{PP}"elifndef"                 { return TOKEN(TELIFNDEF); }
 {PP}"else"                     { return TOKEN(TELSE); }
 {PP}"endif"                    { return TOKEN(TENDIF); }
 

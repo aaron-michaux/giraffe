@@ -18,6 +18,8 @@ public:
    {}
    virtual ~ExpressionNode() = default;
 
+   static ExpressionNode * make_empty() noexcept { return new ExpressionNode{}; }
+   
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
 
    //@{ Getters

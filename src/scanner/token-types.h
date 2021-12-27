@@ -31,12 +31,14 @@
 #define TIFDEF 14
 #define TIFNDEF 15
 #define TELIF 16
-#define TELSE 17
-#define TENDIF 18
+#define TELIFDEF 17
+#define TELIFNDEF 18
+#define TELSE 19
+#define TENDIF 20
 
-#define TINCLUDE 20
-#define TDEFINE 21
-#define TUNDEF 22
+#define TINCLUDE 21
+#define TDEFINE 22
+#define TUNDEF 23
 
 /* ----------------------------- Stuff */
 

@@ -1,18 +1,18 @@
 #include "stdinc.hpp"
 
-#include "undef-node.hpp"
+#include "expression-node.hpp"
 
-#define This UndefNode
+#define This ExpressionNode
 
 
 namespace giraffe {
 
 std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
 {
-   for(auto i = 0; i < indent; ++i) ss << ' ';
-   ss << "#undef " << identifier() << '\n';
+   ss << "TODO: expressions" << '\n';
    return ss;
 }
 
 }
 #undef This
+

@@ -20,8 +20,13 @@ constexpr auto first_set_ifthen = to_array<int>({
       TIF, TIFDEF, TIFNDEF
    });
 
+constexpr auto first_set_else_elif_parts = to_array<int>({
+      TELSE, TELIF, TELIFDEF, TELIFNDEF
+   });
+
+
 constexpr auto stray_ifthen_parts = to_array<int>({
-      TELIF, TELSE, TENDIF
+      TELIF, TELSE, TELIFDEF, TELIFNDEF, TENDIF
    });
 
 
