@@ -141,14 +141,10 @@ PP      {WS}*#{WS}*
 
 <CSTR>{
 [^\"\r\n\\]+                   { return TOKEN(TSTR_PART); }
-"\\\n"                         { return TOKEN(TSTR_PART); }
-"\\\r\n"                       { return TOKEN(TSTR_PART); }
 "\\\""                         { return TOKEN(TSTR_PART); }
 "\\"[\'\"?abfnrtv\\]           { return TOKEN(TSTR_PART); }
 "\\"[0-7]{1,3}                 { return TOKEN(TSTR_PART); }
 "\\x"{HEXD}+                   { return TOKEN(TSTR_PART); }
-"\\u"{HEXQUAD}                 { return TOKEN(TSTR_PART); }
-"\\U"{HEXQUAD}{HEXQUAD}        { return TOKEN(TSTR_PART); }
 {DQUOTE}                       { POP_STATE(); return TOKEN(TSTR_DELIM); }
 
 [\x00-\xff]		       { TOKEN(TBADCHAR); }

@@ -12,7 +12,6 @@ enum class CommandType : uint8_t {
    INCLUDE,
    DEFINE,
    UNDEF,
-   LINE,
    ERROR,
    PRAGMA
 };
@@ -23,13 +22,21 @@ class CommandNode final : public AstNode
 {
 private:
    CommandType type_ = CommandType::NONE;
-
+   string text_ = {}; // 
+   uint32_t line_no_ = 0; // for #line <xyz>
+   bool is_local_include_ = false; // #include "file" versus <file>
+   
 public:
    CommandNode()
       : AstNode(NodeType::COMMAND)
    {}
    virtual ~CommandNode() = default;
 
+   static CommandNode * make_none() noexcept;
+   static CommandNode * make_include(String filename) noexcept;
+   static CommandNode * make_undef(String identifier) noexcept;
+
+   
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
 
    //@{ Getters
