@@ -28,9 +28,18 @@ TranslationUnitNode * accept_translation_unit(Context& context) noexcept
       if(in_list(id, first_set_module)) {
          //push_child(accept_module(context));
 
-      } else if(in_list(id, first_set_command)) {
-         push_child(accept_command(context));
+      } else if(id == TDEFINE) {
+         push_child(accept_define(context));
 
+      } else if(id == TINCLUDE) {
+         push_child(accept_include(context));
+
+      } else if(id == TUNDEF) {
+         push_child(accept_undef(context));
+
+      } else if(in_list(id, first_set_error_warning)) {
+         push_child(accept_error(context));
+         
       } else if(in_list(id, first_set_ifthen)) {
          // push_child(accept_if_then(context));
 

@@ -70,6 +70,7 @@
 #define TRPAREN 61
 #define TSEMICOLON 62
 #define TCOLON 63
+#define TCOMMA 64
 
 #define TAND 70
 #define TOR 71
@@ -84,7 +85,7 @@
 // Probably going to ignore all this
 #define TLINE 180
 #define TERROR 181
-#define TPRAGMA 182
+#define TWARNING 182
 
 #define TBADCHAR 199
 

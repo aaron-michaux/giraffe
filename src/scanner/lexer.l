@@ -34,7 +34,7 @@ static void pop_lex_state(struct lex_params_t* params);
 %option always-interactive
 
 NL      ((\r\n)|(\n\r)|([\r\n]))
-WS      (([\t ])|(\\{NL}))
+WS      ([\t ])
 L	[_a-zA-Z]
 D	[_a-zA-Z0-9]
 ML	[_\.\:a-zA-Z]
@@ -89,7 +89,7 @@ PP      {WS}*#{WS}*
 {PP}"undef"                    { return TOKEN(TUNDEF); }
 {PP}"line"                     { return TOKEN(TLINE); }
 {PP}"error"                    { return TOKEN(TERROR); }
-{PP}"pragma"                   { return TOKEN(TPRAGMA); }
+{PP}"warning"                  { return TOKEN(TWARNING); }
 
 "\""                           { PUSH_STATE(CSTR); return TOKEN(TSTR_DELIM); }
 "<"{NA}*">"	               { return TOKEN(TSTRING); }
@@ -105,6 +105,7 @@ PP      {WS}*#{WS}*
 ")"                            { return TOKEN(TRPAREN); }
 ";"                            { return TOKEN(TSEMICOLON); }
 ":"                            { return TOKEN(TCOLON); }
+","                            { return TOKEN(TCOMMA); }
 
 %{ /* Comparison */ %}
 "<="                           { return TOKEN(TLE); }

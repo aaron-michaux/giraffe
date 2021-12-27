@@ -17,12 +17,26 @@ template<typename T> inline bool accept(Scanner& tokens, const T& ids) noexcept;
 bool recover_to_next_rule(Scanner& tokens) noexcept;
 bool skip_past_element(Scanner& tokens) noexcept;
 
-// Accept functions
+// Accept functions -- could return `EmptyNode`
 TranslationUnitNode * accept_translation_unit(Context& context) noexcept;
-ModuleNode * accept_module(Context& context) noexcept;
-IfThenNode * accept_if_then(Context& context) noexcept;
-CommandNode * accept_command(Context& context) noexcept;
+
+AstNode * accept_module(Context& context) noexcept;
+AstNode * accept_if_then(Context& context) noexcept;
+AstNode * accept_define(Context& context) noexcept;
+AstNode * accept_undef(Context& context) noexcept;
+AstNode * accept_include(Context& context) noexcept;
+AstNode * accept_error(Context& context) noexcept;
+
 ExpressionNode * accept_expression(Context& context) noexcept;
+
+string accept_cstr(Context& context) noexcept;
+string accept_to_newline(Context& context) noexcept;
+                     
+// Helper, for creating empty nodes as fillers for parser errors
+inline EmptyNode * make_empty_node() noexcept
+{
+   return new EmptyNode();
+}
 
 //
 //

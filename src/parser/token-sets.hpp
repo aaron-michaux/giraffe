@@ -12,6 +12,10 @@ constexpr auto first_set_command = to_array<int>({
       TDEFINE, TINCLUDE, TLINE, TUNDEF, TERROR
    });
 
+constexpr auto first_set_error_warning = to_array<int>({
+      TERROR, TWARNING
+   });
+
 constexpr auto first_set_ifthen = to_array<int>({
       TIF, TIFDEF, TIFNDEF
    });

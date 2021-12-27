@@ -8,20 +8,29 @@ namespace giraffe
 // ---------------------------------------------------------- Predfine All Nodes
 
 class AstNode;
+class EmptyNode;      // a placeholder for parse errors
 class TranslationUnitNode;
 class ModuleNode;     // export? import? module
 class IfThenNode;     // if-...-endif
-class CommandNode;    // define, undef, line, error, pragma include
 class ExpressionNode; // Expression, Primary, Unary, Binary
+
+class DefineNode;
+class UndefNode;
+class IncludeNode;
+class ErrorNode;
 
 // --------------------------------------------------------------- NodeType Enum
 
 enum class NodeType : uint8_t {
    NONE = 0,
+   EMPTY,      // a placeholder for parse errors
    TRANSLATION_UNIT,
-   MODULE,
-   IFTHEN,
-   COMMAND,
+   MODULE,     // export? import? module IDENTIFIER
+   IFTHEN,     // #if #ifdef #ifndef #elif #endif
+   DEFINE,     // #define
+   UNDEF,      // #undef
+   INCLUDE,    // #include
+   ERROR,      // #error #warning
    EXPRESSION
 };
 
@@ -47,10 +56,14 @@ T* cast_ast_node_helper_(AstNode * o, NodeType type) noexcept
    if constexpr(std::is_same_v<std::decay_t<T>, AstNode>) {
       ret = o; // not a cast
    }
+   ELSE_IF_(EMPTY, EmptyNode)
    ELSE_IF_(TRANSLATION_UNIT, TranslationUnitNode)
    ELSE_IF_(MODULE, ModuleNode)
    ELSE_IF_(IFTHEN, IfThenNode)
-   ELSE_IF_(COMMAND, CommandNode)
+   ELSE_IF_(DEFINE, DefineNode)
+   ELSE_IF_(UNDEF, UndefNode)
+   ELSE_IF_(INCLUDE, IncludeNode)
+   ELSE_IF_(ERROR, ErrorNode)
    ELSE_IF_(EXPRESSION, ExpressionNode)
    else {
       FATAL("missing case");

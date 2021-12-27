@@ -28,6 +28,13 @@ inline std::ostream& encode_char(std::ostream& ss, char val) noexcept
    return ss;
 }
 
+inline std::ostream& encode_string(std::ostream& ss, std::string_view val) noexcept
+{
+   for(auto x: val)
+      encode_char(ss, x);
+   return ss;
+}
+
 inline std::string encoded_char(char val) noexcept
 {
    std::stringstream ss{""};

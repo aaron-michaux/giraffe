@@ -10,10 +10,14 @@ const char* str(NodeType o) noexcept
    case NodeType::x: return #x
    switch(o) {
       CASE(NONE);
+      CASE(EMPTY);
       CASE(TRANSLATION_UNIT);
       CASE(MODULE);
       CASE(IFTHEN);
-      CASE(COMMAND);
+      CASE(DEFINE);
+      CASE(UNDEF);
+      CASE(INCLUDE);
+      CASE(ERROR);
       CASE(EXPRESSION);
    }
 #undef CASE

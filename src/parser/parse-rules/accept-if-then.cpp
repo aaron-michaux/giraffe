@@ -4,7 +4,7 @@
 
 namespace giraffe
 {
-IfThenNode * accept_if_then(Context& context) noexcept
+AstNode * accept_if_then(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
