@@ -26,7 +26,7 @@ TranslationUnitNode * accept_translation_unit(Context& context) noexcept
    while(!scanner.current().is_eof()) {
       const auto id = scanner.current().id();
       if(in_list(id, first_set_module)) {
-         //push_child(accept_module(context));
+         push_child(accept_module(context));
 
       } else if(id == TDEFINE) {
          push_child(accept_define(context));
