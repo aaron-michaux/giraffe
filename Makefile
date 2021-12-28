@@ -7,6 +7,7 @@ TOOLCHAIN_CONFIG?=asan
 STATIC_LIBCPP?=0
 VERBOSE?=0
 LTO?=0
+UNITY_BUILD?=0
 BUILD_TESTS?=0
 BUILD_EXAMPLES?=0
 BENCHMARK?=0
@@ -53,23 +54,10 @@ include project-config/env.inc.makefile
 # Standard Rules
 .PHONY: clean info test deps test-scan module-deps
 
-#include /tmp/build-amichaux/gcc-11.2.0-asan/sail/src/main.o.d
-#include test1.o.d
-
 all: $(TARGETDIR)/$(TARGET)
 
 test: | all
 	$(TARGETDIR)/$(TARGET) src/main.cpp
-
-comp-database: | $(COMP_DATABASE)
-
-$(COMP_DATABASE): $(COMPDBS)
-	@echo '$(BANNER)c++-system-header $<$(BANEND)'
-	mkdir -p "$(dir $@)"
-	echo "[" > $@
-	cat $(COMPDBS) >> $@
-	$(SED) -i '$$d' $@
-	echo "]" >> $@
 
 $(BUILDDIR)/src/scanner/gen-token-types_cpp.o: src/scanner/token-types.h src/scanner/gen-token-types_cpp.sh
 	@echo "$(BANNER)gen-token-types $^$(BANEND)"
@@ -82,22 +70,6 @@ $(BUILDDIR)/src/scanner/lexer.o: src/scanner/lexer.l
 	flex -t $< | $(CC) -x c $(CFLAGS_F) \
                            -Wno-sign-compare -Wno-unused-value -Wno-unused-function \
                            -c - -o $@
-	@$(RECIPETAIL)
-
-$(BUILDDIR)/%.o: %.cpp
-	@echo "$(BANNER)c++ $<$(BANEND)"
-	mkdir -p $(dir $@)
-	$(CXX) -x c++ $(CXXFLAGS_F) -MMD -MF $@.d -c $< -o $@
-	@$(RECIPETAIL)
-
-$(BUILDDIR)/%.comp-db.json: %.cpp
-	@echo "$(BANNER)comp-db $<$(BANEND)"
-	mkdir -p $(dir $@)
-	printf "{ \"directory\": \"%s\",\n" "$$(echo "$(CURDIR)" | sed 's,\\,\\\\,g' | sed 's,",\\",g')" > $@
-	printf "  \"file\":      \"%s\",\n" "$$(echo "$<" | sed 's,\\,\\\\,g' | sed 's,",\\",g')" >> $@
-	printf "  \"command\":   \"%s\",\n" "$$(echo "$(CXX) -x c++ $(CXXFLAGS_F) -c $< -o $@" | sed 's,\\,\\\\,g' | sed 's,",\\",g')" >> $@
-	printf "  \"output\":    \"%s\" }\n" "$$(echo "$@" | sed 's,\\,\\\\,g' | sed 's,",\\",g')" >> $@
-	printf ",\n" >> $@
 	@$(RECIPETAIL)
 
 $(TARGETDIR)/$(TARGET): $(OBJECTS) $(BUILDDIR)/src/scanner/gen-token-types_cpp.o $(BUILDDIR)/src/scanner/lexer.o

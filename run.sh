@@ -17,6 +17,7 @@ BUILD_TESTS=0
 BENCHMARK=0
 BUILD_EXAMPLES=0
 LTO=0
+UNITY_BUILD=0
 VALGRIND=0
 PYTHON_BINDINGS=0
 RULE=all
@@ -50,6 +51,7 @@ while [ "$#" -gt "0" ] ; do
     [ "$1" = "info" ]      && RULE="info"      && shift && continue
     [ "$1" = "verbose" ]   && FEEDBACK="1"     && shift && continue
     [ "$1" = "quiet" ]     && FEEDBACK="0"     && shift && continue
+    [ "$1" = "unity" ]     && UNITY_BUILD="1"  && shift && continue
     [ "$1" = "lto" ]       && LTO="1"          && shift && continue
     [ "$1" = "no-lto" ]    && LTO="0"          && shift && continue
     [ "$1" = "build" ]     && BUILD_ONLY="1"   && shift && continue    
@@ -96,6 +98,7 @@ export TOOLCHAIN_CONFIG="${CONFIG}"
 export STATIC_LIBCPP="0"
 export VERBOSE="${FEEDBACK}"
 export LTO="${LTO}"
+export UNITY_BUILD="${UNITY_BUILD}"
 
 export BUILD_TESTS="${BUILD_TESTS}"
 export BUILD_EXAMPLES="${BUILD_EXAMPLES}"

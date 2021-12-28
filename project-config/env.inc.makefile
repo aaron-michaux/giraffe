@@ -4,13 +4,22 @@ include project-config/toolchains/$(TOOLCHAIN_NAME).inc.makefile
 # -------------------------------------------------------------------------------------------- Logic
 
 # This is the "toolchain" file to be included
-TARGETDIR?=build/$(TOOLCHAIN_NAME)-$(TOOLCHAIN_CONFIG)
 BUILDDIR?=/tmp/build-$(USER)/$(TOOLCHAIN_NAME)-$(TOOLCHAIN_CONFIG)/$(TARGET)
+TARGETDIR?=build/$(TOOLCHAIN_NAME)-$(TOOLCHAIN_CONFIG)
 GCMDIR:=$(BUILDDIR)/gcm.cache
-OBJECTS:=$(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(SOURCES)))
+OBJECTS:=$(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(SOURCES)) $(patsubst %.c, %.o, $(SOURCES)))
 DEP_FILES:=$(addsuffix .d, $(OBJECTS))
-COMPDBS:=$(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.comp-db.json, $(SOURCES)))
+COMPDBS:=$(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.comp-db.json, $(SOURCES)) $(patsubst %.c, %.comp-db.json, $(SOURCES)))
 COMP_DATABASE:=$(TARGETDIR)/compilation-database.json
+
+# Unity build
+CPP_SOURCES:=$(filter %.cpp, $(SOURCES))
+C_SOURCES:=$(filter %.c, $(SOURCES))
+UNITY_O:=$(BUILDDIR)/unity-file.o
+ifneq ("$(UNITY_BUILD)", "0")
+  SOURCES:=$(C_SOURCES)
+  OBJECTS:=$(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(C_SOURCES))) $(UNITY_O)
+endif
 
 # Static libcpp
 ifeq ($(STATIC_LIBCPP), 1)
@@ -84,12 +93,46 @@ else
   SED:=sed
 endif
 
-
 # This must appear before SILENT
 default: all
 
 # Will be silent unless VERBOSE is set to 1
 $(ISVERBOSE).SILENT:
 
+# The build-unity rule
+.PHONY: $(UNITY_O)
+$(UNITY_O): $(CPP_SOURCES)
+	@echo '$(BANNER)unity-build $@$(BANEND)'
+	mkdir -p $(dir $@)
+	echo $^ | tr ' ' '\n' | sort | grep -Ev '^\s*$$' | sed 's,^,#include ",' | sed 's,$$,",' | $(CXX) -x c++ $(CXXFLAGS_F) -c - -o $@
 
+.PHONEY: unity_cpp
+unity_cpp: $(CPP_SOURCES)
+	echo $^ | tr ' ' '\n' | sort | grep -Ev '^\s*$$' | sed 's,^,#include ",' | sed 's,$$,",'
+
+$(BUILDDIR)/%.o: %.cpp
+	@echo "$(BANNER)c++ $<$(BANEND)"
+	mkdir -p $(dir $@)
+	$(CXX) -x c++ $(CXXFLAGS_F) -MMD -MF $@.d -c $< -o $@
+	@$(RECIPETAIL)
+
+comp-database: | $(COMP_DATABASE)
+
+$(COMP_DATABASE): $(COMPDBS)
+	@echo '$(BANNER)c++-system-header $<$(BANEND)'
+	mkdir -p "$(dir $@)"
+	echo "[" > $@
+	cat $(COMPDBS) >> $@
+	$(SED) -i '$$d' $@
+	echo "]" >> $@
+
+$(BUILDDIR)/%.comp-db.json: %.cpp
+	@echo "$(BANNER)comp-db $<$(BANEND)"
+	mkdir -p $(dir $@)
+	printf "{ \"directory\": \"%s\",\n" "$$(echo "$(CURDIR)" | sed 's,\\,\\\\,g' | sed 's,",\\",g')" > $@
+	printf "  \"file\":      \"%s\",\n" "$$(echo "$<" | sed 's,\\,\\\\,g' | sed 's,",\\",g')" >> $@
+	printf "  \"command\":   \"%s\",\n" "$$(echo "$(CXX) -x c++ $(CXXFLAGS_F) -c $< -o $@" | sed 's,\\,\\\\,g' | sed 's,",\\",g')" >> $@
+	printf "  \"output\":    \"%s\" }\n" "$$(echo "$@" | sed 's,\\,\\\\,g' | sed 's,",\\",g')" >> $@
+	printf ",\n" >> $@
+	@$(RECIPETAIL)
 

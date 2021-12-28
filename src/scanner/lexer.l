@@ -141,6 +141,8 @@ PP      {WS}*#{WS}*
 {DIGIT}+{SUFFIX}*              { return TOKEN(TINTEGER); }
 "0x"{HEXD}+{SUFFIX}*           { return TOKEN(TINTEGER); }
 
+"//".*			       { return TOKEN(TCOMMENT); }
+
 "\\"{NL}                       { return TOKEN(TNEWLINE_ESC); }
 {WS}+			       { return TOKEN(TWHITESPACE); }
 {NL}                           { POP_STATE(); return TOKEN(TNEWLINE); }

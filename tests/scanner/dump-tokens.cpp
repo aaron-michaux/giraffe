@@ -5,7 +5,7 @@
 
 #include "scanner/scanner.hpp"
 
-using namespace giraffe;
+namespace giraffe::test {
 
 // ----------------------------------------------------- test-text-dump-tokens-1
 
@@ -58,5 +58,5 @@ CATCH_TEST_CASE("dump tokens", "[dump-tokens]")
    }
 }
 
-
+}
 
