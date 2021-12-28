@@ -15,14 +15,15 @@ AstNode * accept_include(Context& context) noexcept
    };
    
    // #include (c-string | <FILENAME>)
-   expect(scanner, TINCLUDE);
+   assert(expect(scanner, TINCLUDE));
    scanner.consume();
    const auto& token = scanner.current();
-   if(token.id() == TSTRING) {
+   if(token.id() == TSTRING || token.id() == TSPACESHIP) {
       scanner.consume();
-      return new IncludeNode(token.text());
+      return new IncludeNode(token.source_range(), token.text());
    } else if(token.id() == TSTR_DELIM) {
-      return new IncludeNode(accept_cstr(context));
+      auto str = accept_cstr(context);
+      return new IncludeNode{str.second, str.first};
    }
 
    // -- ERROR

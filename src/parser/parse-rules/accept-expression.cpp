@@ -63,7 +63,7 @@ ExpressionNode * accept_nested_expr(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
    assert(expect(scanner, TLPAREN));
-   scanner.consume();
+   const auto loc0 = scanner.consume().location();
 
    if(!expect(scanner, first_set_expressions)) {
       context.push_error("expected an expression");
@@ -72,8 +72,10 @@ ExpressionNode * accept_nested_expr(Context& context) noexcept
    }
    
    auto expr = accept_expression(context);
+   const auto loc1 = scanner.current().source_range().second;
    if(scanner.current().id() == TRPAREN) {
       scanner.consume(); // All is good
+      expr = ExpressionNode::make_subexpr({loc0, loc1}, expr);
    } else {
       context.push_error("expected closing parenthesis");
       skip_to_sequence(scanner, TNEWLINE);    // Skip to newline            
@@ -125,7 +127,7 @@ ExpressionNode * accept_unary_expr(Context& context) noexcept
       
       auto expr = accept_unary_expr(context);
       const SourceRange expr_range{token.location(), expr->loc1()};
-      return ExpressionNode::make_unary(token.id(), expr_range, expr);
+      return ExpressionNode::make_unary(token.id(), token.location(), expr_range, expr);
    }
 
    return accept_primary_expr(context);

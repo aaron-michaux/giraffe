@@ -46,6 +46,7 @@ SUFFIX  ([uU])|([zZ])|([lL])
 A       ([\x01-\x09])|([\x20-\x7f])|{WS}|{NL}
 NQ      ([\x21-\x21])|([\x23-\x7f])|([\t ])
 NA      ([\x21-\x3d])|([\x3f-\x7f])|{WS}
+NB      ([\x21-\x3c])|([\x3f-\x7f])|{WS}
 NNL     ([^\n\r\\])                                    
 DQUOTE  [\x22]
                         
@@ -94,12 +95,9 @@ PP      {WS}*#{WS}*
 {PP}"warning"                  { return TOKEN(TWARNING); }
 
 "\""                           { PUSH_STATE(CSTR); return TOKEN(TSTR_DELIM); }
-"<"{NA}*">"	               { return TOKEN(TSTRING); }
-
-"defined"                      { return TOKEN(TDEFINED); }
-{L}{D}*                        { return TOKEN(TIDENTIFIER); }
-{DIGIT}+{SUFFIX}*              { return TOKEN(TINTEGER); }
-"0x"{HEXD}+{SUFFIX}*           { return TOKEN(TINTEGER); }
+"<>"    	               { return TOKEN(TSTRING); }
+"<"{NB}">"	               { return TOKEN(TSTRING); }
+"<"{NA}{NA}+">"	               { return TOKEN(TSTRING); }
 
 "##"                           { return TOKEN(TSTRINGIFY); }
 "#"                            { return TOKEN(THASH); }
@@ -107,10 +105,12 @@ PP      {WS}*#{WS}*
 "("                            { return TOKEN(TLPAREN); }
 ")"                            { return TOKEN(TRPAREN); }
 ";"                            { return TOKEN(TSEMICOLON); }
+"?"                            { return TOKEN(TQUESTION); }
 ":"                            { return TOKEN(TCOLON); }
 ","                            { return TOKEN(TCOMMA); }
 
 %{ /* Comparison */ %}
+"<=>"                          { return TOKEN(TSPACESHIP); }
 "<="                           { return TOKEN(TLE); }
 ">="                           { return TOKEN(TGE); }
 "<"                            { return TOKEN(TLT); }
@@ -123,6 +123,7 @@ PP      {WS}*#{WS}*
 "-"                            { return TOKEN(TMINUS); }
 "!"                            { return TOKEN(TSHOUT); }
 "~"                            { return TOKEN(TTILDE); }
+"defined"                      { return TOKEN(TDEFINED); }
 
 %{ /* Binary (but not unary) */ %}
 "*"                            { return TOKEN(TMULT); }
@@ -135,6 +136,10 @@ PP      {WS}*#{WS}*
 "||"                           { return TOKEN(TOROR); }
 "<<"                           { return TOKEN(TLTLT); }
 ">>"                           { return TOKEN(TGTGT); }
+
+{L}{D}*                        { return TOKEN(TIDENTIFIER); }
+{DIGIT}+{SUFFIX}*              { return TOKEN(TINTEGER); }
+"0x"{HEXD}+{SUFFIX}*           { return TOKEN(TINTEGER); }
 
 "\\"{NL}                       { return TOKEN(TNEWLINE_ESC); }
 {WS}+			       { return TOKEN(TWHITESPACE); }

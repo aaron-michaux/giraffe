@@ -24,7 +24,7 @@ IfThenType token_id_to_if_then_type(int id)
 AstNode * accept_else_elif_part(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
-   expect(scanner, first_set_else_elif_parts);
+   assert(expect(scanner, first_set_else_elif_parts));
 
    // The type: #else | #elif | #elifdef | #elifndef
    const auto type = token_id_to_if_then_type(scanner.consume().id());   
@@ -58,7 +58,7 @@ AstNode * accept_if_then(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
-   expect(scanner, first_set_ifthen);
+   assert(expect(scanner, first_set_ifthen));
 
    vector<AstNode*> children;
    

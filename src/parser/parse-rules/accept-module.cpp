@@ -8,7 +8,7 @@ namespace giraffe
 AstNode * accept_module(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
-   expect(scanner, first_set_module);
+   assert(expect(scanner, first_set_module));
 
    auto on_error = [&] (string&& message) {
       context.push_error(std::move(message));

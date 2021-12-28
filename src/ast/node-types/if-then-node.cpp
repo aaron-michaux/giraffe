@@ -14,11 +14,11 @@ IfThenNode * This::make_if_part(IfThenType type,
 {
    auto node = unique_ptr<IfThenNode>(new IfThenNode(type));
    assert(node->is_if());
-   assert(node->has_condition());
+   assert(node->has_condition());   
    assert(children.size() >= 2);
    assert(children[0]->node_type() == NodeType::EXPRESSION);
    assert(children[1]->node_type() == NodeType::STMT_LIST);
-   node->set_children(std::move(children));
+   node->set_children_(std::move(children));
    return node.release();
 }
 
@@ -30,11 +30,7 @@ IfThenNode * This::make_elif_part(IfThenType type,
 {
    auto node = unique_ptr<IfThenNode>(new IfThenNode(type));
    assert(!node->is_if());
-   vector<AstNode *> children;
-   children.reserve(2);
-   children.push_back(condition);
-   children.push_back(stmt_list);
-   node->set_children(std::move(children));
+   node->set_children_(condition, stmt_list);
    return node.release();
 }
 
@@ -42,7 +38,7 @@ IfThenNode * This::make_elif_part(IfThenType type,
 
 const ExpressionNode * This::condition() const noexcept
 {
-      return cast_ast_node<ExpressionNode>(children()[0]);
+   return cast_ast_node<ExpressionNode>(children()[0]);
 }
 
 const StmtListNode *  This::stmts() const noexcept

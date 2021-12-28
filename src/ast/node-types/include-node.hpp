@@ -11,8 +11,8 @@ private:
    bool is_local_include_ = false;
    
 public:
-   IncludeNode(string_view filename) // "file" or <file>. 
-      : AstNode(NodeType::INCLUDE)
+   IncludeNode(SourceRange loc, string_view filename) // "file" or <file>. 
+      : AstNode(NodeType::INCLUDE, loc)
    {
       assert(filename.size() >= 2);
       assert((filename.front() == '"' && filename.back() == '"')

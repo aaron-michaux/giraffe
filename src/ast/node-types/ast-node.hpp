@@ -116,9 +116,36 @@ class AstNode
       set_location_(SourceRange{loc0, loc1});
    }
 
+   void set_child_(AstNode * child) noexcept
+   {
+      vector<AstNode *> children;
+      children.resize(1, nullptr);
+      children[0] = child;
+      set_children_(std::move(children));
+   }
+
+   void set_children_(AstNode * child0, AstNode * child1) noexcept
+   {
+      vector<AstNode *> children;
+      children.resize(2, nullptr);
+      children[0] = child0;
+      children[1] = child1;
+      set_children_(std::move(children));
+   }
+
+   void set_children_(vector<AstNode*>&& children) noexcept
+   {
+      children_    = std::move(children);
+      size_t index = 0;
+      for(auto ptr : children_) {
+         ptr->parent_          = this;
+         ptr->index_in_parent_ = index++;
+      }
+   }
+
  public:
-   AstNode(NodeType type)
-       : node_type_(type)
+   AstNode(NodeType type, SourceRange loc = {})
+      : node_type_{type}, loc_{loc}
    {}
    AstNode(AstNode&&)      = default;
    AstNode(const AstNode&) = delete;
@@ -143,16 +170,6 @@ class AstNode
 
    auto front() const noexcept { return children_.front(); }
    auto back() const noexcept { return children_.back(); }
-
-   void set_children(vector<AstNode*>&& children) noexcept
-   {
-      children_    = std::move(children);
-      size_t index = 0;
-      for(auto ptr : children_) {
-         ptr->parent_          = this;
-         ptr->index_in_parent_ = index++;
-      }
-   }
 
    NodeType node_type() const noexcept { return node_type_; }
    size_t size() const noexcept { return children_.size(); }

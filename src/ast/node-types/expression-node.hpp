@@ -5,20 +5,36 @@
 
 namespace giraffe
 {
+enum class ExprType : uint8_t {
+   NONE = 0,
+   EMPTY,
+   IDENTIFIER,
+   INTEGER,
+   SUBEXPR,
+   UNARY,
+   BINARY
+};
+
 /**
  */
 class ExpressionNode final : public AstNode
 {
 private:
 
+   string text_ = {};
+   int op_ = TNONE;             // The operator (binary/unary only)
+   SourceLocation op_loc_ = {}; // Location of the operator (binary/unary only)
+   ExprType expr_type_ = ExprType::NONE;
+      
+   ExpressionNode(ExprType expr_type, SourceRange expr_range = {})
+      : AstNode(NodeType::EXPRESSION, expr_range)
+      , expr_type_(expr_type)
+   {}
 
 public:
-   ExpressionNode()
-      : AstNode(NodeType::EXPRESSION)
-   {}
    virtual ~ExpressionNode() = default;
 
-   static ExpressionNode * make_empty() noexcept { return new ExpressionNode{}; }
+   static ExpressionNode * make_empty() noexcept;
    static ExpressionNode * make_identifier(const SourceRange expr_range,
                                            string&& identifier) noexcept;
    static ExpressionNode * make_integer(const SourceRange expr_range,
@@ -26,6 +42,7 @@ public:
    static ExpressionNode * make_subexpr(const SourceRange expr_range,
                                         ExpressionNode * subexpr) noexcept;
    static ExpressionNode * make_unary(const int op,
+                                      const SourceLocation op_loc,
                                       const SourceRange expr_range,
                                       ExpressionNode* expr) noexcept;
    static ExpressionNode * make_binary(const int op,
@@ -37,6 +54,10 @@ public:
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
 
    //@{ Getters
+   auto expr_type() const noexcept { return expr_type_; }
+   auto op() const noexcept { return op_; }
+   auto op_loc() const noexcept { return op_loc_; }
+   const auto& text() const noexcept { return text_; }
    //@}
 };
 }

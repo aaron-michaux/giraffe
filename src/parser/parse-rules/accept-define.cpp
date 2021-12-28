@@ -15,7 +15,7 @@ vector<string> accept_arglist(Context& context) noexcept
       args.emplace_back(text.begin(), text.end());
    };
    
-   expect(scanner, TLPAREN);
+   assert(expect(scanner, TLPAREN));
    scanner.consume(); // '('
    bool is_first = true;
    while(true) {
@@ -60,7 +60,7 @@ AstNode * accept_define(Context& context) noexcept
    };
 
 
-   expect(scanner, TDEFINE);
+   assert(expect(scanner, TDEFINE));
    scanner.consume();
    const auto& ident_token = scanner.current();
    if(ident_token.id() != TIDENTIFIER) {

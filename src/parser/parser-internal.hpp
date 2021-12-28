@@ -29,7 +29,7 @@ AstNode * accept_undef(Context& context) noexcept;
 AstNode * accept_include(Context& context) noexcept;
 AstNode * accept_error(Context& context) noexcept;
 
-string accept_cstr(Context& context) noexcept;
+std::pair<string, SourceRange> accept_cstr(Context& context) noexcept;
 string accept_to_newline(Context& context) noexcept;
                      
 // Helper, for creating empty nodes as fillers for parser errors

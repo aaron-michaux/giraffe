@@ -11,10 +11,7 @@ This::This(StmtListNode * stmts)
       : AstNode(NodeType::TRANSLATION_UNIT)
 {
    assert(stmts != nullptr);
-   vector<AstNode *> children;
-   children.reserve(1);
-   children.push_back(stmts); 
-   set_children(std::move(children));
+   set_child_(stmts);
 }
 
 

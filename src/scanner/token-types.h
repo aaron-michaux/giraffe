@@ -51,12 +51,13 @@
 #define TINTEGER 36
 #define TDEFINED 37
 
-#define TLT 40
-#define TGT 41
-#define TLE 42
-#define TGE 43
-#define TEQEQ 44
-#define TNE 45
+#define TSPACESHIP 40
+#define TLT 41
+#define TGT 42
+#define TLE 43
+#define TGE 44
+#define TEQEQ 45
+#define TNE 46
 
 #define TPLUS 50
 #define TMINUS 51
@@ -72,8 +73,9 @@
 #define TLPAREN 60
 #define TRPAREN 61
 #define TSEMICOLON 62
-#define TCOLON 63
-#define TCOMMA 64
+#define TQUESTION 63
+#define TCOLON 64
+#define TCOMMA 65
 
 #define TAND 70
 #define TOR 71

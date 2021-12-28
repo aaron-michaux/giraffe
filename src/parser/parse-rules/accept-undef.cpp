@@ -9,7 +9,7 @@ AstNode * accept_undef(Context& context) noexcept
    Scanner& scanner = context.scanner();
 
    // #undef IDENTIFIER
-   expect(scanner, TUNDEF);
+   assert(expect(scanner, TUNDEF));
    scanner.consume();
    const auto& token = scanner.current();
    if(token.id() == TIDENTIFIER) {

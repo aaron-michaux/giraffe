@@ -12,7 +12,7 @@ public:
    StmtListNode(vector<AstNode*>&& stmts) // "file" or <file>. 
       : AstNode(NodeType::STMT_LIST)
    {
-      set_children(std::move(stmts));
+      set_children_(std::move(stmts));
    }
    virtual ~StmtListNode() = default;
    

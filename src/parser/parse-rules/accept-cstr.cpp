@@ -7,12 +7,12 @@ namespace giraffe
 
 // ----------------------------------------------------------------- accept-cstr
 
-string accept_cstr(Context& context) noexcept
+std::pair<string, SourceRange> accept_cstr(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
-   expect(scanner, TSTR_DELIM);
-   scanner.consume();
+   assert(expect(scanner, TSTR_DELIM));
+   const auto loc0 = scanner.consume().location();
 
    const auto pos0 = scanner.position();
    while(scanner.current().id() == TSTR_PART) 
@@ -21,10 +21,9 @@ string accept_cstr(Context& context) noexcept
 
    if(scanner.current().id() != TSTR_DELIM) {
       context.push_error(format("unexpected token while parsing string"));
-      return ""s;
-   } else {
-      scanner.consume();
-   }
+      return {""s, {}};
+   } 
+   const auto loc1 = scanner.consume().location();
 
    // Consolidate string and return
    auto estimate_length = [&] (const auto pos0, const auto pos1) {
@@ -53,7 +52,7 @@ string accept_cstr(Context& context) noexcept
    ret.reserve(approx_length);
    for(auto i = pos0; i != pos1; ++i)
       append(ret, scanner.at(i));
-   return ret;
+   return {ret, {loc0, loc1}};
 }
 
 
