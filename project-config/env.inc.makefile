@@ -7,14 +7,14 @@ include project-config/toolchains/$(TOOLCHAIN_NAME).inc.makefile
 BUILDDIR?=/tmp/build-$(USER)/$(TOOLCHAIN_NAME)-$(TOOLCHAIN_CONFIG)/$(TARGET)
 TARGETDIR?=build/$(TOOLCHAIN_NAME)-$(TOOLCHAIN_CONFIG)
 GCMDIR:=$(BUILDDIR)/gcm.cache
-OBJECTS:=$(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(SOURCES)) $(patsubst %.c, %.o, $(SOURCES)))
+CPP_SOURCES:=$(filter %.cpp, $(SOURCES))
+C_SOURCES:=$(filter %.c, $(SOURCES))
+OBJECTS:=$(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(CPP_SOURCES)) $(patsubst %.c, %.o, $(C_SOURCES)))
 DEP_FILES:=$(addsuffix .d, $(OBJECTS))
-COMPDBS:=$(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.comp-db.json, $(SOURCES)) $(patsubst %.c, %.comp-db.json, $(SOURCES)))
+COMPDBS:=$(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.comp-db.json, $(CPP_SOURCES)) $(patsubst %.c, %.comp-db.json, $(C_SOURCES)))
 COMP_DATABASE:=$(TARGETDIR)/compilation-database.json
 
 # Unity build
-CPP_SOURCES:=$(filter %.cpp, $(SOURCES))
-C_SOURCES:=$(filter %.c, $(SOURCES))
 UNITY_O:=$(BUILDDIR)/unity-file.o
 ifneq ("$(UNITY_BUILD)", "0")
   SOURCES:=$(C_SOURCES)

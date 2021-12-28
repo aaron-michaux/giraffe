@@ -39,8 +39,9 @@ CATCH_TEST_CASE("001 include", "[001-include]")
       encode_string(token.text()));
    };
 
-   auto context = Context::make(make_unique<Scanner>("test-001", test_text_001));
-   auto& scanner = context->scanner();
+   auto context_ptr = Context::make(make_unique<Scanner>("test-001", test_text_001));
+   auto& context = *context_ptr;
+   auto& scanner = context.scanner();
    
    // -----------------------------------
    CATCH_SECTION("test token sequence") {
@@ -55,7 +56,8 @@ CATCH_TEST_CASE("001 include", "[001-include]")
    // -----------------------------------
    CATCH_SECTION("test parse-tree") {
       scanner.set_position(1); // Skip TSTART
-      //unique_ptr<StmtListNode> stmts(accept_stmt_list(context));
+      unique_ptr<StmtListNode> stmts(accept_stmt_list(context));
+      stmts->stream(cout, 0);
    }
 
 }

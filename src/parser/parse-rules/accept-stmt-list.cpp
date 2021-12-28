@@ -25,7 +25,10 @@ StmtListNode * accept_stmt_list(Context& context) noexcept
    
    while(!scanner.current().is_eof()) {
       const auto id = scanner.current().id();
-      if(in_list(id, first_set_module)) {
+      if(id == TNEWLINE) {
+         scanner.consume();
+         
+      } else if(in_list(id, first_set_module)) {
          push_child(accept_module(context));
 
       } else if(id == TDEFINE) {
@@ -46,9 +49,11 @@ StmtListNode * accept_stmt_list(Context& context) noexcept
       } else if(in_list(id, stray_ifthen_parts)) {
          // We have a diagnostic here
          context.push_error(format("unexpected token {}", token_id_to_str(id)));
+         skip_to_sequence(scanner, TNEWLINE);    // Skip to newline
 
       } else {
          // Assume this is just the blah-blah-blah of the document
+         skip_to_sequence(scanner, TNEWLINE);    // Skip to newline
       }
    }
    
