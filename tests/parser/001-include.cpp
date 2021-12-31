@@ -23,7 +23,8 @@ constexpr static const char * test_text_001 = R"V0G0N(
 
 )V0G0N";
 
-constexpr static const char * test_text_001_result = R"V0G0N(#include "file0"
+constexpr static const char * test_text_001_result =
+   R"V0G0N(#include "file0"
 #include "file1"
 #include <file2>
 #include <=>
