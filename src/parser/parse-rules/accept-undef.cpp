@@ -10,10 +10,13 @@ AstNode * accept_undef(Context& context) noexcept
 
    // #undef IDENTIFIER
    assert(expect(scanner, TUNDEF));
+   TRACE(format("token.text = {}", encode_string(scanner.current().text())));
    scanner.consume();
    const auto& token = scanner.current();
    if(token.id() == TIDENTIFIER) {
+      TRACE(format("token.text = {}", encode_string(token.text())));
       scanner.consume();
+      TRACE(format("token.text = {}", encode_string(token.text())));
       return new UndefNode(token.text());
    }
 
