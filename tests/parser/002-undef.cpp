@@ -42,10 +42,10 @@ CATCH_TEST_CASE("002 undef", "[002-undef]")
    auto& context = *context_ptr;
    auto& scanner = context.scanner();
 
-   while(scanner.has_next()) {
-      //cout << token_id_to_str(scanner.consume().id()) << endl;
-      print_token(cout, scanner.consume());
-   }
+   // while(scanner.has_next()) {
+   //    // cout << token_id_to_str(scanner.consume().id()) << endl;
+   //    // print_token(cout, scanner.consume());
+   // }
    
    // -----------------------------------
    CATCH_SECTION("test token sequence") {
@@ -58,6 +58,7 @@ CATCH_TEST_CASE("002 undef", "[002-undef]")
    }
 
    // -----------------------------------
+
    CATCH_SECTION("test parse-tree") {
       scanner.set_position(1); // Skip TSTART
       {
@@ -77,9 +78,17 @@ CATCH_TEST_CASE("002 undef", "[002-undef]")
          }
          
          std::stringstream ss;
-         stmts->stream(ss, 0);
-         cout << ss.str() << endl;
+         stmts->stream(ss, 0);         
          CATCH_REQUIRE(ss.str() == test_text_002_result);
+
+         const Diagnostics& diagnostics = context.diagnostics();
+         CATCH_REQUIRE(diagnostics.size() == 1);
+         CATCH_REQUIRE(diagnostics.totals().errors == 1);
+
+         // Should not throw
+         for(const auto& diagnostic: diagnostics)
+            diagnostic.stream(ss, context);
+         // cout << ss.str()
       }
       CATCH_REQUIRE(AstNode::get_node_count() == 0);
    }

@@ -88,6 +88,15 @@ class Diagnostics
 
    const auto& diagnostics() const noexcept { return diagnostics_; }
 
+   auto begin() const noexcept { return diagnostics_.begin(); }
+   auto rbegin() const noexcept { return diagnostics_.rbegin(); }
+   auto end() const noexcept { return diagnostics_.end(); }
+   auto rend() const noexcept { return diagnostics_.rend(); }
+   auto cbegin() const noexcept { return diagnostics_.cbegin(); }
+   auto crbegin() const noexcept { return diagnostics_.crbegin(); }
+   auto cend() const noexcept { return diagnostics_.cend(); }
+   auto crend() const noexcept { return diagnostics_.crend(); }
+   
    string to_string(const Context& context) const noexcept;
 };
 

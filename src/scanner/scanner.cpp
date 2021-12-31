@@ -60,7 +60,7 @@ struct Scanner::Worker
       bool is_newline_escaped  = false;
       uint32_t end() const noexcept { return uint32_t(line.size()) + offset; }
    };
-   vector<InternalLineData> lines_ = {}; // lines are parsed one at a time
+   std::deque<InternalLineData> lines_ = {}; // lines are parsed one at a time
 
    uint32_t current_offset_() const noexcept;
 

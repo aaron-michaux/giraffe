@@ -23,12 +23,13 @@ unique_ptr<Context> This::make(unique_ptr<Scanner>&& scanner,
 
 Diagnostics::Range This::diagnostics_from(uint32_t from_idx) const noexcept
 {
-   return {from_idx, uint32_t(diagnostics().size())};
+   assert(from_idx <= uint32_t(diags_.size()));
+   return {from_idx, uint32_t(diags_.size())};
 }
 
 bool This::has_error(Diagnostics::Range range) const noexcept
 {
-   const auto tots = this->totals(range);
+   const auto tots = this->diags_.totals(range);
    return tots.fatals > 0 || tots.errors > 0;
 }
 

@@ -52,9 +52,9 @@ class Context final
    const auto& scanner() const noexcept { return *scanner_; }
    auto& scanner() noexcept { return *scanner_.get(); }
 
-   const auto& totals() const noexcept { return diags_.totals(); }
-   auto totals(auto range) const noexcept { return diags_.totals(range); }
-   const auto& diagnostics() const noexcept { return diags_.diagnostics(); }
+   // const auto& totals() const noexcept { return diags_.totals(); }
+   // auto totals(auto range) const noexcept { return diags_.totals(range); }
+   const auto& diagnostics() const noexcept { return diags_; }
    Diagnostics::Range diagnostics_from(uint32_t) const noexcept;
 
    // TRUE if there's an error/fatal message in the range.

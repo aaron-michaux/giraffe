@@ -12,46 +12,46 @@ using TokenTextFunctor = std::function<string_view(const Token&)>;
 struct Token final
 {
  private:
-   String text_             = {};
+   string text_             = {};    // Better: pmr::string, or short-value-optimized
    SourceLocation loc_      = {};
    uint8_t id_              = TNONE; // id of this token
    bool is_space_delimited_ = false;
 
  public:
-   static constexpr Token make_start_token() noexcept { return Token(TSTART); }
+   static Token make_start_token() noexcept { return Token(TSTART); }
 
-   constexpr Token(uint8_t id = TNONE)
+   Token(uint8_t id = TNONE)
        : id_(id)
    {}
 
-   constexpr Token(uint8_t id, SourceLocation loc, String text, bool space_delimited)
-       : text_(text)
-       , loc_(loc)
-       , id_(id)
-       , is_space_delimited_(space_delimited)
+   Token(uint8_t id, SourceLocation loc, string_view text, bool space_delimited)
+      : text_(begin(text), end(text))
+      , loc_(loc)
+      , id_(id)
+      , is_space_delimited_(space_delimited)
    {
       assert(id_ == id);
    }
 
    constexpr Token(const Token&)     = delete;
-   constexpr Token(Token&&) noexcept = default;
-   constexpr ~Token()                = default;
+   Token(Token&&) noexcept = default;
+   ~Token()                = default;
    constexpr Token& operator=(const Token&) = delete;
-   constexpr Token& operator=(Token&&) noexcept = default;
+   Token& operator=(Token&&) noexcept = default;
 
    constexpr auto id() const noexcept { return id_; }
    constexpr auto location() const noexcept { return loc_; }
-   constexpr auto length() const noexcept { return text_.size(); }
+   auto length() const noexcept { return text_.size(); }
    constexpr auto offset() const noexcept { return loc_.offset; }
    constexpr auto line_no() const noexcept { return loc_.line_no; }
-   constexpr auto text() const noexcept { return string_view(text_); }
+   auto text() const noexcept { return string_view(text_); }
    constexpr auto is_space_delimited() const noexcept
    {
       return is_space_delimited_;
    }
 
    /// The source location just past the end of the token
-   constexpr auto end_location() const noexcept
+   auto end_location() const noexcept
    {
       SourceLocation loc = loc_;
       loc.offset += length();
@@ -59,7 +59,7 @@ struct Token final
       return loc;
    }
 
-   constexpr auto source_range() const noexcept
+   auto source_range() const noexcept
    {
       return SourceRange{location(), end_location()};
    }
