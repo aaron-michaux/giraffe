@@ -73,7 +73,7 @@ PP      {WS}*#{WS}*
 
 %{ /* ------------------------------------------------------- Preprocessor */ %}
 
-{PP}{NNL}*{NL}                 { PUSH_STATE(PREPROC); yyless(0); }
+{PP}{NNL}*{NL}?                { PUSH_STATE(PREPROC); yyless(0); }
 <PREPROC>{
 
 "/*"{NNL}*{NL}                 { PUSH_STATE(MLC); yyless(2); return TOKEN(TCOMMENT_DELIM); }

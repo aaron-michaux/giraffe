@@ -12,6 +12,7 @@ TOOLCHAIN=gcc-11
 FEEDBACK=0
 NO_BUILD=0
 GDB=0
+LLDB=0
 BUILD_ONLY=0
 BUILD_TESTS=0
 BENCHMARK=0
@@ -44,6 +45,7 @@ while [ "$#" -gt "0" ] ; do
     [ "$1" = "debug" ]     && CONFIG=debug     && shift && continue
     [ "$1" = "valgrind" ]  && CONFIG=debug     && VALGRIND=1 && shift && continue
     [ "$1" = "gdb" ]       && CONFIG=debug     && GDB=1 && shift && continue
+    [ "$1" = "lldb" ]      && CONFIG=debug     && LLDB=1 && shift && continue
     [ "$1" = "release" ]   && CONFIG=release   && shift && continue
     
     # Other options
@@ -160,6 +162,11 @@ if [ "$TARGET_FILE" = "$TARGET_FILE0" ] ; then
     if [ "$GDB" = "1" ] ; then        
         gdb -ex run -silent -return-child-result -statistics --args "$PRODUCT" "$@"
         exit $?
+
+    elif [ "$GDB" = "1" ] ; then        
+        lldb -ex run -silent -return-child-result -statistics --args "$PRODUCT" "$@"
+        exit $?
+
         
     elif [ "$VALGRIND" = "1" ] ; then        
         valgrind --tool=memcheck --leak-check=full --track-origins=yes --verbose --log-file=valgrind.log --gen-suppressions=all "$PRODUCT" "$@"

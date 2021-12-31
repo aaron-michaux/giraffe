@@ -1,16 +1,20 @@
 
 # ------------------------------------------------------ This is the "toolchain" file to be included
 ifeq ($(shell uname), Darwin)
-IS_DARWIN:=1
-ARCH=x86_64-apple-darwin21
+   IS_DARWIN:=1
+   ifeq ($(shell uname -m), arm64)
+      ARCH:=aarch64-apple-darwin21
+   else
+      ARCH:=x86_64-apple-darwin21
+   endif
 else
-IS_DARWIN:=0
-ARCH=x86_64-pc-linux-gnu
+   IS_DARWIN:=0
+   ARCH:=x86_64-pc-linux-gnu
 endif
 
 TOOLCHAIN_NAME:=gcc-11
 CC_MAJOR_VERSION:=11
-TOOLCHAIN_ROOT:=/usr/local
+TOOLCHAIN_ROOT:=$(shell echo $$(dirname $$(dirname $$(which $(TOOLCHAIN_NAME)))))
 
 # Executables, should be symlinks like: /usr/local/bin/gcc-11 
 CC:=$(TOOLCHAIN_ROOT)/bin/gcc-$(CC_MAJOR_VERSION)
@@ -21,7 +25,7 @@ AR:=$(TOOLCHAIN_ROOT)/bin/gcc-ar-$(CC_MAJOR_VERSION)
 # Header/library directories
 STDHDR_DIR:=$(TOOLCHAIN_ROOT)/include/c++/$(CC_MAJOR_VERSION)
 ARCHDR_DIR:=$(STDHDR_DIR)/$(ARCH)
-CPPLIB_DIR:=/usr/local/lib/gcc/$(CC_MAJOR_VERSION)
+CPPLIB_DIR:=$(TOOLCHAIN_ROOT)/lib/gcc/$(CC_MAJOR_VERSION)
 
 CPP_INC:=-fPIC -nostdinc++ -isystem$(STDHDR_DIR) -isystem$(ARCHDR_DIR)
 LINK_LIBCPP_SO:=-lm -L$(CPPLIB_DIR) -Wl,-rpath,$(CPPLIB_DIR) -lstdc++ 

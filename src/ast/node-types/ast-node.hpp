@@ -3,6 +3,10 @@
 
 #include "scanner/token.hpp"
 
+#ifndef NDEBUG
+#include <atomic>
+#endif
+
 namespace giraffe
 {
 // ---------------------------------------------------------- Predfine All Nodes
@@ -143,19 +147,46 @@ class AstNode
       }
    }
 
+#ifndef NDEBUG
+   static std::atomic<int64_t> node_count_;
+   static void add_to_node_count_(int64_t value) noexcept
+   {
+      node_count_.fetch_add(value, std::memory_order_relaxed);
+   }
+   static void inc_node_count_() noexcept { add_to_node_count_(1); }
+   static void dec_node_count_() noexcept { add_to_node_count_(-1); }
+#endif
+
  public:
    AstNode(NodeType type, SourceRange loc = {})
       : node_type_{type}, loc_{loc}
-   {}
-   AstNode(AstNode&&)      = default;
+   {
+#ifndef NDEBUG
+      inc_node_count_();
+#endif
+   }
+   AstNode(AstNode&&)      = delete;
    AstNode(const AstNode&) = delete;
    virtual ~AstNode()
    {
-      std::destroy(std::begin(children_), std::end(children_));
+      for(auto child: children_)
+         std::destroy_at(child);
+#ifndef NDEBUG
+      dec_node_count_();
+#endif      
    }
-   AstNode& operator=(AstNode&&) = default;
+   AstNode& operator=(AstNode&&) = delete;
    AstNode& operator=(const AstNode&) = delete;
 
+#ifdef NDEBUG
+   static auto get_node_count() noexcept { return 0; }
+#else
+   static auto get_node_count() noexcept
+   {
+      return node_count_.load(std::memory_order_relaxed);
+   }
+#endif
+   
    auto parent() const noexcept { return parent_; }
    const auto& children() const noexcept { return children_; }
    auto index_in_parent() const noexcept { return index_in_parent_; }

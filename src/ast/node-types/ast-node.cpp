@@ -4,6 +4,11 @@
 
 namespace giraffe
 {
+
+#ifndef NDEBUG
+std::atomic<int64_t> AstNode::node_count_{0};
+#endif
+
 const char* str(NodeType o) noexcept
 {
 #define CASE(x) \
