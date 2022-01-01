@@ -16,6 +16,7 @@ string accept_to_newline(Context& context) noexcept
       const auto& token = scanner.current();
       if(token.id() == TEOF || token.id() == TNEWLINE)
          break;
+      scanner.consume();
       approx_len += token.text().size();
    }
    const auto pos1 = scanner.position(); // text = [pos0, pos1)
