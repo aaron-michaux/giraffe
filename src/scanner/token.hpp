@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <sso-string/string.hpp>
+
 #include "source-location.hpp"
 #include "token-types.h"
 
@@ -8,11 +10,12 @@ namespace giraffe
 {
 struct Token;
 using TokenTextFunctor = std::function<string_view(const Token&)>;
+using SsoString = sso23::basic_string<char>;
 
 struct Token final
 {
  private:
-   string text_             = {};    // Better: pmr::string, or short-value-optimized
+   SsoString text_          = {};    // Better: pmr::string, or short-value-optimized
    SourceLocation loc_      = {};
    uint8_t id_              = TNONE; // id of this token
    bool is_space_delimited_ = false;
@@ -25,10 +28,10 @@ struct Token final
    {}
 
    Token(uint8_t id, SourceLocation loc, string_view text, bool space_delimited)
-      : text_(begin(text), end(text))
-      , loc_(loc)
-      , id_(id)
-      , is_space_delimited_(space_delimited)
+      : text_{text.data(), text.size()}
+      , loc_{loc}
+      , id_{id}
+      , is_space_delimited_{space_delimited}
    {
       assert(id_ == id);
    }
@@ -44,7 +47,7 @@ struct Token final
    auto length() const noexcept { return text_.size(); }
    constexpr auto offset() const noexcept { return loc_.offset; }
    constexpr auto line_no() const noexcept { return loc_.line_no; }
-   auto text() const noexcept { return string_view(text_); }
+   auto text() const noexcept { return string_view{text_.data(), text_.size()}; }
    constexpr auto is_space_delimited() const noexcept
    {
       return is_space_delimited_;

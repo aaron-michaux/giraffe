@@ -9,7 +9,8 @@
 
 namespace giraffe::test {
 
-// ----------------------------------------------------- test-text-dump-tokens-1
+// -----------------------------------------------------------------------------
+
 /**
  * Test #include directive, with comments interspersed
  */

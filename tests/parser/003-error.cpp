@@ -9,10 +9,8 @@
 
 namespace giraffe::test {
 
-// ----------------------------------------------------- test-text-dump-tokens-1
-/**
- * Test #include directive, with comments interspersed
- */
+// -----------------------------------------------------------------------------
+
 constexpr static const char * test_text_003 = R"V0G0N(
 #error Here is some stuff that could be part of an error!
 #warning "And \t\b\r\n\v\f\\\"'that was something!"

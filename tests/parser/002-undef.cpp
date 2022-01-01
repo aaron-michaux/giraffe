@@ -9,10 +9,8 @@
 
 namespace giraffe::test {
 
-// ----------------------------------------------------- test-text-dump-tokens-1
-/**
- * Test #include directive, with comments interspersed
- */
+// -----------------------------------------------------------------------------
+
 constexpr static const char * test_text_002 = R"V0G0N(
 #undef BEATLEJUICE
 #undef 0
