@@ -72,7 +72,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
          std::stringstream ss;
          expr->stream(ss, 0);
          const auto str = ss.str();
-         TRACE(format("{} => {}", input_text, str));
+         // TRACE(format("{} => {}", input_text, str));
          f(context, expr.get(), str, context.diagnostics());
       }
       CATCH_REQUIRE(AstNode::get_node_count() == 0);
@@ -341,6 +341,14 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
                   CATCH_REQUIRE(tern1t->expr_type() == ExprType::BINARY);
                   CATCH_REQUIRE(tern1t->op() == TANDAND);
                   CATCH_REQUIRE(tern1t->text() == "");
+                  CATCH_REQUIRE(tern1t->lhs()->size() == 0);
+                  CATCH_REQUIRE(tern1t->lhs()->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(tern1t->lhs()->op() == TNONE);
+                  CATCH_REQUIRE(tern1t->lhs()->text() == "a");
+                  CATCH_REQUIRE(tern1t->rhs()->size() == 0);
+                  CATCH_REQUIRE(tern1t->rhs()->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(tern1t->rhs()->op() == TNONE);
+                  CATCH_REQUIRE(tern1t->rhs()->text() == "d");
 
                   // Ternary1 False (is another ternary
                   auto tern2 = q1rhs->rhs();
@@ -348,6 +356,36 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
                   CATCH_REQUIRE(tern2->expr_type() == ExprType::BINARY);
                   CATCH_REQUIRE(tern2->op() == TQUESTION);
                   CATCH_REQUIRE(tern2->text() == "");
+                  CATCH_REQUIRE(tern2->rhs()->size() == 2);
+                  CATCH_REQUIRE(tern2->rhs()->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(tern2->rhs()->op() == TCOLON);
+                  CATCH_REQUIRE(tern2->rhs()->text() == "");
+
+                  auto cond2 = tern2->lhs();
+                  CATCH_REQUIRE(cond2->size() == 2);
+                  CATCH_REQUIRE(cond2->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(cond2->op() == TOROR);
+                  CATCH_REQUIRE(cond2->text() == "");
+                  CATCH_REQUIRE(cond2->lhs()->size() == 0);
+                  CATCH_REQUIRE(cond2->lhs()->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(cond2->lhs()->op() == TNONE);
+                  CATCH_REQUIRE(cond2->lhs()->text() == "b");
+                  CATCH_REQUIRE(cond2->rhs()->size() == 0);
+                  CATCH_REQUIRE(cond2->rhs()->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(cond2->rhs()->op() == TNONE);
+                  CATCH_REQUIRE(cond2->rhs()->text() == "c");
+
+                  auto tern2t = tern2->rhs()->lhs();
+                  CATCH_REQUIRE(tern2t->size() == 0);
+                  CATCH_REQUIRE(tern2t->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(tern2t->op() == TNONE);
+                  CATCH_REQUIRE(tern2t->text() == "x");
+
+                  auto tern2f = tern2->rhs()->rhs();
+                  CATCH_REQUIRE(tern2f->size() == 0);
+                  CATCH_REQUIRE(tern2f->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(tern2f->op() == TNONE);
+                  CATCH_REQUIRE(tern2f->text() == "y");
 
                   CATCH_REQUIRE(diagnostics.size() == 0);
                   CATCH_REQUIRE(!context.has_error());
