@@ -1,6 +1,7 @@
 #include "stdinc.hpp"
 
 #include "expression-node.hpp"
+#include "scanner/operators.hpp"
 
 #define This ExpressionNode
 
@@ -112,6 +113,17 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
       }
    };
 
+   auto stream_child = [this](std::ostream& ss, int indent, ExpressionNode* child) {
+      assert(expr_type() == ExprType::BINARY);
+      const auto precedence = operator_precedence_q(op());
+      const auto needs_paren
+          = (child->expr_type() == ExprType::BINARY)
+            && operator_precedence_q(op()) < binary_op_precedence(child->op());
+      if(needs_paren) ss << '(';
+      child->stream(ss, indent); // the sub-expression
+      if(needs_paren) ss << ')';
+   };
+
    switch(expr_type()) {
    case ExprType::NONE: ss << "<NONE-EXPRESSION>"; break;
    case ExprType::EMPTY: break; // do nothing!
@@ -124,12 +136,12 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
       break;
    case ExprType::UNARY:
       ss << print_op(op());
-      children()[0]->stream(ss, indent); // the sub-expression
+      children()[0]->stream(ss, indent); // the child expression
       break;
    case ExprType::BINARY:
-      children()[0]->stream(ss, indent); // the sub-expression
+      stream_child(ss, indent, lhs());
       ss << ' ' << print_op(op()) << ' ';
-      children()[1]->stream(ss, indent); // the sub-expression
+      stream_child(ss, indent, rhs());
       break;
    }
    return ss;

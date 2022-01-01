@@ -20,10 +20,9 @@ const char* test_005_expr_03 = "((a))";
 const char* test_005_expr_04 = "a";
 const char* test_005_expr_05 = "(a)";
 const char* test_005_expr_06 = "a + b";
-const char* test_005_expr_07 = "(a + b)";
-const char* test_005_expr_08 = "a * b + c";
-const char* test_005_expr_09 = "(a * b + c)";
-const char* test_005_expr_10 = "a * (b + c)";
+const char* test_005_expr_07 = "a * b + c";
+const char* test_005_expr_08 = "a * (b + c)";
+const char* test_005_expr_09 = "a || b ? a && d : b || c ? x : y";
 
 // -------------------------------------------------------------------- testcase
 
@@ -72,7 +71,9 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
 
          std::stringstream ss;
          expr->stream(ss, 0);
-         f(context, expr.get(), ss.str(), context.diagnostics());
+         const auto str = ss.str();
+         TRACE(format("{} => {}", input_text, str));
+         f(context, expr.get(), str, context.diagnostics());
       }
       CATCH_REQUIRE(AstNode::get_node_count() == 0);
 
@@ -210,6 +211,144 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
                   CATCH_REQUIRE(rhs->expr_type() == ExprType::IDENTIFIER);
                   CATCH_REQUIRE(rhs->op() == TNONE);
                   CATCH_REQUIRE(rhs->text() == "b");
+                  CATCH_REQUIRE(diagnostics.size() == 0);
+                  CATCH_REQUIRE(!context.has_error());
+               });
+   }
+
+   CATCH_SECTION("expr_07") // -------------------------------------------------
+   {
+      run_test("expr_07",
+               test_005_expr_07,
+               [](Context& context,
+                  ExpressionNode* expr,
+                  string_view str,
+                  const Diagnostics& diagnostics) {
+                  CATCH_REQUIRE(str == "a * b + c");
+                  CATCH_REQUIRE(expr->size() == 2);
+                  CATCH_REQUIRE(expr->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(expr->op() == TPLUS);
+                  CATCH_REQUIRE(expr->text() == "");
+                  auto lhs = expr->lhs();
+                  CATCH_REQUIRE(lhs->size() == 2);
+                  CATCH_REQUIRE(lhs->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(lhs->op() == TMULT);
+                  CATCH_REQUIRE(lhs->text() == "");
+                  auto lhs0 = lhs->lhs();
+                  CATCH_REQUIRE(lhs0->size() == 0);
+                  CATCH_REQUIRE(lhs0->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(lhs0->op() == TNONE);
+                  CATCH_REQUIRE(lhs0->text() == "a");
+                  auto lhs1 = lhs->rhs();
+                  CATCH_REQUIRE(lhs1->size() == 0);
+                  CATCH_REQUIRE(lhs1->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(lhs1->op() == TNONE);
+                  CATCH_REQUIRE(lhs1->text() == "b");
+                  auto rhs = expr->rhs();
+                  CATCH_REQUIRE(rhs->size() == 0);
+                  CATCH_REQUIRE(rhs->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(rhs->op() == TNONE);
+                  CATCH_REQUIRE(rhs->text() == "c");
+                  CATCH_REQUIRE(diagnostics.size() == 0);
+                  CATCH_REQUIRE(!context.has_error());
+               });
+   }
+
+   CATCH_SECTION("expr_08") // -------------------------------------------------
+   {
+      run_test("expr_08",
+               test_005_expr_08,
+               [](Context& context,
+                  ExpressionNode* expr,
+                  string_view str,
+                  const Diagnostics& diagnostics) {
+                  CATCH_REQUIRE(str == "a * (b + c)");
+                  CATCH_REQUIRE(expr->size() == 2);
+                  CATCH_REQUIRE(expr->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(expr->op() == TMULT);
+                  CATCH_REQUIRE(expr->text() == "");
+                  auto lhs = expr->lhs();
+                  CATCH_REQUIRE(lhs->size() == 0);
+                  CATCH_REQUIRE(lhs->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(lhs->op() == TNONE);
+                  CATCH_REQUIRE(lhs->text() == "a");
+                  auto rhs = expr->rhs();
+                  CATCH_REQUIRE(rhs->size() == 1);
+                  CATCH_REQUIRE(rhs->expr_type() == ExprType::SUBEXPR);
+                  CATCH_REQUIRE(rhs->op() == TNONE);
+                  CATCH_REQUIRE(rhs->text() == "");
+                  auto rhs_child = rhs->child(0);
+                  CATCH_REQUIRE(rhs_child->size() == 2);
+                  CATCH_REQUIRE(rhs_child->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(rhs_child->op() == TPLUS);
+                  CATCH_REQUIRE(rhs_child->text() == "");
+                  auto rhs0 = rhs_child->lhs();
+                  CATCH_REQUIRE(rhs0->size() == 0);
+                  CATCH_REQUIRE(rhs0->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(rhs0->op() == TNONE);
+                  CATCH_REQUIRE(rhs0->text() == "b");
+                  auto rhs1 = rhs_child->rhs();
+                  CATCH_REQUIRE(rhs1->size() == 0);
+                  CATCH_REQUIRE(rhs1->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(rhs1->op() == TNONE);
+                  CATCH_REQUIRE(rhs1->text() == "c");
+                  CATCH_REQUIRE(diagnostics.size() == 0);
+                  CATCH_REQUIRE(!context.has_error());
+               });
+   }
+
+   CATCH_SECTION("expr_09") // -------------------------------------------------
+   {
+      run_test("expr_09",
+               test_005_expr_09,
+               [](Context& context,
+                  ExpressionNode* expr,
+                  string_view str,
+                  const Diagnostics& diagnostics) {
+                  CATCH_REQUIRE(str == "(a || b) ? (a && d) : (b || c) ? x : y");
+                  CATCH_REQUIRE(expr->size() == 2);
+                  CATCH_REQUIRE(expr->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(expr->op() == TQUESTION);
+                  CATCH_REQUIRE(expr->text() == "");
+
+                  // The condition
+                  auto condition = expr->lhs();
+                  CATCH_REQUIRE(condition->size() == 2);
+                  CATCH_REQUIRE(condition->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(condition->op() == TOROR);
+                  CATCH_REQUIRE(condition->text() == "");
+                  auto cond_lhs = condition->lhs();
+                  CATCH_REQUIRE(cond_lhs->size() == 0);
+                  CATCH_REQUIRE(cond_lhs->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(cond_lhs->op() == TNONE);
+                  CATCH_REQUIRE(cond_lhs->text() == "a");
+                  auto cond_rhs = condition->rhs();
+                  CATCH_REQUIRE(cond_rhs->size() == 0);
+                  CATCH_REQUIRE(cond_rhs->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(cond_rhs->op() == TNONE);
+                  CATCH_REQUIRE(cond_rhs->text() == "b");
+
+                  // rhs
+                  auto q1rhs = expr->rhs();
+                  CATCH_REQUIRE(q1rhs->size() == 2);
+                  CATCH_REQUIRE(q1rhs->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(q1rhs->op() == TCOLON);
+                  CATCH_REQUIRE(q1rhs->text() == "");
+
+                  // Ternary1 TRUE
+                  auto tern1t = q1rhs->lhs();
+                  CATCH_REQUIRE(tern1t->size() == 2);
+                  CATCH_REQUIRE(tern1t->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(tern1t->op() == TANDAND);
+                  CATCH_REQUIRE(tern1t->text() == "");
+
+                  // Ternary1 False (is another ternary
+                  auto tern2 = q1rhs->rhs();
+                  CATCH_REQUIRE(tern2->size() == 2);
+                  CATCH_REQUIRE(tern2->expr_type() == ExprType::BINARY);
+                  CATCH_REQUIRE(tern2->op() == TQUESTION);
+                  CATCH_REQUIRE(tern2->text() == "");
+
                   CATCH_REQUIRE(diagnostics.size() == 0);
                   CATCH_REQUIRE(!context.has_error());
                });

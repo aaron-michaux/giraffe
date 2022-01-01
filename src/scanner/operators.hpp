@@ -5,31 +5,31 @@
 
 namespace giraffe
 {
-constexpr bool is_unary_postfix_op(uint16_t token_id) noexcept;
-constexpr bool is_unary_prefix_op(uint16_t token_id) noexcept;
-constexpr bool is_unary_op(uint16_t token_id) noexcept;
-constexpr bool is_binary_op(uint16_t token_id) noexcept;
-constexpr bool is_ternary_op(uint16_t token_id) noexcept;
+constexpr bool is_unary_postfix_op(uint8_t token_id) noexcept;
+constexpr bool is_unary_prefix_op(uint8_t token_id) noexcept;
+constexpr bool is_unary_op(uint8_t token_id) noexcept;
+constexpr bool is_binary_op(uint8_t token_id) noexcept;
+constexpr bool is_ternary_op(uint8_t token_id) noexcept;
 
-constexpr bool is_left_right_associative(uint16_t token_id) noexcept;
+constexpr bool is_left_right_associative(uint8_t token_id) noexcept;
 
-constexpr int unary_postfix_op_precedence(uint16_t token_id) noexcept;
-constexpr int unary_prefix_op_precedence(uint16_t token_id) noexcept;
-constexpr int binary_op_precedence(uint16_t token_id) noexcept;
-constexpr int operator_precedence_q(uint16_t token_id) noexcept;
+constexpr int unary_postfix_op_precedence(uint8_t token_id) noexcept;
+constexpr int unary_prefix_op_precedence(uint8_t token_id) noexcept;
+constexpr int binary_op_precedence(uint8_t token_id) noexcept;
+constexpr int operator_precedence_q(uint8_t token_id) noexcept;
 
-constexpr bool is_keyword(uint16_t token_id) noexcept;
-constexpr bool is_str_part(uint16_t token_id) noexcept;
+constexpr bool is_keyword(uint8_t token_id) noexcept;
+constexpr bool is_str_part(uint8_t token_id) noexcept;
 
 // ------------------------------------------------------------- implementations
 
-constexpr bool is_unary_postfix_op(uint16_t token_id) noexcept
+constexpr bool is_unary_postfix_op(uint8_t token_id) noexcept
 {
    switch(token_id) {}
    return false;
 }
 
-constexpr bool is_unary_prefix_op(uint16_t token_id) noexcept
+constexpr bool is_unary_prefix_op(uint8_t token_id) noexcept
 {
    switch(token_id) {
    case TPLUS: [[fallthrough]];
@@ -41,17 +41,17 @@ constexpr bool is_unary_prefix_op(uint16_t token_id) noexcept
    return false;
 }
 
-constexpr bool is_unary_op(uint16_t token_id) noexcept
+constexpr bool is_unary_op(uint8_t token_id) noexcept
 {
    return is_unary_postfix_op(token_id) || is_unary_prefix_op(token_id);
 }
 
-constexpr bool is_binary_op(uint16_t token_id) noexcept
+constexpr bool is_binary_op(uint8_t token_id) noexcept
 {
    return binary_op_precedence(token_id) > 0;
 }
 
-constexpr bool is_ternary_op(uint16_t token_id) noexcept
+constexpr bool is_ternary_op(uint8_t token_id) noexcept
 {
    switch(token_id) {
    case TQUESTION: return true;
@@ -59,7 +59,7 @@ constexpr bool is_ternary_op(uint16_t token_id) noexcept
    return false;
 }
 
-constexpr bool is_left_right_associative(uint16_t token_id) noexcept
+constexpr bool is_left_right_associative(uint8_t token_id) noexcept
 {
    switch(token_id) {
    /* left-to-right */
@@ -97,13 +97,13 @@ constexpr bool is_left_right_associative(uint16_t token_id) noexcept
    return false;
 }
 
-constexpr int unary_postfix_op_precedence(uint16_t token_id) noexcept
+constexpr int unary_postfix_op_precedence(uint8_t token_id) noexcept
 {
    switch(token_id) {}
    return 0;
 }
 
-constexpr int unary_prefix_op_precedence(uint16_t token_id) noexcept
+constexpr int unary_prefix_op_precedence(uint8_t token_id) noexcept
 {
    // Everything has the same precedence
    switch(token_id) {
@@ -116,7 +116,7 @@ constexpr int unary_prefix_op_precedence(uint16_t token_id) noexcept
    return 0;
 }
 
-constexpr int binary_op_precedence(uint16_t token_id) noexcept
+constexpr int binary_op_precedence(uint8_t token_id) noexcept
 {
    // @see https://en.cppreference.com/w/cpp/language/operator_precedence
    switch(token_id) {
@@ -146,7 +146,7 @@ constexpr int binary_op_precedence(uint16_t token_id) noexcept
    return 0;
 }
 
-constexpr int operator_precedence_q(uint16_t token_id) noexcept
+constexpr int operator_precedence_q(uint8_t token_id) noexcept
 {
    const auto is_binary     = is_binary_op(token_id);
    const auto op_precedence = is_binary ? binary_op_precedence(token_id)
@@ -155,7 +155,7 @@ constexpr int operator_precedence_q(uint16_t token_id) noexcept
    return op_precedence + (is_binary ? assoc_diff : 0);
 }
 
-constexpr bool is_keyword(uint16_t token_id) noexcept
+constexpr bool is_keyword(uint8_t token_id) noexcept
 {
    return token_id >= TIF && token_id <= TUNDEF;
 }
