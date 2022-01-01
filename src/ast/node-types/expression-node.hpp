@@ -57,6 +57,9 @@ class ExpressionNode final : public AstNode
    auto op() const noexcept { return op_; }
    auto op_loc() const noexcept { return op_loc_; }
    const auto& text() const noexcept { return text_; }
+   auto child(size_t index) noexcept { return cast_child_<ExpressionNode>(index); }
+   auto lhs() noexcept { return cast_child_<ExpressionNode>(0); }
+   auto rhs() noexcept { return cast_child_<ExpressionNode>(1); }
    //@}
 };
 } // namespace giraffe

@@ -24,6 +24,8 @@
 #include <unistd.h>
 #endif
 
+#include <sso-string/string.hpp>
+
 #include "fmt/format.h"
 
 #include "utils/concepts.hpp"

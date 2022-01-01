@@ -55,7 +55,7 @@ class Context final
    Diagnostics::Range diagnostics_from(uint32_t) const noexcept;
 
    // TRUE if there's an error/fatal message in the range.
-   bool has_error(Diagnostics::Range) const noexcept;
+   bool has_error(Diagnostics::Range = {}) const noexcept;
    //@}
 
    //@{ Pushing Diagnostics

@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include <sso-string/string.hpp>
-
 #include "source-location.hpp"
 #include "token-types.h"
 
