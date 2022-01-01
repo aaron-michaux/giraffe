@@ -15,7 +15,9 @@ using SsoString = sso23::basic_string<char>;
 struct Token final
 {
  private:
-   SsoString text_          = {};    // Better: pmr::string, or short-value-optimized
+   // For our lexer, most tokens are 1 character, and are rarely longer than
+   // 23 characters. Using short-string-optimization (gcc+clang) is important.
+   SsoString text_          = {};    
    SourceLocation loc_      = {};
    uint8_t id_              = TNONE; // id of this token
    bool is_space_delimited_ = false;
