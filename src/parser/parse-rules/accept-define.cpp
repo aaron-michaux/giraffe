@@ -6,10 +6,10 @@ namespace giraffe
 {
 
 // '(' IDENTIFIER (',' IDENTIFIER)* ')'
-vector<string> accept_arglist(Context& context) noexcept
+vector<sso23::string> accept_arglist(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
-   vector<string> args;
+   vector<sso23::string> args;
 
    auto push_arg
        = [&args](const auto text) { args.emplace_back(text.begin(), text.end()); };
@@ -65,7 +65,7 @@ AstNode* accept_define(Context& context) noexcept
    }
    scanner.consume(); // identifier
 
-   vector<string> arglist = {};
+   vector<sso23::string> arglist = {};
    if(scanner.current().id() == TLPAREN) arglist = accept_arglist(context);
 
    string text = accept_to_newline(context);

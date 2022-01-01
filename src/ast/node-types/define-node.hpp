@@ -12,15 +12,15 @@ namespace giraffe
 class DefineNode final : public AstNode
 {
  private:
-   string identifier_      = {};
-   string text_            = {};
-   vector<string> arglist_ = {};
+   sso23::string identifier_      = {};
+   sso23::string text_            = {};
+   vector<sso23::string> arglist_ = {};
 
  public:
-   DefineNode(string_view identifier, string_view text, vector<string> arglist)
+   DefineNode(string_view identifier, string_view text, vector<sso23::string> arglist)
        : AstNode(NodeType::DEFINE)
-       , identifier_{cbegin(identifier), cend(identifier)}
-       , text_{cbegin(text), cend(text)}
+       , identifier_{identifier}
+       , text_{text}
        , arglist_{std::move(arglist)}
    {}
    virtual ~DefineNode() = default;
@@ -28,8 +28,11 @@ class DefineNode final : public AstNode
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
 
    //@{ Getters
-   const auto& identifier() const noexcept { return identifier_; }
-   const auto& text() const noexcept { return text_; }
+   auto identifier() const noexcept
+   {
+      return string_view{identifier_.data(), identifier_.size()};
+   }
+   auto text() const noexcept { return string_view{text_.data(), text_.size()}; }
    const auto& arglist() const noexcept { return arglist_; }
    //@}
 };

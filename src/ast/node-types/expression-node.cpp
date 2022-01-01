@@ -18,20 +18,20 @@ ExpressionNode* This::make_empty() noexcept
 // ------------------------------------------------------------- make-identifier
 
 ExpressionNode* This::make_identifier(const SourceRange expr_range,
-                                      string&& identifier) noexcept
+                                      string_view identifier) noexcept
 {
    unique_ptr<ExpressionNode> node{new ExpressionNode{ExprType::IDENTIFIER, expr_range}};
-   node->text_ = std::move(identifier);
+   node->text_ = identifier;
    return node.release();
 }
 
 // ---------------------------------------------------------------- make-integer
 
 ExpressionNode* This::make_integer(const SourceRange expr_range,
-                                   string&& integer_str) noexcept
+                                   string_view integer_str) noexcept
 {
    unique_ptr<ExpressionNode> node{new ExpressionNode{ExprType::INTEGER, expr_range}};
-   node->text_ = std::move(integer_str);
+   node->text_ = integer_str;
    return node.release();
 }
 

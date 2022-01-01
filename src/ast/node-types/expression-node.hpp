@@ -20,7 +20,7 @@ enum class ExprType : uint8_t {
 class ExpressionNode final : public AstNode
 {
  private:
-   string text_           = {};
+   sso23::string text_    = {};
    int op_                = TNONE; // The operator (binary/unary only)
    SourceLocation op_loc_ = {};    // Location of the operator (binary/unary only)
    ExprType expr_type_    = ExprType::NONE;
@@ -35,9 +35,9 @@ class ExpressionNode final : public AstNode
 
    static ExpressionNode* make_empty() noexcept;
    static ExpressionNode* make_identifier(const SourceRange expr_range,
-                                          string&& identifier) noexcept;
+                                          string_view identifier) noexcept;
    static ExpressionNode* make_integer(const SourceRange expr_range,
-                                       string&& integer_str) noexcept;
+                                       string_view integer_str) noexcept;
    static ExpressionNode* make_subexpr(const SourceRange expr_range,
                                        ExpressionNode* subexpr) noexcept;
    static ExpressionNode* make_unary(const int op,
@@ -56,7 +56,7 @@ class ExpressionNode final : public AstNode
    auto expr_type() const noexcept { return expr_type_; }
    auto op() const noexcept { return op_; }
    auto op_loc() const noexcept { return op_loc_; }
-   const auto& text() const noexcept { return text_; }
+   auto text() const noexcept { return string_view{text_.data(), text_.size()}; }
 
    auto child(size_t index) noexcept { return cast_child_<ExpressionNode>(index); }
    auto lhs() noexcept { return cast_child_<ExpressionNode>(0); }

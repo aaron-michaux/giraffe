@@ -7,14 +7,14 @@ namespace giraffe
 class IncludeNode final : public AstNode
 {
  private:
-   string filename_       = {}; //
-   bool is_local_include_ = false;
+   sso23::string filename_ = {}; //
+   bool is_local_include_  = false;
 
  public:
    // "file" or <file>.
-   IncludeNode(SourceRange loc, string&& filename, bool is_local_include)
+   IncludeNode(SourceRange loc, string_view filename, bool is_local_include)
        : AstNode(NodeType::INCLUDE, loc)
-       , filename_(std::move(filename)) // file, without "" or <>
+       , filename_(filename) // file, without "" or <>
        , is_local_include_(is_local_include)
    {}
 
@@ -23,7 +23,10 @@ class IncludeNode final : public AstNode
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
 
    //@{ Getters
-   const auto& filename() const noexcept { return filename_; }
+   auto filename() const noexcept
+   {
+      return string_view{filename_.data(), filename_.size()};
+   }
    auto is_local_include() const noexcept { return is_local_include_; }
    //@}
 };

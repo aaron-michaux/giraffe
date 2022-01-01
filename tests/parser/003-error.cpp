@@ -27,7 +27,7 @@ constexpr auto test_003_token_seq = to_array<int>(
 
 // -------------------------------------------------------------------- testcase
 
-CATCH_TEST_CASE("003 undef", "[003-undef]")
+CATCH_TEST_CASE("003 errors", "[003-errors]")
 {
    auto print_token = [](auto& os, const Token& token) {
       os << format("{:15s} {:15s} {}\n",

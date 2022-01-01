@@ -14,19 +14,19 @@ namespace giraffe::test
 
 // -----------------------------------------------------------------------------
 
-const char* test_005_expr_01 = "1";
-const char* test_005_expr_02 = "()";
-const char* test_005_expr_03 = "((a))";
-const char* test_005_expr_04 = "a";
-const char* test_005_expr_05 = "(a)";
-const char* test_005_expr_06 = "a + b";
-const char* test_005_expr_07 = "a * b + c";
-const char* test_005_expr_08 = "a * (b + c)";
-const char* test_005_expr_09 = "a || b ? a && d : b || c ? x : y";
+const char* test_004_expr_01 = "1";
+const char* test_004_expr_02 = "()";
+const char* test_004_expr_03 = "((a))";
+const char* test_004_expr_04 = "a";
+const char* test_004_expr_05 = "(a)";
+const char* test_004_expr_06 = "a + b";
+const char* test_004_expr_07 = "a * b + c";
+const char* test_004_expr_08 = "a * (b + c)";
+const char* test_004_expr_09 = "a || b ? a && d : b || c ? x : y";
 
 // -------------------------------------------------------------------- testcase
 
-CATCH_TEST_CASE("005 undef", "[005-undef]")
+CATCH_TEST_CASE("004 expressions", "[004-expressions]")
 {
    auto dump_parse = [&](Context& context) {
       auto& scanner = context.scanner();
@@ -90,7 +90,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
    CATCH_SECTION("expr_01") // -------------------------------------------------
    {
       run_test("expr_01",
-               test_005_expr_01,
+               test_004_expr_01,
                [](Context& context,
                   ExpressionNode* expr,
                   string_view str,
@@ -107,7 +107,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
    CATCH_SECTION("expr_02") // -------------------------------------------------
    {
       run_test("expr_02",
-               test_005_expr_02,
+               test_004_expr_02,
                [](Context& context,
                   ExpressionNode* expr,
                   string_view str,
@@ -125,7 +125,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
    CATCH_SECTION("expr_03") // -------------------------------------------------
    {
       run_test("expr_03",
-               test_005_expr_03,
+               test_004_expr_03,
                [](Context& context,
                   ExpressionNode* expr,
                   string_view str,
@@ -150,7 +150,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
    CATCH_SECTION("expr_04") // -------------------------------------------------
    {
       run_test("expr_04",
-               test_005_expr_04,
+               test_004_expr_04,
                [](Context& context,
                   ExpressionNode* expr,
                   string_view str,
@@ -167,7 +167,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
    CATCH_SECTION("expr_05") // -------------------------------------------------
    {
       run_test("expr_05",
-               test_005_expr_05,
+               test_004_expr_05,
                [](Context& context,
                   ExpressionNode* expr,
                   string_view str,
@@ -191,7 +191,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
    CATCH_SECTION("expr_06") // -------------------------------------------------
    {
       run_test("expr_06",
-               test_005_expr_06,
+               test_004_expr_06,
                [](Context& context,
                   ExpressionNode* expr,
                   string_view str,
@@ -219,7 +219,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
    CATCH_SECTION("expr_07") // -------------------------------------------------
    {
       run_test("expr_07",
-               test_005_expr_07,
+               test_004_expr_07,
                [](Context& context,
                   ExpressionNode* expr,
                   string_view str,
@@ -257,7 +257,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
    CATCH_SECTION("expr_08") // -------------------------------------------------
    {
       run_test("expr_08",
-               test_005_expr_08,
+               test_004_expr_08,
                [](Context& context,
                   ExpressionNode* expr,
                   string_view str,
@@ -300,7 +300,7 @@ CATCH_TEST_CASE("005 undef", "[005-undef]")
    CATCH_SECTION("expr_09") // -------------------------------------------------
    {
       run_test("expr_09",
-               test_005_expr_09,
+               test_004_expr_09,
                [](Context& context,
                   ExpressionNode* expr,
                   string_view str,

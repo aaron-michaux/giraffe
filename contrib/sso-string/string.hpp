@@ -2,7 +2,12 @@
 /**
  * \file   string.hpp
  * \author Elliot Goodrich
- * \author Aaron Michaux (made everything constexpr & removed reinterpret_cast)
+ * \author Aaron Michaux
+ *           constexpr everything
+ *           removed reinterpret_cast
+ *           initialize from iterators
+ *           initialize from string_view
+ *           constant iterators
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -37,6 +42,7 @@
 #include <climits>
 #include <cstddef>
 #include <cstring>
+#include <iterator>
 #include <ostream>
 #include <type_traits>
 
@@ -103,6 +109,15 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       }
    }
 
+   constexpr basic_string(std::string_view sv)
+       : basic_string{sv.data(), sv.size()}
+   {}
+
+   template<std::input_iterator InputIt>
+   constexpr basic_string(InputIt first, InputIt last)
+       : basic_string{std::string_view{first, last}}
+   {}
+
    constexpr basic_string(CharT const* string)
        : basic_string{string, std::strlen(string)}
    {}
@@ -129,7 +144,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       return *this;
    }
 
-   constexpr basic_string& operator=(basic_string&& other)
+   constexpr basic_string& operator=(basic_string&& other) noexcept
    {
       this->~basic_string();
       m_data = other.m_data;
@@ -170,8 +185,18 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       std::swap(lhs.m_data, rhs.m_data);
    }
 
+   auto begin() const noexcept { return data(); }
+   auto cbegin() const noexcept { return data(); }
+   auto rbegin() const noexcept { return std::make_reverse_iterator(end()); }
+   auto crbegin() const noexcept { return std::make_reverse_iterator(cend()); }
+
+   auto end() const noexcept { return data() + size(); }
+   auto cend() const noexcept { return data() + size(); }
+   auto rend() const noexcept { return std::make_reverse_iterator(begin()); }
+   auto crend() const noexcept { return std::make_reverse_iterator(cbegin()); }
+
  private:
-   constexpr void set_moved_from() { set_sso_size(0); }
+   constexpr void set_moved_from() noexcept { set_sso_size(0); }
 
    // We are using sso if the last two bits are 0
    constexpr bool sso() const noexcept

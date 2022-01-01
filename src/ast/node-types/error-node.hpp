@@ -8,13 +8,13 @@ namespace giraffe
 class ErrorNode final : public AstNode
 {
  private:
-   string message_ = {};    //
-   bool is_error_  = false; // #error #warning
+   sso23::string message_ = {};    //
+   bool is_error_         = false; // #error #warning
 
  public:
-   ErrorNode(bool is_error, string message)
+   ErrorNode(bool is_error, string_view message)
        : AstNode(NodeType::ERROR)
-       , message_{std::move(message)}
+       , message_{message}
        , is_error_{is_error}
    {}
    virtual ~ErrorNode() = default;
@@ -22,7 +22,7 @@ class ErrorNode final : public AstNode
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
 
    //@{ Getters
-   const auto& message() const noexcept { return message_; }
+   auto message() const noexcept { return string_view{message_.data(), message_.size()}; }
    auto is_error() const noexcept { return is_error_; }
    //@}
 };
