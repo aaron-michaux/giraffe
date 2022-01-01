@@ -2,6 +2,7 @@
 /**
  * \file   string.hpp
  * \author Elliot Goodrich
+ * \author Aaron Michaux (made everything constexpr & removed reinterpret_cast)
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -32,65 +33,53 @@
 #define INCLUDE_GUARD_2EE24263_BD1F_4E5D_8CDA_A3217E867BF0
 
 #include <algorithm>
+#include <bit>
 #include <climits>
 #include <cstddef>
 #include <cstring>
 #include <ostream>
 #include <type_traits>
 
+namespace sso23::detail
+{
+static constexpr std::size_t const high_bit_mask
+    = static_cast<std::size_t>(1) << (sizeof(std::size_t) * CHAR_BIT - 1);
+static constexpr std::size_t const sec_high_bit_mask
+    = static_cast<std::size_t>(1) << (sizeof(std::size_t) * CHAR_BIT - 2);
+
+template<typename T> constexpr unsigned char& most_sig_byte(T& obj)
+{
+   return *(std::bit_cast<unsigned char*>(&obj) + sizeof(obj) - 1);
+}
+
+template<int N> constexpr bool lsb(unsigned char byte) { return byte & (1u << N); }
+
+template<int N> constexpr bool msb(unsigned char byte)
+{
+   return byte & (1u << (CHAR_BIT - N - 1));
+}
+
+template<int N> constexpr void set_lsb(unsigned char& byte, bool bit)
+{
+   if(bit) {
+      byte |= 1u << N;
+   } else {
+      byte &= ~(1u << N);
+   }
+}
+
+template<int N> constexpr void set_msb(unsigned char& byte, bool bit)
+{
+   if(bit) {
+      byte |= 1u << (CHAR_BIT - N - 1);
+   } else {
+      byte &= ~(1u << (CHAR_BIT - N - 1));
+   }
+}
+} // namespace sso23::detail
+
 namespace sso23
 {
-
-namespace detail
-{
-
-   static std::size_t const high_bit_mask = static_cast<std::size_t>(1)
-                                            << (sizeof(std::size_t) * CHAR_BIT - 1);
-   static std::size_t const sec_high_bit_mask = static_cast<std::size_t>(1)
-                                                << (sizeof(std::size_t) * CHAR_BIT - 2);
-
-   template<typename T> unsigned char* uchar_cast(T* p)
-   {
-      return reinterpret_cast<unsigned char*>(p);
-   }
-
-   template<typename T> unsigned char const* uchar_cast(T const* p)
-   {
-      return reinterpret_cast<unsigned char const*>(p);
-   }
-
-   template<typename T> unsigned char& most_sig_byte(T& obj)
-   {
-      return *(reinterpret_cast<unsigned char*>(&obj) + sizeof(obj) - 1);
-   }
-
-   template<int N> bool lsb(unsigned char byte) { return byte & (1u << N); }
-
-   template<int N> bool msb(unsigned char byte)
-   {
-      return byte & (1u << (CHAR_BIT - N - 1));
-   }
-
-   template<int N> void set_lsb(unsigned char& byte, bool bit)
-   {
-      if(bit) {
-         byte |= 1u << N;
-      } else {
-         byte &= ~(1u << N);
-      }
-   }
-
-   template<int N> void set_msb(unsigned char& byte, bool bit)
-   {
-      if(bit) {
-         byte |= 1u << (CHAR_BIT - N - 1);
-      } else {
-         byte &= ~(1u << (CHAR_BIT - N - 1));
-      }
-   }
-
-} // namespace detail
-
 template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_string
 {
    typedef typename std::make_unsigned<CharT>::type UCharT;
@@ -260,7 +249,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    } m_data;
 
  public:
-   static std::size_t const sso_capacity
+   static constexpr std::size_t const sso_capacity
        = sizeof(typename Data::NonSSO) / sizeof(CharT) - 1;
 };
 
@@ -292,7 +281,7 @@ std::ostream& operator<<(std::ostream& stream, const basic_string<CharT, Traits>
    return stream << string.data();
 }
 
-typedef basic_string<char> string;
+using string = basic_string<char>;
 
 } // namespace sso23
 

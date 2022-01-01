@@ -10,14 +10,13 @@ namespace giraffe
 {
 struct Token;
 using TokenTextFunctor = std::function<string_view(const Token&)>;
-using SsoString        = sso23::basic_string<char>;
 
 struct Token final
 {
  private:
    // For our lexer, most tokens are 1 character, and are rarely longer than
    // 23 characters. Using short-string-optimization (gcc+clang) is important.
-   SsoString text_          = {};
+   sso23::string text_      = {};
    SourceLocation loc_      = {};
    uint8_t id_              = TNONE; // id of this token
    bool is_space_delimited_ = false;
