@@ -33,7 +33,6 @@
 #include "utils/in-list.hpp"
 #include "utils/is-reverse-iterator.hpp"
 #include "utils/remove-duplicates.hpp"
-#include "utils/s-string.hpp"
 #include "utils/to-array.hpp"
 
 namespace giraffe

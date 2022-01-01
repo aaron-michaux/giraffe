@@ -4,7 +4,7 @@
 
 namespace giraffe
 {
-AstNode * accept_undef(Context& context) noexcept
+AstNode* accept_undef(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
@@ -19,8 +19,7 @@ AstNode * accept_undef(Context& context) noexcept
 
    // -- ERROR
    context.push_error(format("expected identifier after #undef"));
-   skip_to_sequence(scanner, TNEWLINE);    // Skip to newline
+   skip_to_sequence(scanner, TNEWLINE); // Skip to newline
    return make_empty_node();
 }
-}
-
+} // namespace giraffe

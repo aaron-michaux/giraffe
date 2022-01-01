@@ -19,38 +19,37 @@ enum class ExprType : uint8_t {
  */
 class ExpressionNode final : public AstNode
 {
-private:
+ private:
+   string text_           = {};
+   int op_                = TNONE; // The operator (binary/unary only)
+   SourceLocation op_loc_ = {};    // Location of the operator (binary/unary only)
+   ExprType expr_type_    = ExprType::NONE;
 
-   string text_ = {};
-   int op_ = TNONE;             // The operator (binary/unary only)
-   SourceLocation op_loc_ = {}; // Location of the operator (binary/unary only)
-   ExprType expr_type_ = ExprType::NONE;
-      
    ExpressionNode(ExprType expr_type, SourceRange expr_range = {})
-      : AstNode(NodeType::EXPRESSION, expr_range)
-      , expr_type_(expr_type)
+       : AstNode(NodeType::EXPRESSION, expr_range)
+       , expr_type_(expr_type)
    {}
 
-public:
+ public:
    virtual ~ExpressionNode() = default;
 
-   static ExpressionNode * make_empty() noexcept;
-   static ExpressionNode * make_identifier(const SourceRange expr_range,
-                                           string&& identifier) noexcept;
-   static ExpressionNode * make_integer(const SourceRange expr_range,
-                                        string&& integer_str) noexcept;
-   static ExpressionNode * make_subexpr(const SourceRange expr_range,
-                                        ExpressionNode * subexpr) noexcept;
-   static ExpressionNode * make_unary(const int op,
+   static ExpressionNode* make_empty() noexcept;
+   static ExpressionNode* make_identifier(const SourceRange expr_range,
+                                          string&& identifier) noexcept;
+   static ExpressionNode* make_integer(const SourceRange expr_range,
+                                       string&& integer_str) noexcept;
+   static ExpressionNode* make_subexpr(const SourceRange expr_range,
+                                       ExpressionNode* subexpr) noexcept;
+   static ExpressionNode* make_unary(const int op,
+                                     const SourceLocation op_loc,
+                                     const SourceRange expr_range,
+                                     ExpressionNode* expr) noexcept;
+   static ExpressionNode* make_binary(const int op,
                                       const SourceLocation op_loc,
                                       const SourceRange expr_range,
-                                      ExpressionNode* expr) noexcept;
-   static ExpressionNode * make_binary(const int op,
-                                       const SourceLocation op_loc,
-                                       const SourceRange expr_range,
-                                       ExpressionNode* lhs,
-                                       ExpressionNode* rhs) noexcept;
-   
+                                      ExpressionNode* lhs,
+                                      ExpressionNode* rhs) noexcept;
+
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
 
    //@{ Getters
@@ -60,4 +59,4 @@ public:
    const auto& text() const noexcept { return text_; }
    //@}
 };
-}
+} // namespace giraffe

@@ -110,10 +110,7 @@ const std::vector<uint8_t>& all_token_ids() noexcept;
 
 constexpr bool token_id_is_none(auto id) { return id == TNONE; }
 constexpr bool token_id_is_eof(auto id) { return id == TEOF; }
-constexpr bool token_id_is_keyword(auto id)
-{
-   return id >= TIF && id <= TUNDEF;
-}
+constexpr bool token_id_is_keyword(auto id) { return id >= TIF && id <= TUNDEF; }
 constexpr bool token_id_is_newline(auto id)
 {
    return id >= TNEWLINE && id <= TIN_COMMENT_NEWLINE;
@@ -123,14 +120,7 @@ constexpr bool token_id_is_comment(auto id)
 {
    return id >= TIN_COMMENT_NEWLINE && id <= TCOMMENT_PART;
 }
-constexpr bool token_id_is_whitespace(auto id)
-{
-return id == TWHITESPACE;
-}
-constexpr bool token_id_can_by_zero_length(auto id)
-{
-   return id == TEOF || id == TSTART;
-}
+constexpr bool token_id_is_whitespace(auto id) { return id == TWHITESPACE; }
+constexpr bool token_id_can_by_zero_length(auto id) { return id == TEOF || id == TSTART; }
 } // namespace giraffe
 #endif
-

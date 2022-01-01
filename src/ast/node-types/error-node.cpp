@@ -1,11 +1,12 @@
+
 #include "stdinc.hpp"
 
 #include "error-node.hpp"
 
 #define This ErrorNode
 
-
-namespace giraffe {
+namespace giraffe
+{
 
 std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
 {
@@ -14,5 +15,5 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
    return ss;
 }
 
-}
+} // namespace giraffe
 #undef This

@@ -18,19 +18,17 @@ template<typename T> bool match_worker(Scanner& tokens, T&& id) noexcept
 template<typename T, typename... Ts>
 bool match_worker(Scanner& tokens, T&& id, Ts&&... rest) noexcept
 {
-   return match_worker(tokens, id)
-          && match_worker(tokens, std::forward<Ts>(rest)...);
+   return match_worker(tokens, id) && match_worker(tokens, std::forward<Ts>(rest)...);
 }
 } // namespace giraffe::detail
 
 namespace giraffe
 {
-template<typename... Ts>
-bool skip_to_sequence(Scanner& tokens, Ts&&... ids) noexcept
+template<typename... Ts> bool skip_to_sequence(Scanner& tokens, Ts&&... ids) noexcept
 {
    while(tokens.has_next()) {
       const auto start_position = tokens.position();
-      const bool match = detail::match_worker(tokens, std::forward<Ts>(ids)...);
+      const bool match          = detail::match_worker(tokens, std::forward<Ts>(ids)...);
       tokens.set_position(start_position);
       if(match)
          return true;
@@ -41,13 +39,11 @@ bool skip_to_sequence(Scanner& tokens, Ts&&... ids) noexcept
 }
 
 template<typename O, typename... Ts>
-bool skip_to_sequence_omitting(Scanner& tokens,
-                               const O& omit,
-                               Ts&&... ids) noexcept
+bool skip_to_sequence_omitting(Scanner& tokens, const O& omit, Ts&&... ids) noexcept
 {
    while(tokens.has_next() && !in_list(tokens.current().id(), omit)) {
       const auto start_position = tokens.position();
-      const bool match = detail::match_worker(tokens, std::forward<Ts>(ids)...);
+      const bool match          = detail::match_worker(tokens, std::forward<Ts>(ids)...);
       tokens.set_position(start_position);
       if(match)
          return true;

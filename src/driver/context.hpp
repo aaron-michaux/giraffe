@@ -26,10 +26,8 @@ class Context final
    Diagnostics diags_           = {};
    unique_ptr<Scanner> scanner_ = {};
 
-   void push_diagnostic_(Diagnostic::Level,
-                         SourceLocation,
-                         SourceRange,
-                         string&&) noexcept;
+   void
+   push_diagnostic_(Diagnostic::Level, SourceLocation, SourceRange, string&&) noexcept;
    void push_diagnostic_(Diagnostic::Level, SourceLocation, string&&) noexcept;
 
    Context() = default;
@@ -42,8 +40,7 @@ class Context final
    Context& operator=(Context&&) = default;
 
    //@{ Construction
-   static unique_ptr<Context> make(unique_ptr<Scanner>&&,
-                                   DriverOptions opts = {});
+   static unique_ptr<Context> make(unique_ptr<Scanner>&&, DriverOptions opts = {});
    //@}
 
    //@{ Getters

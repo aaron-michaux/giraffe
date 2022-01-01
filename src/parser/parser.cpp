@@ -12,7 +12,7 @@ unique_ptr<TranslationUnitNode> parse(Context& context) noexcept
    if(scanner.current().id() == TSTART) scanner.consume();
 
    // Accept and return
-   TranslationUnitNode * node = accept_translation_unit(context);
+   TranslationUnitNode* node = accept_translation_unit(context);
    assert(node != nullptr);
    return unique_ptr<TranslationUnitNode>(node);
 }

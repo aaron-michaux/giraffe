@@ -9,19 +9,19 @@ namespace giraffe
  */
 class ModuleNode final : public AstNode
 {
-private:
+ private:
    string identifier_ = ""s;
-   bool is_import_ = false;
-   bool is_export_ = false;
-   bool is_module_ = false;
+   bool is_import_    = false;
+   bool is_export_    = false;
+   bool is_module_    = false;
 
-public:
+ public:
    ModuleNode(bool is_import, bool is_export, bool is_module, string identifier)
-      : AstNode(NodeType::MODULE)
-      , identifier_(std::move(identifier))
-      , is_import_(is_import)
-      , is_export_(is_export)
-      , is_module_(is_module)
+       : AstNode(NodeType::MODULE)
+       , identifier_(std::move(identifier))
+       , is_import_(is_import)
+       , is_export_(is_export)
+       , is_module_(is_module)
    {}
    virtual ~ModuleNode() = default;
 
@@ -34,5 +34,4 @@ public:
    const auto& identifier() const noexcept { return identifier_; }
    //@}
 };
-}
-
+} // namespace giraffe

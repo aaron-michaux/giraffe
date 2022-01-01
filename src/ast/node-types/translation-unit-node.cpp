@@ -5,15 +5,15 @@
 
 #define This TranslationUnitNode
 
-namespace giraffe {
+namespace giraffe
+{
 
-This::This(StmtListNode * stmts)
-      : AstNode(NodeType::TRANSLATION_UNIT)
+This::This(StmtListNode* stmts)
+    : AstNode(NodeType::TRANSLATION_UNIT)
 {
    assert(stmts != nullptr);
    set_child_(stmts);
 }
-
 
 std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
 {
@@ -21,6 +21,6 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
    return ss;
 }
 
-}
+} // namespace giraffe
 
 #undef This

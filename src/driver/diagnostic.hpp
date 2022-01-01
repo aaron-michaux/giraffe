@@ -39,10 +39,7 @@ struct Diagnostic final
    Diagnostic& operator=(const Diagnostic&) = default;
    Diagnostic& operator=(Diagnostic&&) = default;
 
-   Diagnostic(Level lv,
-              SourceLocation loc,
-              SourceRange rng,
-              string&& msg) noexcept
+   Diagnostic(Level lv, SourceLocation loc, SourceRange rng, string&& msg) noexcept
        : message(std::move(msg))
        , location(loc)
        , range(rng)
@@ -75,10 +72,8 @@ class Diagnostics
    vector<Diagnostic> diagnostics_ = {};
 
  public:
-   void push_diagnostic(Diagnostic::Level,
-                        SourceLocation,
-                        SourceRange,
-                        string&&) noexcept;
+   void
+   push_diagnostic(Diagnostic::Level, SourceLocation, SourceRange, string&&) noexcept;
 
    size_t size() const noexcept { return diagnostics_.size(); }
 
@@ -96,7 +91,7 @@ class Diagnostics
    auto crbegin() const noexcept { return diagnostics_.crbegin(); }
    auto cend() const noexcept { return diagnostics_.cend(); }
    auto crend() const noexcept { return diagnostics_.crend(); }
-   
+
    string to_string(const Context& context) const noexcept;
 };
 

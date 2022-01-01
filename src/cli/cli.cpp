@@ -7,8 +7,8 @@
 #include <iterator>
 #include <ostream>
 
-#include <unistd.h>
 #include <libgen.h>
+#include <unistd.h>
 
 #include "cli.hpp"
 
@@ -39,18 +39,19 @@ static bool is_regular_file(string_view filename) noexcept
 static void add_define(auto& map, string_view arg) noexcept
 {
    // symbol=value
-   const auto pos = arg.find('=');
+   const auto pos    = arg.find('=');
    const auto has_eq = (pos != string_view::npos);
-   string key = string(begin(arg), has_eq ? begin(arg) + pos : end(arg));
-   string val = has_eq ? string(begin(arg) + pos + 1, end(arg)) : ""s;
+   string key        = string(begin(arg), has_eq ? begin(arg) + pos : end(arg));
+   string val        = has_eq ? string(begin(arg) + pos + 1, end(arg)) : ""s;
    map.insert_or_assign(std::move(key), std::move(val));
 }
 
 // ------------------------------------------------------------------ operator<<
 
-void print_range(ostream& os, auto delim, auto&& input_range, auto f) {
+void print_range(ostream& os, auto delim, auto&& input_range, auto f)
+{
    bool is_first = true;
-   for(const auto& value: input_range) {
+   for(const auto& value : input_range) {
       if(!is_first) os << delim;
       is_first = false;
       os << f(value);
@@ -58,7 +59,7 @@ void print_range(ostream& os, auto delim, auto&& input_range, auto f) {
 }
 
 ostream& operator<<(ostream& os, const CliConfig& conf)
-{   
+{
    os << format(R"V0G0N(
 show-help:      {}
 has-error:      {}
@@ -77,13 +78,13 @@ compiler-opts
                 conf.driver_opts.color_diagnostics,
                 conf.driver_opts.w_error,
                 range::implode(conf.driver_opts.include_paths, ", "),
-                range::implode(conf.driver_opts.defines, ", ", [] (auto& x) {
-                      if(x.second.empty()) return x.first;
-                      return format("{}={}", x.first, x.second);
-                   }));
-   
+                range::implode(conf.driver_opts.defines, ", ", [](auto& x) {
+                   if(x.second.empty()) return x.first;
+                   return format("{}={}", x.first, x.second);
+                }));
+
    // print_range(os, "', '", conf.include_paths, [] (auto& x) { return x; });
-   // os << "\ndefines:   '";   
+   // os << "\ndefines:   '";
    // print_range(os, ", ", conf.defines, [] (auto& x) {
    //       if(x.second.empty()) return x.first;
    //       return format("{}={}", x.first, x.second);
@@ -141,19 +142,17 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
          else if(arg == "--dump-tokens")
             config.dump_tokens = true;
          else if(arg.starts_with("-D"))
-            add_define(config.driver_opts.defines,
-                       string_view(begin(arg)+2, end(arg)));
+            add_define(config.driver_opts.defines, string_view(begin(arg) + 2, end(arg)));
          else if(arg.starts_with("-I"))
-            config.driver_opts.include_paths.emplace_back(begin(arg)+2, end(arg));
+            config.driver_opts.include_paths.emplace_back(begin(arg) + 2, end(arg));
          else if(arg.starts_with("-isystem"))
-            config.driver_opts.include_paths.emplace_back(begin(arg)+8, end(arg));
+            config.driver_opts.include_paths.emplace_back(begin(arg) + 8, end(arg));
          else if(is_regular_file(arg) && config.filename.empty())
             config.filename = string(begin(arg), end(arg));
          else if(arg == "-" && config.filename.empty()) // i.e., stdin
             config.filename = "-"s;
          else {
-            std::cerr << format("Unexpected command-line argument: '{}'\n",
-                                arg);
+            std::cerr << format("Unexpected command-line argument: '{}'\n", arg);
             config.has_error = true;
          }
       } catch(std::exception& e) {
@@ -181,17 +180,15 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
 static unique_ptr<Context> init_compiler_context(const CliConfig& config) noexcept
 {
    if(config.has_error) return nullptr;
-   
+
    try {
-      auto source = (config.filename == "-")
-         ? make_unique<FILE_ScannerInput>("<stdin>", stdin)
-         : make_unique<FILE_ScannerInput>(config.filename);
+      auto source  = (config.filename == "-")
+                         ? make_unique<FILE_ScannerInput>("<stdin>", stdin)
+                         : make_unique<FILE_ScannerInput>(config.filename);
       auto scanner = make_unique<giraffe::Scanner>(std::move(source));
       return Context::make(std::move(scanner), config.driver_opts);
    } catch(std::exception& e) {
-      std::cerr << format("Exception while reading '{}': {}",
-                          config.filename,
-                          e.what())
+      std::cerr << format("Exception while reading '{}': {}", config.filename, e.what())
                 << endl;
    }
    return nullptr; // error
@@ -206,13 +203,13 @@ int run(int argc, char** argv) noexcept
       show_help(argv[0]);
       return EXIT_SUCCESS;
    }
-   
+
    auto context = init_compiler_context(config);
    if(context == nullptr) {
       cout << "Aborting due to previous errors." << endl;
       return EXIT_FAILURE;
    }
-   
+
    const auto success = execute(*context);
    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }

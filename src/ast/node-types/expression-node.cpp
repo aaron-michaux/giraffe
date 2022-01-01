@@ -4,20 +4,20 @@
 
 #define This ExpressionNode
 
-
-namespace giraffe {
+namespace giraffe
+{
 
 // ------------------------------------------------------------------ make-empty
 
-ExpressionNode * This::make_empty() noexcept
+ExpressionNode* This::make_empty() noexcept
 {
    return new ExpressionNode{ExprType::EMPTY};
 }
 
 // ------------------------------------------------------------- make-identifier
 
-ExpressionNode * This::make_identifier(const SourceRange expr_range,
-                                       string&& identifier) noexcept
+ExpressionNode* This::make_identifier(const SourceRange expr_range,
+                                      string&& identifier) noexcept
 {
    unique_ptr<ExpressionNode> node{new ExpressionNode{ExprType::IDENTIFIER, expr_range}};
    node->text_ = std::move(identifier);
@@ -26,8 +26,8 @@ ExpressionNode * This::make_identifier(const SourceRange expr_range,
 
 // ---------------------------------------------------------------- make-integer
 
-ExpressionNode * This::make_integer(const SourceRange expr_range,
-                                    string&& integer_str) noexcept
+ExpressionNode* This::make_integer(const SourceRange expr_range,
+                                   string&& integer_str) noexcept
 {
    unique_ptr<ExpressionNode> node{new ExpressionNode{ExprType::INTEGER, expr_range}};
    node->text_ = std::move(integer_str);
@@ -36,8 +36,8 @@ ExpressionNode * This::make_integer(const SourceRange expr_range,
 
 // ---------------------------------------------------------------- make-subexpr
 
-ExpressionNode * This::make_subexpr(const SourceRange expr_range,
-                                    ExpressionNode * subexpr) noexcept
+ExpressionNode* This::make_subexpr(const SourceRange expr_range,
+                                   ExpressionNode* subexpr) noexcept
 {
    unique_ptr<ExpressionNode> node{new ExpressionNode{ExprType::SUBEXPR, expr_range}};
    node->set_child_(subexpr);
@@ -46,13 +46,13 @@ ExpressionNode * This::make_subexpr(const SourceRange expr_range,
 
 // ------------------------------------------------------------------ make-unary
 
-ExpressionNode * This::make_unary(const int op,
-                                  const SourceLocation op_loc,
-                                  const SourceRange expr_range,
-                                  ExpressionNode* expr) noexcept
+ExpressionNode* This::make_unary(const int op,
+                                 const SourceLocation op_loc,
+                                 const SourceRange expr_range,
+                                 ExpressionNode* expr) noexcept
 {
    unique_ptr<ExpressionNode> node{new ExpressionNode{ExprType::UNARY, expr_range}};
-   node->op_ = op;
+   node->op_     = op;
    node->op_loc_ = op_loc;
    node->set_child_(expr);
    return node.release();
@@ -60,14 +60,14 @@ ExpressionNode * This::make_unary(const int op,
 
 // ----------------------------------------------------------------- make-binary
 
-ExpressionNode * This::make_binary(const int op,
-                                   const SourceLocation op_loc,
-                                   const SourceRange expr_range,
-                                   ExpressionNode* lhs,
-                                   ExpressionNode* rhs) noexcept
+ExpressionNode* This::make_binary(const int op,
+                                  const SourceLocation op_loc,
+                                  const SourceRange expr_range,
+                                  ExpressionNode* lhs,
+                                  ExpressionNode* rhs) noexcept
 {
    unique_ptr<ExpressionNode> node{new ExpressionNode{ExprType::BINARY, expr_range}};
-   node->op_ = op;
+   node->op_     = op;
    node->op_loc_ = op_loc;
    node->set_children_(lhs, rhs);
    return node.release();
@@ -77,7 +77,7 @@ ExpressionNode * This::make_binary(const int op,
 
 std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
 {
-   auto print_op = [] (int op) {
+   auto print_op = [](int op) {
       switch(op) {
       case TPLUS: return "+";
       case TMINUS: return "-";
@@ -98,7 +98,7 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
       case TMULT: return "*";
       case TDIV: return "/";
       case TREMAINDER: return "%";
-         
+
       case TAND: return "&";
       case TOR: return "|";
       case TCARROT: return "^";
@@ -108,11 +108,10 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
       case TQUESTION: return "?";
       case TCOLON: return ":";
 
-      default:
-         FATAL("logic error");
+      default: FATAL("logic error");
       }
    };
-   
+
    switch(expr_type()) {
    case ExprType::NONE: ss << "<NONE-EXPRESSION>"; break;
    case ExprType::EMPTY: break; // do nothing!
@@ -132,10 +131,9 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
       ss << ' ' << print_op(op()) << ' ';
       children()[1]->stream(ss, indent); // the sub-expression
       break;
-   }   
+   }
    return ss;
 }
 
-}
+} // namespace giraffe
 #undef This
-

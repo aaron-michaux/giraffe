@@ -4,24 +4,24 @@
 
 #define This DefineNode
 
-
-namespace giraffe {
-
-std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept 
+namespace giraffe
 {
-   auto do_indent = [indent, &ss] () {
+
+std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
+{
+   auto do_indent = [indent, &ss]() {
       for(auto i = 0; i < indent; ++i) ss << ' ';
    };
    do_indent();
-   
+
    ss << "#define " << identifier();
    if(arglist_.size() > 0) { // Output the argument list
       ss << '(';
       bool first_arg = true;
-      for(const auto& arg: arglist_) {
-         if(first_arg) 
+      for(const auto& arg : arglist_) {
+         if(first_arg)
             first_arg = false;
-         else 
+         else
             ss << ", ";
          ss << arg;
       }
@@ -30,7 +30,7 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
 
    if(text_.size() > 0) { // Output the text... excaping newline characters
       bool last_ch_was_newline = false;
-      for(const auto ch: text_) {
+      for(const auto ch : text_) {
          if(ch == '\n') {
             ss << "\\\n";
             last_ch_was_newline = true;
@@ -43,11 +43,10 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
          }
       }
    }
-   
+
    ss << '\n';
    return ss;
 }
 
-
-}
+} // namespace giraffe
 #undef This

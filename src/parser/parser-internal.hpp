@@ -18,25 +18,22 @@ bool recover_to_next_rule(Scanner& tokens) noexcept;
 bool skip_past_element(Scanner& tokens) noexcept;
 
 // Accept functions -- could return `EmptyNode`
-TranslationUnitNode * accept_translation_unit(Context& context) noexcept;
-StmtListNode * accept_stmt_list(Context& context) noexcept;
-ExpressionNode * accept_expression(Context& context) noexcept;
+TranslationUnitNode* accept_translation_unit(Context& context) noexcept;
+StmtListNode* accept_stmt_list(Context& context) noexcept;
+ExpressionNode* accept_expression(Context& context) noexcept;
 
-AstNode * accept_module(Context& context) noexcept;
-AstNode * accept_if_then(Context& context) noexcept;
-AstNode * accept_define(Context& context) noexcept;
-AstNode * accept_undef(Context& context) noexcept;
-AstNode * accept_include(Context& context) noexcept;
-AstNode * accept_error(Context& context) noexcept;
+AstNode* accept_module(Context& context) noexcept;
+AstNode* accept_if_then(Context& context) noexcept;
+AstNode* accept_define(Context& context) noexcept;
+AstNode* accept_undef(Context& context) noexcept;
+AstNode* accept_include(Context& context) noexcept;
+AstNode* accept_error(Context& context) noexcept;
 
 std::pair<string, SourceRange> accept_cstr(Context& context) noexcept;
 string accept_to_newline(Context& context) noexcept;
-                     
+
 // Helper, for creating empty nodes as fillers for parser errors
-inline EmptyNode * make_empty_node() noexcept
-{
-   return new EmptyNode();
-}
+inline EmptyNode* make_empty_node() noexcept { return new EmptyNode(); }
 
 //
 //

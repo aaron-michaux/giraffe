@@ -2,19 +2,18 @@
 #pragma once
 
 #include <functional>
+#include <iterator>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <ranges>
-#include <iterator>
 
 namespace giraffe
 {
 // --------------------------------------------------------------------- Implode
 
 template<std::input_iterator InputIt, typename F>
-std::string
-implode(InputIt first, InputIt last, const std::string_view glue, F&& f)
+std::string implode(InputIt first, InputIt last, const std::string_view glue, F&& f)
 {
    std::stringstream stream("");
    bool start = true;
@@ -35,18 +34,19 @@ std::string implode(InputIt first, InputIt last, const std::string_view glue)
    return implode(first, last, glue, f);
 }
 
-namespace range {
-template<std::ranges::range Range, typename F>
-std::string implode(Range&& range, const std::string_view glue, F&& f)
+namespace range
 {
-   return ::giraffe::implode(begin(range), end(range), glue, std::forward<F&&>(f));
-}
+   template<std::ranges::range Range, typename F>
+   std::string implode(Range&& range, const std::string_view glue, F&& f)
+   {
+      return ::giraffe::implode(begin(range), end(range), glue, std::forward<F&&>(f));
+   }
 
-template<std::ranges::range Range>
-std::string implode(Range&& range, const std::string_view glue)
-{
-   return ::giraffe::implode(begin(range), end(range), glue);
-}
-}
+   template<std::ranges::range Range>
+   std::string implode(Range&& range, const std::string_view glue)
+   {
+      return ::giraffe::implode(begin(range), end(range), glue);
+   }
+} // namespace range
 
 } // namespace giraffe

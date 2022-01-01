@@ -10,12 +10,11 @@ namespace giraffe
 {
 // ------------------------------------------------------- make-compiler-context
 
-unique_ptr<Context> This::make(unique_ptr<Scanner>&& scanner,
-                               DriverOptions opts)
+unique_ptr<Context> This::make(unique_ptr<Scanner>&& scanner, DriverOptions opts)
 {
-   auto context            = unique_ptr<Context>(new Context{});
-   context->driver_opts_   = opts;
-   context->scanner_       = std::move(scanner);
+   auto context          = unique_ptr<Context>(new Context{});
+   context->driver_opts_ = opts;
+   context->scanner_     = std::move(scanner);
    return context;
 }
 
@@ -40,8 +39,7 @@ void This::push_diagnostic_(Diagnostic::Level level,
                             SourceRange rng,
                             string&& message) noexcept
 {
-   if(level == Diagnostic::WARN && driver_opts().w_error)
-      level = Diagnostic::ERROR;
+   if(level == Diagnostic::WARN && driver_opts().w_error) level = Diagnostic::ERROR;
    diags_.push_diagnostic(level, location, rng, std::move(message));
 }
 

@@ -30,11 +30,11 @@ class Scanner final
    Scanner(); //!< reads from stdin
    Scanner(unique_ptr<ScannerInputInterface>&& source,
            ScannerOptions opts = {}) noexcept; //!<
-   Scanner(string_view name,      //!< How should we refer to this text?
-           string_view text_data, //!< text to scan
+   Scanner(string_view name,                   //!< How should we refer to this text?
+           string_view text_data,              //!< text to scan
            ScannerOptions opts = {}) noexcept; //!< reads `text_data`
-   Scanner(string_view name, //!< How should we refer to the FILE*?
-           FILE* fp,         //!< Reads from FILE*
+   Scanner(string_view name,                   //!< How should we refer to the FILE*?
+           FILE* fp,                           //!< Reads from FILE*
            ScannerOptions opts = {}) noexcept;
    Scanner(const Scanner&) = delete;
    Scanner(Scanner&&) noexcept;
@@ -90,8 +90,7 @@ class Scanner final
    /// Returns the total number of available lines
    uint32_t total_lines() const noexcept;
 
-   std::pair<string_view, uint32_t>
-   find_line_offset(SourceLocation loc) const noexcept;
+   std::pair<string_view, uint32_t> find_line_offset(SourceLocation loc) const noexcept;
    //@}
 };
 

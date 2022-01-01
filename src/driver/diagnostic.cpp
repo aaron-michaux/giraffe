@@ -6,8 +6,7 @@
 
 namespace giraffe
 {
-std::ostream& Diagnostic::stream(std::ostream& ss,
-                                 const Context& context) const noexcept
+std::ostream& Diagnostic::stream(std::ostream& ss, const Context& context) const noexcept
 {
    static constexpr auto sentence_ends = to_array<char>({'.', '!', '?'});
 
@@ -54,12 +53,12 @@ std::ostream& Diagnostic::stream(std::ostream& ss,
          assert(location.line_no >= range.first.line_no);
          assert(location.line_no <= range.second.line_no);
          const auto carrot_col = col_no;
-         const auto col0       = (location.line_no == range.first.line_no
-                                      ? range.first.offset - ldat.offset
-                                      : 0);
-         const auto col1       = (location.line_no == range.first.line_no
-                                      ? range.second.offset - ldat.offset
-                                      : ldat.line.size());
+         const auto col0
+             = (location.line_no == range.first.line_no ? range.first.offset - ldat.offset
+                                                        : 0);
+         const auto col1 = (location.line_no == range.first.line_no
+                                ? range.second.offset - ldat.offset
+                                : ldat.line.size());
          if(carrot_col < col0) {
             print_space(carrot_col);
             print_carrot();

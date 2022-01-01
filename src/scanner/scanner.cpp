@@ -25,8 +25,7 @@ static size_t count_newlines(string_view text) noexcept
 
 // -------------------------------------------------------- is token of interest
 // We often want to skip white space, etc.
-static bool is_token_of_interest(const Token& token,
-                                 const ScannerOptions& opts) noexcept
+static bool is_token_of_interest(const Token& token, const ScannerOptions& opts) noexcept
 {
    if(opts.skip_comments && token.is_comment()) return false;
    if(opts.skip_whitespace && token.is_whitespace()) return false;
@@ -46,9 +45,9 @@ struct Scanner::Worker
    ScannerOptions opts_                      = {};
    std::deque<Token> tokens_                 = {};
    vector<Token> token_buffer_               = {};
-   size_t position_           = 0; //!< The position in the token stack
-   int last_non_ws_token_     = TSTART;
-   bool last_token_was_delim_ = true;
+   size_t position_                          = 0; //!< The position in the token stack
+   int last_non_ws_token_                    = TSTART;
+   bool last_token_was_delim_                = true;
 
    // This is where we store the memory for parsed token text
    string line_buffer_ = ""s;
@@ -105,8 +104,7 @@ struct Scanner::Worker
 
    uint32_t total_lines() const noexcept;
 
-   std::pair<string_view, uint32_t>
-   find_line_offset(SourceLocation loc) const noexcept;
+   std::pair<string_view, uint32_t> find_line_offset(SourceLocation loc) const noexcept;
 };
 
 size_t This::Worker::read_input_callback(char* buffer, size_t max_size) noexcept
@@ -116,8 +114,7 @@ size_t This::Worker::read_input_callback(char* buffer, size_t max_size) noexcept
 
 uint32_t This::Worker::current_offset_() const noexcept
 {
-   return uint32_t(line_buffer_.size())
-          + (lines_.size() == 0 ? 0u : lines_.back().end());
+   return uint32_t(line_buffer_.size()) + (lines_.size() == 0 ? 0u : lines_.back().end());
 }
 
 SourceLocation This::Worker::store_lines_(const lex_params_t& lex) noexcept
@@ -168,9 +165,8 @@ void This::Worker::fill_token_buffer_(vector<Token>& buffer) noexcept
       const bool is_eof = (yylex(lex_) == TEOF); /// lex the token
 
       if(is_eof) {
-         const auto loc
-             = SourceLocation(current_offset_(), uint32_t(lines_.size()));
-         buffer.emplace_back(TEOF, loc, String(""), last_token_was_delim_);
+         const auto loc = SourceLocation(current_offset_(), uint32_t(lines_.size()));
+         buffer.emplace_back(TEOF, loc, string_view(""), last_token_was_delim_);
          break;
       }
 
@@ -181,11 +177,10 @@ void This::Worker::fill_token_buffer_(vector<Token>& buffer) noexcept
       const auto location = store_lines_(lex_params);
 
       // Store the token in temporary buffer
-      buffer.emplace_back(
-          lex_params.token_id,
-          location,
-          String(string_view{lex_params.text, lex_params.text_len}),
-          last_token_was_delim_);
+      buffer.emplace_back(lex_params.token_id,
+                          location,
+                          string_view(string_view{lex_params.text, lex_params.text_len}),
+                          last_token_was_delim_);
 
       const bool is_newline = lex_params.token_id == TNEWLINE;
       const bool is_delim   = (lex_params.token_id == TWHITESPACE)
@@ -222,9 +217,8 @@ bool This::Worker::produce_tokens() noexcept
       assert(token_buffer_.size() != 0);
 
       size_t pos = 0;
-      for(auto& token: token_buffer_)
-         if(is_token_of_interest(token, opts_))
-            tokens_.push_back(std::move(token));
+      for(auto& token : token_buffer_)
+         if(is_token_of_interest(token, opts_)) tokens_.push_back(std::move(token));
 
       token_buffer_.clear();
    }
@@ -242,8 +236,7 @@ This::LineData This::Worker::line_data(uint32_t line_no) const noexcept
    } else if(line_no == lines_.size()) {
       return {string_view(line_buffer_),
               lines_.back().end(),
-              lines_.back().logical_line_no
-                  + (lines_.back().is_newline_escaped ? 0 : 1)};
+              lines_.back().logical_line_no + (lines_.back().is_newline_escaped ? 0 : 1)};
    }
    return This::LineData{"", 0, 0};
 }
@@ -266,8 +259,7 @@ This::Worker::find_line_offset(SourceLocation loc) const noexcept
 
 This::This() { initialize(make_unique<FILE_ScannerInput>("{stdin}", stdin)); }
 
-This::This(unique_ptr<ScannerInputInterface>&& source,
-           ScannerOptions opts) noexcept
+This::This(unique_ptr<ScannerInputInterface>&& source, ScannerOptions opts) noexcept
 {
    initialize(std::move(source), opts);
 }
@@ -368,8 +360,7 @@ This::LineData This::line_data(uint32_t line_no) const noexcept
 
 uint32_t This::total_lines() const noexcept { return worker_->total_lines(); }
 
-std::pair<string_view, uint32_t>
-This::find_line_offset(SourceLocation loc) const noexcept
+std::pair<string_view, uint32_t> This::find_line_offset(SourceLocation loc) const noexcept
 {
    return worker_->find_line_offset(loc);
 }
@@ -398,8 +389,8 @@ string token_info(const Scanner& scanner, const Token& token) noexcept
 // `read-input-callback`, which produces text data for flex
 size_t read_input_callback_(void* worker, char* buffer, size_t max_size)
 {
-   return reinterpret_cast<Scanner::Worker*>(worker)->read_input_callback(
-       buffer, max_size);
+   return reinterpret_cast<Scanner::Worker*>(worker)->read_input_callback(buffer,
+                                                                          max_size);
 }
 
 } // namespace giraffe

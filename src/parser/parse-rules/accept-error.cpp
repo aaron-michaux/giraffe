@@ -4,7 +4,7 @@
 
 namespace giraffe
 {
-AstNode * accept_error(Context& context) noexcept
+AstNode* accept_error(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
@@ -13,5 +13,4 @@ AstNode * accept_error(Context& context) noexcept
    const bool is_error = scanner.consume().id() == TERROR; // or TWARNING
    return new ErrorNode{is_error, accept_to_newline(context)};
 }
-}
-
+} // namespace giraffe

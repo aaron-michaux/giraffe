@@ -21,22 +21,22 @@ struct shell_stack_type
  */
 struct lex_params_t
 {
-   const char* text;        //!< Token text (memory owned by lexer)
-   uint32_t text_len;       //!< Length of the current token
-   uint32_t offset;         //!< Offset into the underlying source file
-   uint32_t last_offset;    //!< Offset of previous token
-   uint32_t line_no;        //!< Line number of current token, 0-indexed
-   uint32_t last_line_no;   //!< Line number of previous token, 0-indexed
-   uint16_t column_no;      //!< Column number of curren token, 0-indexed
-   uint16_t last_column_no; //!< Column number of previous token, 0-indexed
-   uint8_t token_id;        //!< Token identifier
-   int lex_state;           //!< The current state of the lex
-   int n_concurrent_states; //!< Number of states on the state stack
+   const char* text;               //!< Token text (memory owned by lexer)
+   uint32_t text_len;              //!< Length of the current token
+   uint32_t offset;                //!< Offset into the underlying source file
+   uint32_t last_offset;           //!< Offset of previous token
+   uint32_t line_no;               //!< Line number of current token, 0-indexed
+   uint32_t last_line_no;          //!< Line number of previous token, 0-indexed
+   uint16_t column_no;             //!< Column number of curren token, 0-indexed
+   uint16_t last_column_no;        //!< Column number of previous token, 0-indexed
+   uint8_t token_id;               //!< Token identifier
+   int lex_state;                  //!< The current state of the lex
+   int n_concurrent_states;        //!< Number of states on the state stack
    struct shell_stack_type* stack; //!< End 'heredoc' delimiter, if any
-   void* lex;               //!< Unmanaged pointer back to the (flex) lex
-   void* scanner_worker;    //!< Unmanaged pointer back to (cpp) scanner_worker
+   void* lex;                      //!< Unmanaged pointer back to the (flex) lex
+   void* scanner_worker;           //!< Unmanaged pointer back to (cpp) scanner_worker
 };
-   
+
 /** Create (and initialize) a new lex */
 extern void* init_lex(void* scanner_worker);
 

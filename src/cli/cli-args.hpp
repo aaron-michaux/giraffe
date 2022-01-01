@@ -68,7 +68,6 @@ double safe_arg_double(int argc, char** argv, int& i) noexcept(false);
 
 // ------------------------------------------------------------------ parse args
 
-std::vector<std::string>
-parse_cmd_args(const std::string_view line) noexcept(false);
+std::vector<std::string> parse_cmd_args(const std::string_view line) noexcept(false);
 
 } // namespace giraffe::cli

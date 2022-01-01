@@ -6,28 +6,28 @@
 
 namespace giraffe
 {
-// 
+//
 // StmtList:
 //    | PreprocCommand*
 //    | 'export'? ('import' | 'module') ModuleName ';'
 //    ;
 //
 
-StmtListNode * accept_stmt_list(Context& context) noexcept
+StmtListNode* accept_stmt_list(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
    std::deque<AstNode*> children;
-   auto push_child = [&] (AstNode * child) {
+   auto push_child = [&](AstNode* child) {
       assert(child != nullptr);
       children.push_back(child);
    };
-   
+
    while(!scanner.current().is_eof()) {
       const auto id = scanner.current().id();
       if(id == TNEWLINE) {
          scanner.consume();
-         
+
       } else if(in_list(id, first_set_module)) {
          push_child(accept_module(context));
 
@@ -42,24 +42,23 @@ StmtListNode * accept_stmt_list(Context& context) noexcept
 
       } else if(in_list(id, first_set_error_warning)) {
          push_child(accept_error(context));
-         
+
       } else if(in_list(id, first_set_ifthen)) {
          push_child(accept_if_then(context));
 
       } else if(in_list(id, stray_ifthen_parts)) {
          // We have a diagnostic here
          context.push_error(format("unexpected token {}", token_id_to_str(id)));
-         skip_to_sequence(scanner, TNEWLINE);    // Skip to newline
+         skip_to_sequence(scanner, TNEWLINE); // Skip to newline
 
       } else {
          // Assume this is just the blah-blah-blah of the document
-         skip_to_sequence(scanner, TNEWLINE);    // Skip to newline
+         skip_to_sequence(scanner, TNEWLINE); // Skip to newline
       }
    }
-   
+
    //
-   return new StmtListNode({ begin(children), end(children) });
+   return new StmtListNode({begin(children), end(children)});
 }
 
-}
-
+} // namespace giraffe

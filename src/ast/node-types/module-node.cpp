@@ -1,9 +1,11 @@
 #include "stdinc.hpp"
+
 #include "module-node.hpp"
 
 #define This ModuleNode
 
-namespace giraffe {
+namespace giraffe
+{
 
 std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
 {
@@ -17,6 +19,5 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
    return ss;
 }
 
-}
+} // namespace giraffe
 #undef This
-
