@@ -16,15 +16,18 @@ namespace giraffe::test {
 constexpr static const char * test_text_002 = R"V0G0N(
 #undef BEATLEJUICE
 #undef 0
+#undef
 )V0G0N";
 
 constexpr static const char * test_text_002_result =
    R"V0G0N(#undef BEATLEJUICE
 <empty-node>
+<empty-node>
 )V0G0N";
 
 constexpr auto test_002_token_seq = to_array<int>({
-      TNEWLINE, TUNDEF, TIDENTIFIER, TNEWLINE, TUNDEF, TINTEGER, TNEWLINE, TEOF
+      TNEWLINE, TUNDEF, TIDENTIFIER, TNEWLINE, TUNDEF, TINTEGER, TNEWLINE,
+      TUNDEF, TNEWLINE, TEOF
    });
 
 // ----------------------------------------------------------------- dump-tokens
@@ -63,32 +66,37 @@ CATCH_TEST_CASE("002 undef", "[002-undef]")
       scanner.set_position(1); // Skip TSTART
       {
          unique_ptr<StmtListNode> stmts(accept_stmt_list(context));
-
-         CATCH_REQUIRE(stmts->size() == 2);
+         
+         CATCH_REQUIRE(stmts->size() == 3);
          {
             auto child = stmts->children()[0];
             CATCH_REQUIRE(child->node_type() == NodeType::UNDEF);
             auto node = cast_ast_node<UndefNode>(child);
             CATCH_REQUIRE(node->identifier() == "BEATLEJUICE");
+
+            // Two errors
+            CATCH_REQUIRE(stmts->children()[1]->node_type() == NodeType::EMPTY);
+            CATCH_REQUIRE(stmts->children()[2]->node_type() == NodeType::EMPTY);
          }
 
-         {
-            auto child = stmts->children()[1];
-            CATCH_REQUIRE(child->node_type() == NodeType::EMPTY); // and error
+         { // Formatted output
+            std::stringstream ss;
+            stmts->stream(ss, 0);         
+            const auto out = ss.str();
+            CATCH_REQUIRE(out == test_text_002_result);
          }
-         
-         std::stringstream ss;
-         stmts->stream(ss, 0);         
-         CATCH_REQUIRE(ss.str() == test_text_002_result);
 
-         const Diagnostics& diagnostics = context.diagnostics();
-         CATCH_REQUIRE(diagnostics.size() == 1);
-         CATCH_REQUIRE(diagnostics.totals().errors == 1);
-
-         // Should not throw
-         for(const auto& diagnostic: diagnostics)
-            diagnostic.stream(ss, context);
-         // cout << ss.str()
+         { // Diagnostics
+            const Diagnostics& diagnostics = context.diagnostics();
+            CATCH_REQUIRE(diagnostics.size() == 2);
+            CATCH_REQUIRE(diagnostics.totals().errors == 2);
+            
+            // Should not throw
+            std::stringstream ss;
+            for(const auto& diagnostic: diagnostics)
+               diagnostic.stream(ss, context);
+            // cout << ss.str();
+         }
       }
       CATCH_REQUIRE(AstNode::get_node_count() == 0);
    }

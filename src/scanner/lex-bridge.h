@@ -36,7 +36,7 @@ struct lex_params_t
    void* lex;               //!< Unmanaged pointer back to the (flex) lex
    void* scanner_worker;    //!< Unmanaged pointer back to (cpp) scanner_worker
 };
-
+   
 /** Create (and initialize) a new lex */
 extern void* init_lex(void* scanner_worker);
 

@@ -43,7 +43,6 @@ DIGIT   [0-9']
 HEXD    [0-9a-fA-F']
 HEXQUAD {HEXD}{HEXD}{HEXD}{HEXD}
 SUFFIX  ([uU])|([zZ])|([lL])
-A       ([\x01-\x09])|([\x20-\x7f])|{WS}|{NL}
 NQ      ([\x21-\x21])|([\x23-\x7f])|([\t ])
 NA      ([\x21-\x3d])|([\x3f-\x7f])|{WS}
 NB      ([\x21-\x3c])|([\x3f-\x7f])|{WS}
@@ -239,6 +238,30 @@ extern struct lex_params_t* get_lex_params(yyscan_t lex)
     return yyget_extra(lex);
 }
 
+static void fprint_token(FILE* fp, int token_id, const char* text, int text_len)
+{
+    fprintf(fp, "TOKEN(%s) = \"", token_id_to_cstr(token_id));
+    for(int i = 0; i < text_len; ++i) {
+        uint8_t ch = (uint8_t) text[i];                
+        switch(ch) {
+        case '\t': fprintf(fp, "\\t"); break;
+        case '\n': fprintf(fp, "\\n"); break;
+        case '\v': fprintf(fp, "\\v"); break;
+        case '\f': fprintf(fp, "\\f"); break;
+        case '\r': fprintf(fp, "\\r"); break;
+        case '"': fprintf(fp, "\\\""); break;
+        case '\\': fprintf(fp, "\\\\"); break;
+        default:
+            if(ch < ' ' || ch > '~') {
+                fprintf(fp, "\\x%02X", ch);
+            } else {
+                fprintf(fp, "%c", ch);
+            }
+        }
+    }
+    fprintf(fp, "\"\n");
+}
+
 static void update_token(int token_id,
                          struct lex_params_t* params,
                          const char * text,
@@ -251,11 +274,28 @@ static void update_token(int token_id,
 
     if(token_id == TNEWLINE) {
         const char* pos = text;
-        while(*pos) if(*pos++ == '\n') params->line_no += 1;
+        for(int i = 0; i < text_len; ++i) 
+            if(pos[i] == '\n') params->line_no += 1;
         params->column_no = 0;
-    } else if(token_id == TNEWLINE_ESC) {
+    } else if(token_id == TNEWLINE_ESC
+              || token_id == TIN_COMMENT_NEWLINE
+              || (token_id == TBADCHAR && text[0] == '\n')) {
         params->column_no = 0;
         params->line_no += 1;
+    } else {
+#ifndef NDEBUG
+        const char* pos = text;
+        int has_error = 0;
+        for(int i = 0; i < text_len && !has_error; ++i) {
+            has_error = (pos[i] == '\n');
+        }
+        
+        if(has_error) {
+            fprintf(stderr, "LEXING ERROR: found newline in token:\n");
+            fprint_token(stderr, token_id, text, text_len);
+            assert(0);
+        }
+#endif
     }
 }
 

@@ -16,8 +16,8 @@ cat <<EOF
 
 #include "scanner/token-types.h"
 
-namespace giraffe {
-std::string_view token_id_to_str(uint8_t token_id) noexcept
+extern "C" {
+const char * token_id_to_cstr(uint8_t token_id)
 {
    switch(token_id) {
 EOF
@@ -27,6 +27,13 @@ cat "$TOKEN_TYPES_H" | grep -E "^#define [A-Z_0-9]+ +[0-9]+ *$" | sed 's/^#defin
 cat <<EOF
    }
    return "?";
+}
+}
+
+namespace giraffe {
+std::string_view token_id_to_str(uint8_t token_id) noexcept
+{
+   return token_id_to_cstr(token_id);
 }
 
 const std::vector<uint8_t>& all_token_ids() noexcept

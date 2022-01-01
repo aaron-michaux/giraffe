@@ -97,14 +97,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-//extern const char* token_id_to_str(uint16_t token_id);
+extern const char* token_id_to_cstr(uint8_t token_id);
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef __cplusplus
 namespace giraffe
 {
-constexpr uint8_t MAX_INLINE_STR_DELIM = 99;
-
 std::string_view token_id_to_str(uint8_t token_id) noexcept;
 const std::vector<uint8_t>& all_token_ids() noexcept;
 
@@ -131,11 +131,6 @@ constexpr bool token_id_can_by_zero_length(auto id)
 {
    return id == TEOF || id == TSTART;
 }
-
-
 } // namespace giraffe
 #endif
 
-#ifdef __cplusplus
-}
-#endif
