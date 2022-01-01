@@ -54,138 +54,148 @@ PP      {WS}*#{WS}*
 %x MLC
 %x PREPROC
 %x CSTR
-%x MODULE                                        
+%x MODULE
+%x PPERR                                                            
 
 %%
 
-<<EOF>>			       { return TOKEN(TEOF); }
+<<EOF>>			     { return TOKEN(TEOF); }
 
 %{ /* ----------------------------------------------------------- Comments */ %}
-"/*"{NNL}*{NL}?                { PUSH_STATE(MLC); yyless(2); return TOKEN(TCOMMENT_DELIM); }
+"/*"{NNL}*{NL}?              { PUSH_STATE(MLC); yyless(2); return TOKEN(TCOMMENT_DELIM); }
 <MLC>{
-"*/"                           { POP_STATE(); return TOKEN(TCOMMENT_END_DELIM); }
-{NL}                           { return TOKEN(TIN_COMMENT_NEWLINE); }
-[^*\n]+                        { return TOKEN(TCOMMENT_PART); }
-"*"                            { return TOKEN(TCOMMENT_PART); }
+"*/"                         { POP_STATE(); return TOKEN(TCOMMENT_END_DELIM); }
+{NL}                         { return TOKEN(TIN_COMMENT_NEWLINE); }
+[^*\n]+                      { return TOKEN(TCOMMENT_PART); }
+"*"                          { return TOKEN(TCOMMENT_PART); }
 }
-"//".*			       { return TOKEN(TCOMMENT); }
+"//".*			     { return TOKEN(TCOMMENT); }
+
+%{ /* ---------------------------------------------------- #error/#warning */ %}
+
+<PPERR>{
+"/*"{NNL}*{NL}?              { PUSH_STATE(MLC); yyless(2); return TOKEN(TCOMMENT_DELIM); }
+[^\n]+                       { return TOKEN(TLINE_PART); }
+"\\"{NL}                     { return TOKEN(TNEWLINE_ESC); }
+{NL}                         { POP_STATE(); return TOKEN(TNEWLINE); }
+}
 
 %{ /* ------------------------------------------------------- Preprocessor */ %}
 
-{PP}{NNL}*{NL}?                { PUSH_STATE(PREPROC); yyless(0); }
+{PP}{NNL}*{NL}?              { PUSH_STATE(PREPROC); yyless(0); }
 <PREPROC>{
 
-"/*"{NNL}*{NL}                 { PUSH_STATE(MLC); yyless(2); return TOKEN(TCOMMENT_DELIM); }
+"/*"{NNL}*{NL}?              { PUSH_STATE(MLC); yyless(2); return TOKEN(TCOMMENT_DELIM); }
 
-{PP}"ifdef"                    { return TOKEN(TIFDEF); }
-{PP}"ifndef"                   { return TOKEN(TIFNDEF); }
-{PP}"if"                       { return TOKEN(TIF); }
-{PP}"elif"                     { return TOKEN(TELIF); }
-{PP}"elifdef"                  { return TOKEN(TELIFDEF); }
-{PP}"elifndef"                 { return TOKEN(TELIFNDEF); }
-{PP}"else"                     { return TOKEN(TELSE); }
-{PP}"endif"                    { return TOKEN(TENDIF); }
+{PP}"ifdef"                  { return TOKEN(TIFDEF); }
+{PP}"ifndef"                 { return TOKEN(TIFNDEF); }
+{PP}"if"                     { return TOKEN(TIF); }
+{PP}"elif"                   { return TOKEN(TELIF); }
+{PP}"elifdef"                { return TOKEN(TELIFDEF); }
+{PP}"elifndef"               { return TOKEN(TELIFNDEF); }
+{PP}"else"                   { return TOKEN(TELSE); }
+{PP}"endif"                  { return TOKEN(TENDIF); }
 
-{PP}"include"                  { return TOKEN(TINCLUDE); }
-{PP}"define"                   { return TOKEN(TDEFINE); }
-{PP}"undef"                    { return TOKEN(TUNDEF); }
-{PP}"line"                     { return TOKEN(TLINE); }
-{PP}"error"                    { return TOKEN(TERROR); }
-{PP}"warning"                  { return TOKEN(TWARNING); }
+{PP}"include"                { return TOKEN(TINCLUDE); }
+{PP}"define"                 { return TOKEN(TDEFINE); }
+{PP}"undef"                  { return TOKEN(TUNDEF); }
+{PP}"line"                   { return TOKEN(TLINE); }
+{PP}"error"                  { PUSH_STATE(PPERR); return TOKEN(TERROR); }
+{PP}"warning"                { PUSH_STATE(PPERR); return TOKEN(TWARNING); }
 
-"\""                           { PUSH_STATE(CSTR); return TOKEN(TSTR_DELIM); }
-"<>"    	               { return TOKEN(TSTRING); }
-"<"{NB}">"	               { return TOKEN(TSTRING); }
-"<"{NA}{NA}+">"	               { return TOKEN(TSTRING); }
+"\""                         { PUSH_STATE(CSTR); return TOKEN(TSTR_DELIM); }
+"<>"    	             { return TOKEN(TSTRING); }
+"<"{NB}">"	             { return TOKEN(TSTRING); }
+"<"{NA}{NA}+">"	             { return TOKEN(TSTRING); }
 
-"##"                           { return TOKEN(TSTRINGIFY); }
-"#"                            { return TOKEN(THASH); }
+"##"                         { return TOKEN(TSTRINGIFY); }
+"#"                          { return TOKEN(THASH); }
 
-"("                            { return TOKEN(TLPAREN); }
-")"                            { return TOKEN(TRPAREN); }
-";"                            { return TOKEN(TSEMICOLON); }
-"?"                            { return TOKEN(TQUESTION); }
-":"                            { return TOKEN(TCOLON); }
-","                            { return TOKEN(TCOMMA); }
+"("                          { return TOKEN(TLPAREN); }
+")"                          { return TOKEN(TRPAREN); }
+";"                          { return TOKEN(TSEMICOLON); }
+"?"                          { return TOKEN(TQUESTION); }
+":"                          { return TOKEN(TCOLON); }
+","                          { return TOKEN(TCOMMA); }
 
 %{ /* Comparison */ %}
-"<=>"                          { return TOKEN(TSPACESHIP); }
-"<="                           { return TOKEN(TLE); }
-">="                           { return TOKEN(TGE); }
-"<"                            { return TOKEN(TLT); }
-">"                            { return TOKEN(TGT); }
-"=="                           { return TOKEN(TEQEQ); }
-"!="                           { return TOKEN(TNE); }
+"<=>"                        { return TOKEN(TSPACESHIP); }
+"<="                         { return TOKEN(TLE); }
+">="                         { return TOKEN(TGE); }
+"<"                          { return TOKEN(TLT); }
+">"                          { return TOKEN(TGT); }
+"=="                         { return TOKEN(TEQEQ); }
+"!="                         { return TOKEN(TNE); }
 
 %{ /* Unary */ %}
-"+"                            { return TOKEN(TPLUS); }
-"-"                            { return TOKEN(TMINUS); }
-"!"                            { return TOKEN(TSHOUT); }
-"~"                            { return TOKEN(TTILDE); }
-"defined"                      { return TOKEN(TDEFINED); }
+"+"                          { return TOKEN(TPLUS); }
+"-"                          { return TOKEN(TMINUS); }
+"!"                          { return TOKEN(TSHOUT); }
+"~"                          { return TOKEN(TTILDE); }
+"defined"                    { return TOKEN(TDEFINED); }
 
 %{ /* Binary (but not unary) */ %}
-"*"                            { return TOKEN(TMULT); }
-"/"                            { return TOKEN(TDIV); }
-"%"                            { return TOKEN(TREMAINDER); }
-"&"                            { return TOKEN(TAND); }
-"|"                            { return TOKEN(TOR); }
-"^"                            { return TOKEN(TCARROT); }
-"&&"                           { return TOKEN(TANDAND); }
-"||"                           { return TOKEN(TOROR); }
-"<<"                           { return TOKEN(TLTLT); }
-">>"                           { return TOKEN(TGTGT); }
+"*"                          { return TOKEN(TMULT); }
+"/"                          { return TOKEN(TDIV); }
+"%"                          { return TOKEN(TREMAINDER); }
+"&"                          { return TOKEN(TAND); }
+"|"                          { return TOKEN(TOR); }
+"^"                          { return TOKEN(TCARROT); }
+"&&"                         { return TOKEN(TANDAND); }
+"||"                         { return TOKEN(TOROR); }
+"<<"                         { return TOKEN(TLTLT); }
+">>"                         { return TOKEN(TGTGT); }
 
-{L}{D}*                        { return TOKEN(TIDENTIFIER); }
-{DIGIT}+{SUFFIX}*              { return TOKEN(TINTEGER); }
-"0x"{HEXD}+{SUFFIX}*           { return TOKEN(TINTEGER); }
+{L}{D}*                      { return TOKEN(TIDENTIFIER); }
+{DIGIT}+{SUFFIX}*            { return TOKEN(TINTEGER); }
+"0x"{HEXD}+{SUFFIX}*         { return TOKEN(TINTEGER); }
 
-"//".*			       { return TOKEN(TCOMMENT); }
+"//".*			     { return TOKEN(TCOMMENT); }
 
-"\\"{NL}                       { return TOKEN(TNEWLINE_ESC); }
-{WS}+			       { return TOKEN(TWHITESPACE); }
-{NL}                           { POP_STATE(); return TOKEN(TNEWLINE); }
+"\\"{NL}                     { return TOKEN(TNEWLINE_ESC); }
+{WS}+			     { return TOKEN(TWHITESPACE); }
+{NL}                         { POP_STATE(); return TOKEN(TNEWLINE); }
 
-[\x00-\xff]		       { return TOKEN(TLINE_PART); }
+[\x00-\xff]		     { return TOKEN(TLINE_PART); }
 }
 
 <CSTR>{
-[^\"\r\n\\]+                   { return TOKEN(TSTR_PART); }
-"\\\""                         { return TOKEN(TSTR_PART); }
-"\\"[\'\"?abfnrtv\\]           { return TOKEN(TSTR_PART); }
-"\\"[0-7]{1,3}                 { return TOKEN(TSTR_PART); }
-"\\x"{HEXD}+                   { return TOKEN(TSTR_PART); }
-{DQUOTE}                       { POP_STATE(); return TOKEN(TSTR_DELIM); }
+[^\"\r\n\\]+                 { return TOKEN(TSTR_PART); }
+"\\\""                       { return TOKEN(TSTR_PART); }
+"\\"[\'\"?abfnrtv\\]         { return TOKEN(TSTR_PART); }
+"\\"[0-7]{1,3}               { return TOKEN(TSTR_PART); }
+"\\x"{HEXD}+                 { return TOKEN(TSTR_PART); }
+{DQUOTE}                     { POP_STATE(); return TOKEN(TSTR_DELIM); }
 
-[\x00-\xff]		       { TOKEN(TBADCHAR); }
+[\x00-\xff]		     { TOKEN(TBADCHAR); }
 }
 
-"import"({WS}{NNL}*)?          { yyless(6); PUSH_STATE(MODULE); return TOKEN(TIMPORT); }
-"export"({WS}{NNL}*)?          { yyless(6); PUSH_STATE(MODULE); return TOKEN(TEXPORT); }
-"module"({WS}{NNL}*)?          { yyless(6); PUSH_STATE(MODULE); return TOKEN(TMODULE); }
+"import"({WS}{NNL}*)?        { yyless(6); PUSH_STATE(MODULE); return TOKEN(TIMPORT); }
+"export"({WS}{NNL}*)?        { yyless(6); PUSH_STATE(MODULE); return TOKEN(TEXPORT); }
+"module"({WS}{NNL}*)?        { yyless(6); PUSH_STATE(MODULE); return TOKEN(TMODULE); }
 
 <MODULE>{
-"import"                       { return TOKEN(TIMPORT); }
-"export"                       { return TOKEN(TEXPORT); }
-"module"                       { return TOKEN(TMODULE); }
-{ML}{MD}*                      { return TOKEN(TIDENTIFIER); }
-{WS}+			       { return TOKEN(TWHITESPACE); }
-";"                            { return TOKEN(TSEMICOLON); }
-"\\"{NL}                       { return TOKEN(TNEWLINE_ESC); }
-{NL}                           { POP_STATE(); return TOKEN(TNEWLINE); }
-[\x00-\xff]		       { return TOKEN(TBADCHAR); }
+"import"                     { return TOKEN(TIMPORT); }
+"export"                     { return TOKEN(TEXPORT); }
+"module"                     { return TOKEN(TMODULE); }
+{ML}{MD}*                    { return TOKEN(TIDENTIFIER); }
+{WS}+			     { return TOKEN(TWHITESPACE); }
+";"                          { return TOKEN(TSEMICOLON); }
+"\\"{NL}                     { return TOKEN(TNEWLINE_ESC); }
+{NL}                         { POP_STATE(); return TOKEN(TNEWLINE); }
+[\x00-\xff]		     { return TOKEN(TBADCHAR); }
 }
 
-{NNL}+                         { return TOKEN(TLINE_PART); }
+{NNL}+                       { return TOKEN(TLINE_PART); }
 
-"\\"{NL}                       { return TOKEN(TNEWLINE_ESC); }
-{NL}                           { return TOKEN(TNEWLINE); }
+"\\"{NL}                     { return TOKEN(TNEWLINE_ESC); }
+{NL}                         { return TOKEN(TNEWLINE); }
 
-"\\"                           { return TOKEN(TLINE_PART); }
+"\\"                         { return TOKEN(TLINE_PART); }
 
 %%
 
-// [\x00-\xff]		       { TOKEN(TBADCHAR); }
+// [\x00-\xff]		     { TOKEN(TBADCHAR); }
 
 static void lex_params_init(struct lex_params_t* params,
                             void * lex,
