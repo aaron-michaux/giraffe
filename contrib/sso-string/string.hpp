@@ -82,7 +82,7 @@ namespace sso23
 {
 template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_string
 {
-   typedef typename std::make_unsigned<CharT>::type UCharT;
+   using UCharT = typename std::make_unsigned<CharT>::type;
 
  public:
    constexpr basic_string() noexcept

@@ -27,14 +27,14 @@
 #include "fmt/format.h"
 
 #include "utils/concepts.hpp"
+#include "utils/encode-char.hpp"
 #include "utils/for-each-adjacent-pair.hpp"
 #include "utils/implode.hpp"
 #include "utils/in-list.hpp"
 #include "utils/is-reverse-iterator.hpp"
 #include "utils/remove-duplicates.hpp"
-#include "utils/to-array.hpp"
 #include "utils/s-string.hpp"
-#include "utils/encode-char.hpp"
+#include "utils/to-array.hpp"
 
 namespace giraffe
 {
@@ -45,15 +45,15 @@ using std::make_unique;
 using std::string;
 using std::string_view;
 using std::unique_ptr;
-using std::vector;
 using std::unordered_map;
+using std::vector;
 
 using fmt::format;
 using std::function;
 
-using std::ostream;
 using std::cout;
 using std::endl;
+using std::ostream;
 
 using std::begin;
 using std::cbegin;

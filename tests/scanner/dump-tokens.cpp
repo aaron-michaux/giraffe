@@ -5,11 +5,12 @@
 
 #include "scanner/scanner.hpp"
 
-namespace giraffe::test {
+namespace giraffe::test
+{
 
 // ----------------------------------------------------- test-text-dump-tokens-1
 
-constexpr static const char * test_text_dump_tokens_1 = R"V0G0N(
+constexpr static const char* test_text_dump_tokens_1 = R"V0G0N(
 
 #pragma once
 
@@ -36,17 +37,18 @@ template<class T> concept integral        = is_integral_v<T>;
 
 CATCH_TEST_CASE("dump tokens", "[dump-tokens]")
 {
-   auto print_token = [] (auto& os, const Token& token) {
+   auto print_token = [](auto& os, const Token& token) {
       os << format("{:15s} {:15s} {}\n",
                    str(token.location()),
                    token_id_to_str(token.id()),
-      encode_string(token.text()));
+                   encode_string(token.text()));
    };
 
-   CATCH_SECTION("some section") {
+   CATCH_SECTION("some section")
+   {
       ScannerOptions opts;
       opts.skip_newlines = true;
-      Scanner scanner("test-text-dump-tokens-1", test_text_dump_tokens_1, opts);   
+      Scanner scanner("test-text-dump-tokens-1", test_text_dump_tokens_1, opts);
       while(scanner.has_next()) {
          scanner.consume();
          // print_token(cout, scanner.current());
@@ -58,5 +60,4 @@ CATCH_TEST_CASE("dump tokens", "[dump-tokens]")
    }
 }
 
-}
-
+} // namespace giraffe::test
