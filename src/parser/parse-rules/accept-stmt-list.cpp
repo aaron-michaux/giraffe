@@ -12,7 +12,6 @@ namespace giraffe
 //    | 'export'? ('import' | 'module') ModuleName ';'
 //    ;
 //
-
 StmtListNode* accept_stmt_list(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();

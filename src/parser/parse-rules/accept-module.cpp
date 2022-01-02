@@ -16,10 +16,10 @@ AstNode* accept_module(Context& context) noexcept
       return make_empty_node();
    };
 
-   bool is_import    = false;
-   bool is_export    = false;
-   bool is_module    = false;
-   string identifier = {};
+   bool is_import         = false;
+   bool is_export         = false;
+   bool is_module         = false;
+   string_view identifier = {};
 
    if(scanner.current().id() == TEXPORT) {
       scanner.consume();
@@ -38,7 +38,7 @@ AstNode* accept_module(Context& context) noexcept
 
    if(scanner.current().id() == TIDENTIFIER) {
       const auto text = scanner.consume().text();
-      identifier      = string{text.begin(), text.end()};
+      identifier      = string_view{text.begin(), text.end()};
    } else {
       return on_error("expected module name");
    }
@@ -47,6 +47,6 @@ AstNode* accept_module(Context& context) noexcept
       return on_error("expected semicolon after module delcaration");
    }
 
-   return new ModuleNode(is_import, is_export, is_module, std::move(identifier));
+   return new ModuleNode(is_import, is_export, is_module, identifier);
 }
 } // namespace giraffe

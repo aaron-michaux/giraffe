@@ -29,6 +29,7 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
    }
 
    if(text_.size() > 0) { // Output the text... excaping newline characters
+      ss << ' ';
       bool last_ch_was_newline = false;
       for(const auto ch : text_) {
          if(ch == '\n') {

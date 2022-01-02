@@ -23,6 +23,7 @@ vector<sso23::string> accept_arglist(Context& context) noexcept
       if(id == TRPAREN) {
          scanner.consume();
          break; // all is good
+
       } else if(id == TIDENTIFIER && args.size() == 0) {
          push_arg(scanner.consume().text());
 

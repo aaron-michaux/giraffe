@@ -26,7 +26,7 @@ AstNode* accept_include(Context& context) noexcept
       return new IncludeNode{token.source_range(), move(filename), false};
    } else if(token.id() == TSTR_DELIM) {
       auto [filename, src_range] = accept_cstr(context);
-      return new IncludeNode{src_range, std::move(filename), true};
+      return new IncludeNode{src_range, filename, true};
    } else if(token.id() == TSPACESHIP) {
       return new IncludeNode{token.source_range(), "=", false};
    }
