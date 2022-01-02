@@ -23,6 +23,8 @@ const char* test_004_expr_06 = "a + b";
 const char* test_004_expr_07 = "a * b + c";
 const char* test_004_expr_08 = "a * (b + c)";
 const char* test_004_expr_09 = "a || b ? a && d : b || c ? x : y";
+const char* test_004_expr_10 = "defined X";
+const char* test_004_expr_11 = "!defined X";
 
 // -------------------------------------------------------------------- testcase
 
@@ -387,6 +389,57 @@ CATCH_TEST_CASE("004 expressions", "[004-expressions]")
                   CATCH_REQUIRE(tern2f->op() == TNONE);
                   CATCH_REQUIRE(tern2f->text() == "y");
 
+                  CATCH_REQUIRE(diagnostics.size() == 0);
+                  CATCH_REQUIRE(!context.has_error());
+               });
+   }
+
+   CATCH_SECTION("expr_10") // -------------------------------------------------
+   {
+      run_test("expr_10",
+               test_004_expr_10,
+               [](Context& context,
+                  ExpressionNode* expr,
+                  string_view str,
+                  const Diagnostics& diagnostics) {
+                  CATCH_REQUIRE(str == "defined X");
+                  CATCH_REQUIRE(expr->size() == 1);
+                  CATCH_REQUIRE(expr->expr_type() == ExprType::UNARY);
+                  CATCH_REQUIRE(expr->op() == TDEFINED);
+                  CATCH_REQUIRE(expr->text() == "");
+                  auto child0 = expr->child(0);
+                  CATCH_REQUIRE(child0->size() == 0);
+                  CATCH_REQUIRE(child0->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(child0->op() == TNONE);
+                  CATCH_REQUIRE(child0->text() == "X");
+                  CATCH_REQUIRE(diagnostics.size() == 0);
+                  CATCH_REQUIRE(!context.has_error());
+               });
+   }
+
+   CATCH_SECTION("expr_11") // -------------------------------------------------
+   {
+      run_test("expr_11",
+               test_004_expr_11,
+               [](Context& context,
+                  ExpressionNode* expr,
+                  string_view str,
+                  const Diagnostics& diagnostics) {
+                  CATCH_REQUIRE(str == "!defined X");
+                  CATCH_REQUIRE(expr->size() == 1);
+                  CATCH_REQUIRE(expr->expr_type() == ExprType::UNARY);
+                  CATCH_REQUIRE(expr->op() == TSHOUT);
+                  CATCH_REQUIRE(expr->text() == "");
+                  auto child0 = expr->child(0);
+                  CATCH_REQUIRE(child0->size() == 1);
+                  CATCH_REQUIRE(child0->expr_type() == ExprType::UNARY);
+                  CATCH_REQUIRE(child0->op() == TDEFINED);
+                  CATCH_REQUIRE(child0->text() == "");
+                  auto child1 = child0->child(0);
+                  CATCH_REQUIRE(child1->size() == 0);
+                  CATCH_REQUIRE(child1->expr_type() == ExprType::IDENTIFIER);
+                  CATCH_REQUIRE(child1->op() == TNONE);
+                  CATCH_REQUIRE(child1->text() == "X");
                   CATCH_REQUIRE(diagnostics.size() == 0);
                   CATCH_REQUIRE(!context.has_error());
                });
