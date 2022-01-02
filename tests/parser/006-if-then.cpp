@@ -71,6 +71,11 @@ CATCH_TEST_CASE("006 if then", "[006-if-then]")
          unique_ptr<AstNode> node(accept_stmt_list(context));
          node->stream(cout, 0);
       }
+
+      {
+         for(const auto& diag : context.diagnostics()) { diag.stream(cout, context); }
+      }
+
       CATCH_REQUIRE(AstNode::get_node_count() == 0);
    };
 

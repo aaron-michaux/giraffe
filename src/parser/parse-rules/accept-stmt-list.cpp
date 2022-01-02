@@ -46,9 +46,7 @@ StmtListNode* accept_stmt_list(Context& context) noexcept
          push_child(accept_if_then(context));
 
       } else if(in_list(id, stray_ifthen_parts)) {
-         // We have a diagnostic here
-         context.push_error(format("unexpected token {}", token_id_to_str(id)));
-         skip_to_sequence(scanner, TNEWLINE); // Skip to newline
+         break; // we're done
 
       } else {
          // Assume this is just the blah-blah-blah of the document
