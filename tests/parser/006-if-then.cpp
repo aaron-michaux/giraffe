@@ -37,7 +37,21 @@ constexpr static const char* test_text_006 = R"V0G0N(
 )V0G0N";
 
 constexpr static const char* test_text_006_result =
-    R"V0G0N(
+    R"V0G0N(#if !defined NDEBUG
+ #include <cstdio>
+#endif
+#ifndef INCLUDE_GUARD
+ #define INCLUDE_GUARD
+ #ifdef __cplusplus
+  #if VERSION >= 20211201ull
+   #include "assert.h"
+  #else
+   #error "Done Bad"
+  #endif
+ #else
+  #include <cassert>
+ #endif
+#endif
 )V0G0N";
 
 // -------------------------------------------------------------------- testcase
@@ -83,7 +97,21 @@ CATCH_TEST_CASE("006 if then", "[006-if-then]")
    auto& context    = *context_ptr;
    auto& scanner    = context.scanner();
 
-   dump_parse(context);
+   // dump_parse(context);
+
+   CATCH_SECTION("006")
+   {
+      {
+         scanner.set_position(0);
+         unique_ptr<AstNode> node(accept_stmt_list(context));
+
+         std::stringstream ss;
+         node->stream(ss, 0);
+         CATCH_REQUIRE(ss.str() == test_text_006_result);
+      }
+      CATCH_REQUIRE(context.diagnostics().size() == 0);
+      CATCH_REQUIRE(AstNode::get_node_count() == 0);
+   }
 }
 
 } // namespace giraffe::test
