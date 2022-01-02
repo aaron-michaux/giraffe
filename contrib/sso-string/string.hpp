@@ -205,7 +205,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    }
    //@}
 
-   friend constexpr void swap(basic_string& lhs, basic_string& rhs)
+   friend constexpr void swap(basic_string& lhs, basic_string& rhs) noexcept
    {
       std::swap(lhs.data_, rhs.data_);
    }
@@ -371,6 +371,7 @@ static_assert(sizeof(string) == 3 * sizeof(std::size_t));
 static_assert(std::is_nothrow_default_constructible<string>::value);
 static_assert(std::is_nothrow_move_constructible<string>::value);
 static_assert(std::is_nothrow_move_assignable<string>::value);
+static_assert(std::is_nothrow_swappable<string>::value);
 
 } // namespace sso23
 
