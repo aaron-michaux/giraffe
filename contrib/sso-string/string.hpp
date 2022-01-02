@@ -46,44 +46,6 @@
 #include <ostream>
 #include <type_traits>
 
-namespace sso23::detail
-{
-static constexpr std::size_t const high_bit_mask
-    = static_cast<std::size_t>(1) << (sizeof(std::size_t) * CHAR_BIT - 1);
-static constexpr std::size_t const sec_high_bit_mask
-    = static_cast<std::size_t>(1) << (sizeof(std::size_t) * CHAR_BIT - 2);
-
-template<typename T> constexpr unsigned char& most_sig_byte(T& obj)
-{
-   return *(std::bit_cast<unsigned char*>(&obj) + sizeof(obj) - 1);
-}
-
-template<int N> constexpr bool lsb(unsigned char byte) { return byte & (1u << N); }
-
-template<int N> constexpr bool msb(unsigned char byte)
-{
-   return byte & (1u << (CHAR_BIT - N - 1));
-}
-
-template<int N> constexpr void set_lsb(unsigned char& byte, bool bit)
-{
-   if(bit) {
-      byte |= 1u << N;
-   } else {
-      byte &= ~(1u << N);
-   }
-}
-
-template<int N> constexpr void set_msb(unsigned char& byte, bool bit)
-{
-   if(bit) {
-      byte |= 1u << (CHAR_BIT - N - 1);
-   } else {
-      byte &= ~(1u << (CHAR_BIT - N - 1));
-   }
-}
-} // namespace sso23::detail
-
 namespace sso23
 {
 template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_string
@@ -91,31 +53,45 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    using UCharT = typename std::make_unsigned<CharT>::type;
 
  public:
+   using traits_type            = Traits;
+   using value_type             = CharT;
+   using size_type              = std::size_t;
+   using difference_type        = std::ptrdiff_t;
+   using reference              = value_type&;
+   using const_reference        = const value_type&;
+   using pointer                = CharT*;
+   using const_pointer          = const CharT*;
+   using iterator               = pointer;
+   using const_iterator         = const_pointer;
+   using reverse_iterator       = std::reverse_iterator<iterator>;
+   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+ public:
    constexpr basic_string() noexcept
-       : basic_string{"", static_cast<std::size_t>(0)}
+       : basic_string{"", static_cast<size_type>(0)}
    {}
 
-   constexpr basic_string(CharT const* string, std::size_t size)
+   constexpr basic_string(CharT const* string, size_type size)
    {
       if(size <= sso_capacity) {
-         Traits::move(m_data.sso.string, string, size);
-         Traits::assign(m_data.sso.string[size], static_cast<CharT>(0));
+         Traits::move(data_.sso.string, string, size);
+         Traits::assign(data_.sso.string[size], static_cast<CharT>(0));
          set_sso_size(size);
       } else {
-         m_data.non_sso.ptr = new CharT[size + 1];
-         Traits::move(m_data.non_sso.ptr, string, size);
-         Traits::assign(m_data.non_sso.ptr[size], static_cast<CharT>(0));
+         data_.non_sso.ptr = new CharT[size + 1];
+         Traits::move(data_.non_sso.ptr, string, size);
+         Traits::assign(data_.non_sso.ptr[size], static_cast<CharT>(0));
          set_non_sso_data(size, size);
       }
    }
 
-   constexpr basic_string(std::string_view sv)
+   constexpr basic_string(std::basic_string_view<CharT, Traits> sv)
        : basic_string{sv.data(), sv.size()}
    {}
 
    template<std::input_iterator InputIt>
    constexpr basic_string(InputIt first, InputIt last)
-       : basic_string{std::string_view{first, last}}
+       : basic_string{std::basic_string_view<CharT, Traits>{first, last}}
    {}
 
    constexpr basic_string(CharT const* string)
@@ -125,7 +101,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    constexpr basic_string(const basic_string& string)
    {
       if(string.sso()) {
-         m_data.sso = string.m_data.sso;
+         data_.sso = string.data_.sso;
       } else {
          new(this) basic_string{string.data(), string.size()};
       }
@@ -133,8 +109,13 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 
    constexpr basic_string(basic_string&& string) noexcept
    {
-      m_data = string.m_data;
+      data_ = string.data_;
       string.set_moved_from();
+   }
+
+   constexpr ~basic_string()
+   {
+      if(!sso()) { delete[] data_.non_sso.ptr; }
    }
 
    constexpr basic_string& operator=(basic_string const& other)
@@ -147,53 +128,87 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    constexpr basic_string& operator=(basic_string&& other) noexcept
    {
       this->~basic_string();
-      m_data = other.m_data;
+      data_ = other.data_;
       other.set_moved_from();
       return *this;
    }
 
-   constexpr ~basic_string()
+   //@{ Element Access
+   constexpr reference at(size_type pos) noexcept
    {
-      if(!sso()) { delete[] m_data.non_sso.ptr; }
+      if(pos >= size()) throw std::out_of_range{};
+      return data()[pos];
+   }
+   constexpr const_reference at(size_type pos) const noexcept
+   {
+      if(pos >= size()) throw std::out_of_range{};
+      return data()[pos];
+   }
+
+   constexpr reference operator[](size_type pos) noexcept { return data()[pos]; }
+   constexpr const_reference operator[](size_type pos) const noexcept
+   {
+      return data()[pos];
+   }
+
+   constexpr reference front() noexcept { return data()[0]; }
+   constexpr const_reference front() const noexcept { return data()[0]; }
+
+   constexpr reference back() noexcept { return data()[size() - 1]; }
+   constexpr const_reference back() const noexcept { return data()[size() - 1]; }
+
+   constexpr CharT* data() noexcept
+   {
+      return sso() ? data_.sso.string : data_.non_sso.ptr;
    }
 
    constexpr CharT const* data() const noexcept
    {
-      return sso() ? m_data.sso.string : m_data.non_sso.ptr;
+      return sso() ? data_.sso.string : data_.non_sso.ptr;
    }
 
-   constexpr std::size_t size() const noexcept
+   operator std::basic_string_view<CharT, Traits>() const noexcept
    {
-      if(sso()) {
-         return sso_size();
-      } else {
-         return read_non_sso_data().first;
-      }
+      return std::basic_string_view<CharT, Traits>{data(), size()};
+   }
+   //@}
+
+   //@{ Iterators
+   auto begin() noexcept { return data(); }
+   auto begin() const noexcept { return data(); }
+   auto rbegin() noexcept { return std::make_reverse_iterator(end()); }
+   auto rbegin() const noexcept { return std::make_reverse_iterator(end()); }
+   auto cbegin() const noexcept { return data(); }
+   auto crbegin() const noexcept { return std::make_reverse_iterator(cend()); }
+
+   auto end() noexcept { return data() + size(); }
+   auto end() const noexcept { return data() + size(); }
+   auto rend() noexcept { return std::make_reverse_iterator(begin()); }
+   auto rend() const noexcept { return std::make_reverse_iterator(begin()); }
+   auto cend() const noexcept { return data() + size(); }
+   auto crend() const noexcept { return std::make_reverse_iterator(cbegin()); }
+   //@}
+
+   //@{ Capacity
+   constexpr bool empty() const noexcept { return size() == 0; }
+
+   constexpr size_type size() const noexcept
+   {
+      return sso() ? sso_size() : read_non_sso_data().first;
    }
 
-   constexpr std::size_t capacity() const noexcept
+   constexpr size_type length() const noexcept { return size(); }
+
+   constexpr size_type capacity() const noexcept
    {
-      if(sso()) {
-         return sizeof(m_data) - 1;
-      } else {
-         return read_non_sso_data().second;
-      }
+      return sso() ? (sizeof(data_) - 1) : read_non_sso_data().second;
    }
+   //@}
 
    friend constexpr void swap(basic_string& lhs, basic_string& rhs)
    {
-      std::swap(lhs.m_data, rhs.m_data);
+      std::swap(lhs.data_, rhs.data_);
    }
-
-   auto begin() const noexcept { return data(); }
-   auto cbegin() const noexcept { return data(); }
-   auto rbegin() const noexcept { return std::make_reverse_iterator(end()); }
-   auto crbegin() const noexcept { return std::make_reverse_iterator(cend()); }
-
-   auto end() const noexcept { return data() + size(); }
-   auto cend() const noexcept { return data() + size(); }
-   auto rend() const noexcept { return std::make_reverse_iterator(begin()); }
-   auto crend() const noexcept { return std::make_reverse_iterator(cbegin()); }
 
  private:
    constexpr void set_moved_from() noexcept { set_sso_size(0); }
@@ -201,58 +216,58 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    // We are using sso if the last two bits are 0
    constexpr bool sso() const noexcept
    {
-      return !detail::lsb<0>(m_data.sso.size) && !detail::lsb<1>(m_data.sso.size);
+      return !lsb_<0>(data_.sso.size) && !lsb_<1>(data_.sso.size);
    }
 
    // good
    constexpr void set_sso_size(unsigned char size) noexcept
    {
-      m_data.sso.size = static_cast<UCharT>(sso_capacity - size) << 2;
+      data_.sso.size = static_cast<UCharT>(sso_capacity - size) << 2;
    }
 
    // good
-   constexpr std::size_t sso_size() const noexcept
+   constexpr size_type sso_size() const noexcept
    {
-      return sso_capacity - ((m_data.sso.size >> 2) & 63u);
+      return sso_capacity - ((data_.sso.size >> 2) & 63u);
    }
 
-   constexpr void set_non_sso_data(std::size_t size, std::size_t capacity)
+   constexpr void set_non_sso_data(size_type size, size_type capacity)
    {
-      auto& size_hsb           = detail::most_sig_byte(size);
-      auto const size_high_bit = detail::msb<0>(size_hsb);
+      auto& size_hsb           = most_sig_byte_(size);
+      auto const size_high_bit = msb_<0>(size_hsb);
 
-      auto& cap_hsb               = detail::most_sig_byte(capacity);
-      auto const cap_high_bit     = detail::msb<0>(cap_hsb);
-      auto const cap_sec_high_bit = detail::msb<1>(cap_hsb);
+      auto& cap_hsb               = most_sig_byte_(capacity);
+      auto const cap_high_bit     = msb_<0>(cap_hsb);
+      auto const cap_sec_high_bit = msb_<1>(cap_hsb);
 
-      detail::set_msb<0>(size_hsb, cap_sec_high_bit);
+      set_msb_<0>(size_hsb, cap_sec_high_bit);
 
       cap_hsb <<= 2;
-      detail::set_lsb<0>(cap_hsb, cap_high_bit);
-      detail::set_lsb<1>(cap_hsb, !size_high_bit);
+      set_lsb_<0>(cap_hsb, cap_high_bit);
+      set_lsb_<1>(cap_hsb, !size_high_bit);
 
-      m_data.non_sso.size     = size;
-      m_data.non_sso.capacity = capacity;
+      data_.non_sso.size     = size;
+      data_.non_sso.capacity = capacity;
    }
 
-   constexpr std::pair<std::size_t, std::size_t> read_non_sso_data() const
+   constexpr std::pair<size_type, size_type> read_non_sso_data() const
    {
-      auto size     = m_data.non_sso.size;
-      auto capacity = m_data.non_sso.capacity;
+      auto size     = data_.non_sso.size;
+      auto capacity = data_.non_sso.capacity;
 
-      auto& size_hsb = detail::most_sig_byte(size);
-      auto& cap_hsb  = detail::most_sig_byte(capacity);
+      auto& size_hsb = most_sig_byte_(size);
+      auto& cap_hsb  = most_sig_byte_(capacity);
 
       // Remember to negate the high bits
-      auto const cap_high_bit     = detail::lsb<0>(cap_hsb);
-      auto const size_high_bit    = !detail::lsb<1>(cap_hsb);
-      auto const cap_sec_high_bit = detail::msb<0>(size_hsb);
+      auto const cap_high_bit     = lsb_<0>(cap_hsb);
+      auto const size_high_bit    = !lsb_<1>(cap_hsb);
+      auto const cap_sec_high_bit = msb_<0>(size_hsb);
 
-      detail::set_msb<0>(size_hsb, size_high_bit);
+      set_msb_<0>(size_hsb, size_high_bit);
 
       cap_hsb >>= 2;
-      detail::set_msb<0>(cap_hsb, cap_high_bit);
-      detail::set_msb<1>(cap_hsb, cap_sec_high_bit);
+      set_msb_<0>(cap_hsb, cap_high_bit);
+      set_msb_<1>(cap_hsb, cap_sec_high_bit);
 
       return std::make_pair(size, capacity);
    }
@@ -263,41 +278,82 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       struct NonSSO
       {
          CharT* ptr;
-         std::size_t size;
-         std::size_t capacity;
+         size_type size;
+         size_type capacity;
       } non_sso;
       struct SSO
       {
          CharT string[sizeof(NonSSO) / sizeof(CharT) - 1];
          UCharT size;
       } sso;
-   } m_data;
+   } data_;
 
  public:
-   static constexpr std::size_t const sso_capacity
+   static constexpr size_type const sso_capacity
        = sizeof(typename Data::NonSSO) / sizeof(CharT) - 1;
+
+ private:
+   static constexpr size_type const high_bit_mask_
+       = static_cast<size_type>(1) << (sizeof(size_type) * CHAR_BIT - 1);
+   static constexpr size_type const sec_high_bit_mask_
+       = static_cast<size_type>(1) << (sizeof(size_type) * CHAR_BIT - 2);
+
+   template<typename T> static constexpr unsigned char& most_sig_byte_(T& obj)
+   {
+      return *(std::bit_cast<unsigned char*>(&obj) + sizeof(obj) - 1);
+   }
+
+   template<int N> static constexpr bool lsb_(unsigned char byte)
+   {
+      return byte & (1u << N);
+   }
+
+   template<int N> static constexpr bool msb_(unsigned char byte)
+   {
+      return byte & (1u << (CHAR_BIT - N - 1));
+   }
+
+   template<int N> static constexpr void set_lsb_(unsigned char& byte, bool bit)
+   {
+      if(bit) {
+         byte |= 1u << N;
+      } else {
+         byte &= ~(1u << N);
+      }
+   }
+
+   template<int N> static constexpr void set_msb_(unsigned char& byte, bool bit)
+   {
+      if(bit) {
+         byte |= 1u << (CHAR_BIT - N - 1);
+      } else {
+         byte &= ~(1u << (CHAR_BIT - N - 1));
+      }
+   }
 };
 
 template<typename CharT, typename Traits>
-constexpr bool operator==(const basic_string<CharT, Traits>& lhs,
-                          const CharT* rhs) noexcept
+constexpr auto operator<=>(const std::basic_string_view<CharT, Traits>& lhs,
+                           const basic_string<CharT, Traits>& rhs) noexcept
 {
-   return !std::strcmp(lhs.data(), rhs);
+   return std::lexicographical_compare_three_way(
+       begin(lhs), end(lhs), begin(rhs), end(rhs));
 }
 
 template<typename CharT, typename Traits>
-constexpr bool operator==(const CharT* lhs,
-                          const basic_string<CharT, Traits>& rhs) noexcept
+constexpr auto operator<=>(const CharT* lhs,
+                           const basic_string<CharT, Traits>& rhs) noexcept
 {
-   return rhs == lhs;
+   return std::lexicographical_compare_three_way(
+       lhs, lhs + strlen(lhs), begin(rhs), end(rhs));
 }
 
 template<typename CharT, typename Traits>
-constexpr bool operator==(const basic_string<CharT, Traits>& lhs,
-                          const basic_string<CharT, Traits>& rhs) noexcept
+constexpr auto operator<=>(const basic_string<CharT, Traits>& lhs,
+                           const basic_string<CharT, Traits>& rhs) noexcept
 {
-   if(lhs.size() != rhs.size()) return false;
-   return !std::strcmp(lhs.data(), rhs.data());
+   return std::lexicographical_compare_three_way(
+       begin(lhs), end(lhs), begin(rhs), end(rhs));
 }
 
 template<typename CharT, typename Traits>
