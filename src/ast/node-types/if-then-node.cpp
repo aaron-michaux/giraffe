@@ -78,6 +78,7 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
 
    // Print the condition
    if(has_condition()) {
+      ss << ' ';
       condition()->stream(ss, 0); // Should be on 1 line
    }
    ss << '\n';
@@ -89,7 +90,10 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
    for(size_t i = 2; i < children().size(); ++i) children()[i]->stream(ss, indent);
 
    // Print #endif iff #if, #ifdef, #ifndef
-   if(is_if()) ss << "#endif" << '\n';
+   if(is_if()) {
+      for(auto i = 0; i < indent; ++i) ss << ' ';
+      ss << "#endif" << '\n';
+   }
 
    return ss;
 }

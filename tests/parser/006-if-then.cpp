@@ -12,23 +12,37 @@ namespace giraffe::test
 
 // -----------------------------------------------------------------------------
 
-constexpr static const char* test_text_005 = R"V0G0N(
-#define
-#define NDEBUG
-#define FOO(a, b, c) some - tokens(a)
-#define ZAPPY "Heh The Preprocessor!"
+constexpr static const char* test_text_006 = R"V0G0N(
+#pragma once
+
+#if !defined NDEBUG
+#include <cstdio>
+#endif
+
+#ifndef INCLUDE_GUARD
+#define INCLUDE_GUARD
+
+#ifdef __cplusplus
+#if VERSION >= 20211201ull
+#include "assert.h"
+#else
+#error "Done Bad"
+#endif
+#else
+#include <cassert>
+#endif
+
+#endif
+
 )V0G0N";
 
-constexpr static const char* test_text_005_result =
-    R"V0G0N(<empty-node>
-#define NDEBUG
-#define FOO(a, b, c) some - tokens(a)
-#define ZAPPY "Heh The Preprocessor!"
+constexpr static const char* test_text_006_result =
+    R"V0G0N(
 )V0G0N";
 
 // -------------------------------------------------------------------- testcase
 
-CATCH_TEST_CASE("005 define", "[005-define]")
+CATCH_TEST_CASE("006 if then", "[006-if-then]")
 {
    auto dump_parse = [&](Context& context) {
       auto& scanner = context.scanner();
@@ -60,22 +74,11 @@ CATCH_TEST_CASE("005 define", "[005-define]")
       CATCH_REQUIRE(AstNode::get_node_count() == 0);
    };
 
-   auto context_ptr = Context::make(make_unique<Scanner>("test-005", test_text_005));
+   auto context_ptr = Context::make(make_unique<Scanner>("test-006", test_text_006));
    auto& context    = *context_ptr;
    auto& scanner    = context.scanner();
 
-   CATCH_SECTION("005-define")
-   {
-      {
-         scanner.set_position(0);
-         unique_ptr<AstNode> node(accept_stmt_list(context));
-
-         std::stringstream ss;
-         node->stream(ss, 0);
-         CATCH_REQUIRE(test_text_005_result == ss.str());
-      }
-      CATCH_REQUIRE(AstNode::get_node_count() == 0);
-   }
+   dump_parse(context);
 }
 
 } // namespace giraffe::test
