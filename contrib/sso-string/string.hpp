@@ -288,6 +288,9 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       } sso;
    } data_;
 
+   static_assert(sizeof(typename Data::SSO) == sizeof(typename Data::NonSSO));
+   static_assert(sizeof(data_) == sizeof(void*) + 2 * sizeof(size_type));
+
  public:
    static constexpr size_type const sso_capacity
        = sizeof(typename Data::NonSSO) / sizeof(CharT) - 1;
@@ -363,6 +366,11 @@ std::ostream& operator<<(std::ostream& stream, const basic_string<CharT, Traits>
 }
 
 using string = basic_string<char>;
+
+static_assert(sizeof(string) == 3 * sizeof(std::size_t));
+static_assert(std::is_nothrow_default_constructible<string>::value);
+static_assert(std::is_nothrow_move_constructible<string>::value);
+static_assert(std::is_nothrow_move_assignable<string>::value);
 
 } // namespace sso23
 
