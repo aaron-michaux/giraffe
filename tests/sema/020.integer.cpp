@@ -23,7 +23,8 @@ namespace detail020
          const auto x = static_cast<T>(dist(gen));
          const auto y = Integer{x};
          CATCH_REQUIRE(y.type() == type);
-         if(detail::is_signed_(type)) {
+         CATCH_REQUIRE(std::is_signed<T>::value == y.is_signed());
+         if(y.is_signed()) {
             CATCH_REQUIRE(y.signed_value() == x);
          } else {
             CATCH_REQUIRE(y.unsigned_value() == x);
@@ -35,7 +36,6 @@ namespace detail020
          CASE(~, utilde);
 #undef CASE
       }
-      CATCH_REQUIRE(detail::is_signed_(type) == std::is_signed<T>::value);
    }
 
    template<typename U, typename V> void cross_test(auto& gen)
