@@ -181,6 +181,19 @@ struct Integer
    OPERATOR_FUNCTION(multiply)
    OPERATOR_FUNCTION(divide)
    OPERATOR_FUNCTION(remainder)
+   OPERATOR_FUNCTION(left_shift)
+   OPERATOR_FUNCTION(right_shift)
+   OPERATOR_FUNCTION(less)
+   OPERATOR_FUNCTION(less_eq)
+   OPERATOR_FUNCTION(greater)
+   OPERATOR_FUNCTION(greater_eq)
+   OPERATOR_FUNCTION(equal)
+   OPERATOR_FUNCTION(not_equal)
+   OPERATOR_FUNCTION(bitwise_and)
+   OPERATOR_FUNCTION(bitwise_xor)
+   OPERATOR_FUNCTION(bitwise_or)
+   OPERATOR_FUNCTION(logical_and)
+   OPERATOR_FUNCTION(logical_or)
 
 #undef OPERATOR_FUNCTION
 #undef OP_INNER
@@ -236,6 +249,19 @@ struct Integer
    OP_(multiply_, *)
    OP_(divide_, /)
    OP_(remainder_, %)
+   OP_(left_shift_, <<)
+   OP_(right_shift_, >>)
+   OP_(less_, <)
+   OP_(less_eq_, <=)
+   OP_(greater_, >)
+   OP_(greater_eq_, >=)
+   OP_(equal_, ==)
+   OP_(not_equal_, !=)
+   OP_(bitwise_and_, &)
+   OP_(bitwise_xor_, ^)
+   OP_(bitwise_or_, |)
+   OP_(logical_and_, &&)
+   OP_(logical_or_, ||)
 
 #undef OP_
 }; // namespace giraffe

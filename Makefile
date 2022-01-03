@@ -34,7 +34,7 @@ endif
 INCDIRS:=-Isrc
 CXX_CONTRIB_INC:=-isystemcontrib/include
 CFLAGS+= $(INCDIRS)
-CXXFLAGS+= -DFMT_HEADER_ONLY $(INCDIRS) $(CXX_CONTRIB_INC)
+CXXFLAGS+= -DFMT_HEADER_ONLY $(INCDIRS) $(CXX_CONTRIB_INC) -Wno-sign-compare
 
 # -------------------------------------------------------- Check that we're in the correct directory
 # Every shell command is executed in the same invocation

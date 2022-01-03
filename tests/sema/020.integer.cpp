@@ -41,13 +41,27 @@ namespace detail020
 
 #define CASE(op, func)                          \
    CATCH_REQUIRE(Integer{u op v} == a.func(b)); \
-   CATCH_REQUIRE(a.func(b).to_string() == format("{}", u op v));
+   CATCH_REQUIRE(a.func(b).to_string() == format("{:d}", u op v));
 
          CASE(+, plus)
          CASE(-, minus)
          CASE(*, multiply)
          CASE(/, divide)
          CASE(%, remainder)
+         CASE(<<, left_shift)
+         CASE(>>, right_shift)
+         CASE(<, less)
+         CASE(<=, less_eq)
+         CASE(>, greater)
+         CASE(>=, greater_eq)
+         CASE(==, equal)
+         CASE(!=, not_equal)
+         CASE(&, bitwise_and)
+         CASE(^, bitwise_xor)
+         CASE(|, bitwise_or)
+         CASE(&&, logical_and)
+         CASE(||, logical_or)
+
 #undef CASE
       }
    }
