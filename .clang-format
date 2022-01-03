@@ -5,7 +5,7 @@
 
 #BasedOnStyle : LLVM
 IndentWidth : 3
-ColumnLimit : 90
+ColumnLimit : 100
 
 ---
 
