@@ -34,8 +34,7 @@
  * DEALINGS IN THE SOFTWARE.
  *********************************************************************/
 
-#ifndef INCLUDE_GUARD_2EE24263_BD1F_4E5D_8CDA_A3217E867BF0
-#define INCLUDE_GUARD_2EE24263_BD1F_4E5D_8CDA_A3217E867BF0
+#pragma once
 
 #include <algorithm>
 #include <bit>
@@ -133,6 +132,30 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       return *this;
    }
 
+   //@{ Compare
+   constexpr bool operator==(const basic_string& rhs) const noexcept
+   {
+      return std::equal(begin(), end(), rhs.begin(), rhs.end(q));
+   }
+
+   constexpr bool operator!=(const basic_string& rhs) const noexcept { return !(*this == rhs); }
+
+   constexpr auto operator<=>(const std::basic_string_view<CharT, Traits>& rhs) const noexcept
+   {
+      return std::lexicographical_compare_three_way(begin(), end(), begin(rhs), end(rhs));
+   }
+
+   constexpr auto operator<=>(const CharT* rhs) const noexcept
+   {
+      return std::lexicographical_compare_three_way(begin(), end(), rhs, rhs + strlen(rhs));
+   }
+
+   constexpr auto operator<=>(const basic_string<CharT, Traits>& rhs) const noexcept
+   {
+      return std::lexicographical_compare_three_way(begin(), end(), begin(rhs), end(rhs));
+   }
+   //@}
+
    //@{ Element Access
    constexpr reference at(size_type pos) noexcept
    {
@@ -146,10 +169,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    }
 
    constexpr reference operator[](size_type pos) noexcept { return data()[pos]; }
-   constexpr const_reference operator[](size_type pos) const noexcept
-   {
-      return data()[pos];
-   }
+   constexpr const_reference operator[](size_type pos) const noexcept { return data()[pos]; }
 
    constexpr reference front() noexcept { return data()[0]; }
    constexpr const_reference front() const noexcept { return data()[0]; }
@@ -157,10 +177,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    constexpr reference back() noexcept { return data()[size() - 1]; }
    constexpr const_reference back() const noexcept { return data()[size() - 1]; }
 
-   constexpr CharT* data() noexcept
-   {
-      return sso() ? data_.sso.string : data_.non_sso.ptr;
-   }
+   constexpr CharT* data() noexcept { return sso() ? data_.sso.string : data_.non_sso.ptr; }
 
    constexpr CharT const* data() const noexcept
    {
@@ -208,6 +225,13 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    friend constexpr void swap(basic_string& lhs, basic_string& rhs) noexcept
    {
       std::swap(lhs.data_, rhs.data_);
+   }
+
+   constexpr std::size_t hash() const noexcept
+   {
+      using sv = std::basic_string_view<CharT, Traits>;
+      auto f   = std::hash<sv>{};
+      return f(sv{data(), size()});
    }
 
  private:
@@ -296,20 +320,17 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
        = sizeof(typename Data::NonSSO) / sizeof(CharT) - 1;
 
  private:
-   static constexpr size_type const high_bit_mask_
-       = static_cast<size_type>(1) << (sizeof(size_type) * CHAR_BIT - 1);
-   static constexpr size_type const sec_high_bit_mask_
-       = static_cast<size_type>(1) << (sizeof(size_type) * CHAR_BIT - 2);
+   static constexpr size_type const high_bit_mask_ = static_cast<size_type>(1)
+                                                     << (sizeof(size_type) * CHAR_BIT - 1);
+   static constexpr size_type const sec_high_bit_mask_ = static_cast<size_type>(1)
+                                                         << (sizeof(size_type) * CHAR_BIT - 2);
 
    template<typename T> static constexpr unsigned char& most_sig_byte_(T& obj)
    {
       return *(std::bit_cast<unsigned char*>(&obj) + sizeof(obj) - 1);
    }
 
-   template<int N> static constexpr bool lsb_(unsigned char byte)
-   {
-      return byte & (1u << N);
-   }
+   template<int N> static constexpr bool lsb_(unsigned char byte) { return byte & (1u << N); }
 
    template<int N> static constexpr bool msb_(unsigned char byte)
    {
@@ -336,27 +357,23 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 };
 
 template<typename CharT, typename Traits>
-constexpr auto operator<=>(const std::basic_string_view<CharT, Traits>& lhs,
-                           const basic_string<CharT, Traits>& rhs) noexcept
+constexpr auto operator<=>(const basic_string<CharT, Traits>& lhs,
+                           const std::basic_string_view<CharT, Traits>& rhs) noexcept
 {
-   return std::lexicographical_compare_three_way(
-       begin(lhs), end(lhs), begin(rhs), end(rhs));
+   return lhs <=> rhs;
 }
 
 template<typename CharT, typename Traits>
-constexpr auto operator<=>(const CharT* lhs,
-                           const basic_string<CharT, Traits>& rhs) noexcept
+constexpr auto operator<=>(const basic_string<CharT, Traits>& lhs, const CharT* rhs) noexcept
 {
-   return std::lexicographical_compare_three_way(
-       lhs, lhs + strlen(lhs), begin(rhs), end(rhs));
+   return lhs <=> rhs;
 }
 
 template<typename CharT, typename Traits>
 constexpr auto operator<=>(const basic_string<CharT, Traits>& lhs,
                            const basic_string<CharT, Traits>& rhs) noexcept
 {
-   return std::lexicographical_compare_three_way(
-       begin(lhs), end(lhs), begin(rhs), end(rhs));
+   return lhs <=> rhs;
 }
 
 template<typename CharT, typename Traits>
@@ -373,6 +390,9 @@ static_assert(std::is_nothrow_move_constructible<string>::value);
 static_assert(std::is_nothrow_move_assignable<string>::value);
 static_assert(std::is_nothrow_swappable<string>::value);
 
-} // namespace sso23
+template<typename T> struct hash
+{
+   std::size_t operator()(const T& o) const { return o.hash(); }
+};
 
-#endif
+} // namespace sso23

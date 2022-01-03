@@ -5,6 +5,7 @@
 #include "driver/context.hpp"
 
 #include "integer.hpp"
+#include "symbol-table.hpp"
 
 namespace giraffe
 {
@@ -17,6 +18,6 @@ Integer parse_integer(string_view text) noexcept(false);
 /**
  * All expressions evaluate to an integer type of some form
  */
-Integer evaluate_expr(const Context& ctx, const ExpressionNode* expr) noexcept(false);
+Integer evaluate_expr(const SymbolTable& symbols, const ExpressionNode* expr) noexcept(false);
 
 } // namespace giraffe

@@ -124,54 +124,62 @@ Integer parse_integer(string_view text) noexcept(false)
 
 // ---------------------------------------------------------------------------------- evalutate expr
 
-Integer evaluate_expr(const ExpressionNode* expr) noexcept(false)
+Integer evaluate_expr(const SymbolTable& symbols, const ExpressionNode* expr) noexcept(false)
 {
+   auto eval_binary = [&symbols, expr]() -> Integer {
+      assert(expr->size() == 2);
+      const auto lhs = evaluate_expr(symbols, expr->lhs());
+      const auto rhs = evaluate_expr(symbols, expr->rhs());
+      switch(expr->op()) {
+      case TPLUS: return lhs.plus(rhs);
+      case TMINUS: return lhs.minus(rhs);
+      case TMULT: return lhs.multiply(rhs);
+      case TDIV: return lhs.divide(rhs);
+      case TREMAINDER: return lhs.remainder(rhs);
+      case TLTLT: return lhs.left_shift(rhs);
+      case TGTGT: return lhs.right_shift(rhs);
+      case TLT: return lhs.less(rhs);
+      case TLE: return lhs.less_eq(rhs);
+      case TGT: return lhs.greater(rhs);
+      case TGE: return lhs.greater_eq(rhs);
+      case TEQEQ: return lhs.equal(rhs);
+      case TNE: return lhs.not_equal(rhs);
+      case TAND: return lhs.bitwise_and(rhs);
+      case TCARROT: return lhs.bitwise_xor(rhs);
+      case TOR: return lhs.bitwise_or(rhs);
+      case TANDAND: return lhs.logical_and(rhs);
+      case TOROR: return lhs.logical_or(rhs);
+      }
+      throw std::logic_error{
+          format("unexpected binary operator: '{}'", token_id_to_str(expr->op()))};
+      return Integer{0};
+   };
+
    switch(expr->expr_type()) {
    case ExprType::NONE: //
       throw std::logic_error{"attempt to evaluate a 'none' expression"};
    case ExprType::EMPTY: //
       throw std::logic_error{"attempt to evaluate an 'empty' expression"};
    case ExprType::IDENTIFIER:
-      throw std::runtime_error{format("failed to resolve symbol: '{}'", expr->text())};
-   case ExprType::INTEGER: //
-      return parse_integer(expr->text());
-   case ExprType::SUBEXPR: //
+      if(!symbols.has(expr->text()))
+         throw std::runtime_error{format("failed to resolve symbol: '{}'", expr->text())};
+      return parse_integer(symbols.eval(expr->text())); // throws parser/cannot eval
+   case ExprType::INTEGER:                              //
+      return parse_integer(expr->text());               // throws parser type errors
+   case ExprType::SUBEXPR:                              //
       assert(expr->size() == 1);
-      return evaluate_expr(expr->child(0));
+      return evaluate_expr(symbols, expr->child(0));
    case ExprType::UNARY:
       assert(expr->size() == 1);
       switch(expr->op()) {
-      case TSHOUT: return evaluate_expr(expr->child(0)).unot();
-      case TPLUS: return evaluate_expr(expr->child(0)).uplus();
-      case TMINUS: return evaluate_expr(expr->child(0)).uminus();
-      case TTILDE: return evaluate_expr(expr->child(0)).utilde();
+      case TSHOUT: return evaluate_expr(symbols, expr->child(0)).unot();
+      case TPLUS: return evaluate_expr(symbols, expr->child(0)).uplus();
+      case TMINUS: return evaluate_expr(symbols, expr->child(0)).uminus();
+      case TTILDE: return evaluate_expr(symbols, expr->child(0)).utilde();
       }
       throw std::logic_error{
           format("unexpected unary operator: '{}'", token_id_to_str(expr->op()))};
-   case ExprType::BINARY:
-      assert(expr->size() == 2);
-      switch(expr->op()) {
-      case TPLUS: return evaluate_expr(expr->lhs()).plus(evaluate_expr(expr->rhs()));
-      case TMINUS: return evaluate_expr(expr->lhs()).minus(evaluate_expr(expr->rhs()));
-      case TMULT: return evaluate_expr(expr->lhs()).multiply(evaluate_expr(expr->rhs()));
-      case TDIV: return evaluate_expr(expr->lhs()).divide(evaluate_expr(expr->rhs()));
-      case TREMAINDER: return evaluate_expr(expr->lhs()).remainder(evaluate_expr(expr->rhs()));
-      case TLTLT: return evaluate_expr(expr->lhs()).left_shift(evaluate_expr(expr->rhs()));
-      case TGTGT: return evaluate_expr(expr->lhs()).right_shift(evaluate_expr(expr->rhs()));
-      case TLT: return evaluate_expr(expr->lhs()).less(evaluate_expr(expr->rhs()));
-      case TLE: return evaluate_expr(expr->lhs()).less_eq(evaluate_expr(expr->rhs()));
-      case TGT: return evaluate_expr(expr->lhs()).greater(evaluate_expr(expr->rhs()));
-      case TGE: return evaluate_expr(expr->lhs()).greater_eq(evaluate_expr(expr->rhs()));
-      case TEQEQ: return evaluate_expr(expr->lhs()).equal(evaluate_expr(expr->rhs()));
-      case TNE: return evaluate_expr(expr->lhs()).not_equal(evaluate_expr(expr->rhs()));
-      case TAND: return evaluate_expr(expr->lhs()).bitwise_and(evaluate_expr(expr->rhs()));
-      case TCARROT: return evaluate_expr(expr->lhs()).bitwise_xor(evaluate_expr(expr->rhs()));
-      case TOR: return evaluate_expr(expr->lhs()).bitwise_or(evaluate_expr(expr->rhs()));
-      case TANDAND: return evaluate_expr(expr->lhs()).logical_and(evaluate_expr(expr->rhs()));
-      case TOROR: return evaluate_expr(expr->lhs()).logical_or(evaluate_expr(expr->rhs()));
-      }
-      throw std::logic_error{
-          format("unexpected binary operator: '{}'", token_id_to_str(expr->op()))};
+   case ExprType::BINARY: return eval_binary();
    }
    assert(false); // logic error
    return {};
