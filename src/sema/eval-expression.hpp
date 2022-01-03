@@ -12,7 +12,7 @@ namespace giraffe
 /**
  * Takes an integer literal (as text), and returns an Integer object
  */
-Integer parse_integer_(string_view text) noexcept(false);
+Integer parse_integer(string_view text) noexcept(false);
 
 /**
  * All expressions evaluate to an integer type of some form
