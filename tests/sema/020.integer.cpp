@@ -15,14 +15,27 @@ namespace giraffe::test
 {
 namespace detail020
 {
-   template<typename T> void test_type(IntegerType type)
+   template<typename T> void test_type(IntegerType type, auto& gen)
    {
       const T x = 0;
-      const Integer i{x};
-      CATCH_REQUIRE(i.type() == type);
+      std::uniform_int_distribution<T> dist;
+      for(auto i = 0; i < 10; ++i) {
+         const auto x = static_cast<T>(dist(gen));
+         const auto y = Integer{x};
+         CATCH_REQUIRE(y.type() == type);
+         if(detail::is_signed_(type)) {
+            CATCH_REQUIRE(y.signed_value() == x);
+         } else {
+            CATCH_REQUIRE(y.unsigned_value() == x);
+         }
+#define CASE(op, func) CATCH_REQUIRE(Integer{op x} == y.func())
+         CASE(!, unot);
+         CASE(+, uplus);
+         CASE(-, uminus);
+         CASE(~, utilde);
+#undef CASE
+      }
       CATCH_REQUIRE(detail::is_signed_(type) == std::is_signed<T>::value);
-      CATCH_REQUIRE(i.signed_value() == x);
-      CATCH_REQUIRE(i.unsigned_value() == x);
    }
 
    template<typename U, typename V> void cross_test(auto& gen)
@@ -30,7 +43,7 @@ namespace detail020
       std::uniform_int_distribution<U> udist;
       std::uniform_int_distribution<V> vdist;
 
-      for(auto i = 1; i < 10; ++i) {
+      for(auto i = 0; i < 10; ++i) {
          const auto u = static_cast<U>(udist(gen));
          const auto v = static_cast<V>(vdist(gen));
          const auto a = Integer{u};
@@ -76,16 +89,16 @@ CATCH_TEST_CASE("020 Integer", "[020-integer]")
 
    CATCH_SECTION("020-Construction")
    {
-      detail020::test_type<char>(IntegerType::CHAR);
-      detail020::test_type<short>(IntegerType::SHORT);
-      detail020::test_type<int>(IntegerType::INT);
-      detail020::test_type<long>(IntegerType::LONG);
-      detail020::test_type<long long>(IntegerType::LONGLONG);
-      detail020::test_type<unsigned char>(IntegerType::UCHAR);
-      detail020::test_type<unsigned short>(IntegerType::USHORT);
-      detail020::test_type<unsigned int>(IntegerType::UINT);
-      detail020::test_type<unsigned long>(IntegerType::ULONG);
-      detail020::test_type<unsigned long long>(IntegerType::ULONGLONG);
+      detail020::test_type<char>(IntegerType::CHAR, gen64);
+      detail020::test_type<short>(IntegerType::SHORT, gen64);
+      detail020::test_type<int>(IntegerType::INT, gen64);
+      detail020::test_type<long>(IntegerType::LONG, gen64);
+      detail020::test_type<long long>(IntegerType::LONGLONG, gen64);
+      detail020::test_type<unsigned char>(IntegerType::UCHAR, gen64);
+      detail020::test_type<unsigned short>(IntegerType::USHORT, gen64);
+      detail020::test_type<unsigned int>(IntegerType::UINT, gen64);
+      detail020::test_type<unsigned long>(IntegerType::ULONG, gen64);
+      detail020::test_type<unsigned long long>(IntegerType::ULONGLONG, gen64);
    }
 
    CATCH_SECTION("020-Construction")

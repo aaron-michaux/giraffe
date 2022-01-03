@@ -140,7 +140,32 @@ struct Integer
       return ""s;
    }
 
-#define OP_INNER(OP, TYPE)                                                                 \
+#define UNARY_OP(fname)                                                                    \
+   constexpr Integer fname() const noexcept                                                \
+   {                                                                                       \
+      switch(type()) {                                                                     \
+      case IntegerType::CHAR: return fname##_(static_cast_to_<char>());                    \
+      case IntegerType::SHORT: return fname##_(static_cast_to_<short>());                  \
+      case IntegerType::INT: return fname##_(static_cast_to_<int>());                      \
+      case IntegerType::LONG: return fname##_(static_cast_to_<long>());                    \
+      case IntegerType::LONGLONG: return fname##_(static_cast_to_<long long>());           \
+      case IntegerType::UCHAR: return fname##_(static_cast_to_<unsigned char>());          \
+      case IntegerType::USHORT: return fname##_(static_cast_to_<unsigned short>());        \
+      case IntegerType::UINT: return fname##_(static_cast_to_<unsigned int>());            \
+      case IntegerType::ULONG: return fname##_(static_cast_to_<unsigned long>());          \
+      case IntegerType::ULONGLONG: return fname##_(static_cast_to_<unsigned long long>()); \
+      }                                                                                    \
+      assert(false); /* logic error */                                                     \
+      return Integer{0};                                                                   \
+   }
+
+   UNARY_OP(unot)
+   UNARY_OP(uplus)
+   UNARY_OP(uminus)
+   UNARY_OP(utilde)
+#undef UNARY_OP
+
+#define BINOP_INNER(OP, TYPE)                                                              \
    switch(rhs.type()) {                                                                    \
    case IntegerType::CHAR: return OP(lhs.sc_<TYPE>(), rhs.sc_<char>());                    \
    case IntegerType::SHORT: return OP(lhs.sc_<TYPE>(), rhs.sc_<short>());                  \
@@ -156,50 +181,42 @@ struct Integer
    assert(false); /* logic error */                                                        \
    return Integer{0};
 
-#define OPERATOR_FUNCTION(fname)                                          \
-   constexpr Integer fname(const Integer& rhs) const noexcept             \
-   {                                                                      \
-      const auto& lhs = *this;                                            \
-      switch(lhs.type()) {                                                \
-      case IntegerType::CHAR: OP_INNER(fname##_, char)                    \
-      case IntegerType::SHORT: OP_INNER(fname##_, short)                  \
-      case IntegerType::INT: OP_INNER(fname##_, int)                      \
-      case IntegerType::LONG: OP_INNER(fname##_, long)                    \
-      case IntegerType::LONGLONG: OP_INNER(fname##_, long long)           \
-      case IntegerType::UCHAR: OP_INNER(fname##_, unsigned char)          \
-      case IntegerType::USHORT: OP_INNER(fname##_, unsigned short)        \
-      case IntegerType::UINT: OP_INNER(fname##_, unsigned int)            \
-      case IntegerType::ULONG: OP_INNER(fname##_, unsigned long)          \
-      case IntegerType::ULONGLONG: OP_INNER(fname##_, unsigned long long) \
-      }                                                                   \
-      assert(false); /* logic error */                                    \
-      return Integer{0};                                                  \
+#define BINARY_OPERATOR(fname)                                               \
+   constexpr Integer fname(const Integer& rhs) const noexcept                \
+   {                                                                         \
+      const auto& lhs = *this;                                               \
+      switch(lhs.type()) {                                                   \
+      case IntegerType::CHAR: BINOP_INNER(fname##_, char)                    \
+      case IntegerType::SHORT: BINOP_INNER(fname##_, short)                  \
+      case IntegerType::INT: BINOP_INNER(fname##_, int)                      \
+      case IntegerType::LONG: BINOP_INNER(fname##_, long)                    \
+      case IntegerType::LONGLONG: BINOP_INNER(fname##_, long long)           \
+      case IntegerType::UCHAR: BINOP_INNER(fname##_, unsigned char)          \
+      case IntegerType::USHORT: BINOP_INNER(fname##_, unsigned short)        \
+      case IntegerType::UINT: BINOP_INNER(fname##_, unsigned int)            \
+      case IntegerType::ULONG: BINOP_INNER(fname##_, unsigned long)          \
+      case IntegerType::ULONGLONG: BINOP_INNER(fname##_, unsigned long long) \
+      }                                                                      \
+      assert(false); /* logic error */                                       \
+      return Integer{0};                                                     \
    }
 
-   OPERATOR_FUNCTION(plus)
-   OPERATOR_FUNCTION(minus)
-   OPERATOR_FUNCTION(multiply)
-   OPERATOR_FUNCTION(divide)
-   OPERATOR_FUNCTION(remainder)
-   OPERATOR_FUNCTION(left_shift)
-   OPERATOR_FUNCTION(right_shift)
-   OPERATOR_FUNCTION(less)
-   OPERATOR_FUNCTION(less_eq)
-   OPERATOR_FUNCTION(greater)
-   OPERATOR_FUNCTION(greater_eq)
-   OPERATOR_FUNCTION(equal)
-   OPERATOR_FUNCTION(not_equal)
-   OPERATOR_FUNCTION(bitwise_and)
-   OPERATOR_FUNCTION(bitwise_xor)
-   OPERATOR_FUNCTION(bitwise_or)
-   OPERATOR_FUNCTION(logical_and)
-   OPERATOR_FUNCTION(logical_or)
+   BINARY_OPERATOR(plus)
+   BINARY_OPERATOR(minus)
+   BINARY_OPERATOR(multiply)
+   BINARY_OPERATOR(divide)
+   BINARY_OPERATOR(remainder)
+   BINARY_OPERATOR(left_shift)
+   BINARY_OPERATOR(right_shift) BINARY_OPERATOR(less) BINARY_OPERATOR(less_eq)
+       BINARY_OPERATOR(greater) BINARY_OPERATOR(greater_eq) BINARY_OPERATOR(equal)
+           BINARY_OPERATOR(not_equal) BINARY_OPERATOR(bitwise_and) BINARY_OPERATOR(bitwise_xor)
+               BINARY_OPERATOR(bitwise_or) BINARY_OPERATOR(logical_and) BINARY_OPERATOR(logical_or)
 
-#undef OPERATOR_FUNCTION
-#undef OP_INNER
+#undef BINARY_OPERATOR
+#undef BINOP_INNER
 
- private:
-   template<typename T> constexpr T static_cast_to_() const noexcept
+                   private : template<typename T>
+                             constexpr T static_cast_to_() const noexcept
    {
       switch(type()) {
       case IntegerType::CHAR: return static_cast<T>(data_.c);
@@ -238,32 +255,45 @@ struct Integer
       return T{0};
    }
 
-#define OP_(func, op)                                                                \
+#define BINARY_OP_(func, op)                                                         \
    template<typename U, typename V> static constexpr Integer func(U u, V v) noexcept \
    {                                                                                 \
       return Integer{u op v};                                                        \
    }
 
-   OP_(plus_, +)
-   OP_(minus_, -)
-   OP_(multiply_, *)
-   OP_(divide_, /)
-   OP_(remainder_, %)
-   OP_(left_shift_, <<)
-   OP_(right_shift_, >>)
-   OP_(less_, <)
-   OP_(less_eq_, <=)
-   OP_(greater_, >)
-   OP_(greater_eq_, >=)
-   OP_(equal_, ==)
-   OP_(not_equal_, !=)
-   OP_(bitwise_and_, &)
-   OP_(bitwise_xor_, ^)
-   OP_(bitwise_or_, |)
-   OP_(logical_and_, &&)
-   OP_(logical_or_, ||)
+   BINARY_OP_(plus_, +)
+   BINARY_OP_(minus_, -)
+   BINARY_OP_(multiply_, *)
+   BINARY_OP_(divide_, /)
+   BINARY_OP_(remainder_, %)
+   BINARY_OP_(left_shift_, <<)
+   BINARY_OP_(right_shift_, >>)
+   BINARY_OP_(less_, <)
+   BINARY_OP_(less_eq_, <=)
+   BINARY_OP_(greater_, >)
+   BINARY_OP_(greater_eq_, >=)
+   BINARY_OP_(equal_, ==)
+   BINARY_OP_(not_equal_, !=)
+   BINARY_OP_(bitwise_and_, &)
+   BINARY_OP_(bitwise_xor_, ^)
+   BINARY_OP_(bitwise_or_, |)
+   BINARY_OP_(logical_and_, &&)
+   BINARY_OP_(logical_or_, ||)
 
-#undef OP_
+#undef BINARY_OP_
+
+#define UNARY_OP_(func, op)                                             \
+   template<typename T> static constexpr Integer func(T value) noexcept \
+   {                                                                    \
+      return Integer{op value};                                         \
+   }
+
+   UNARY_OP_(unot_, !)
+   UNARY_OP_(uplus_, +)
+   UNARY_OP_(uminus_, -)
+   UNARY_OP_(utilde_, ~)
+#undef UNARY_OP_
+
 }; // namespace giraffe
 
 } // namespace giraffe
