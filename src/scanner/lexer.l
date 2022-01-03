@@ -42,7 +42,11 @@ MD	[_\.\:a-zA-Z0-9]
 DIGIT   [0-9']
 HEXD    [0-9a-fA-F']
 HEXQUAD {HEXD}{HEXD}{HEXD}{HEXD}
-SUFFIX  ([uU])|([zZ])|([lL])
+
+UNSIGN  [uU]
+USUFF   ([lL])|([zZ])|(ll)|(LL)                                       
+SUFFIX  ({USUFF})|({UNSIGN})|({USUFF}{UNSIGN})|({UNSIGN}{USUFF})
+
 NQ      ([\x21-\x21])|([\x23-\x7f])|([\t ])
 NA      ([\x21-\x3d])|([\x3f-\x7f])|{WS}
 NB      ([\x21-\x3c])|([\x3f-\x7f])|{WS}
@@ -147,8 +151,9 @@ PP      {WS}*#{WS}*
 ">>"                         { return TOKEN(TGTGT); }
 
 {L}{D}*                      { return TOKEN(TIDENTIFIER); }
-{DIGIT}+{SUFFIX}*            { return TOKEN(TINTEGER); }
-"0x"{HEXD}+{SUFFIX}*         { return TOKEN(TINTEGER); }
+{DIGIT}+{SUFFIX}?            { return TOKEN(TINTEGER); }
+"0"[xX]{HEXD}+{SUFFIX}?      { return TOKEN(TINTEGER); }
+"0"[bB][01]+{SUFFIX}?        { return TOKEN(TINTEGER); }
 
 "//".*			     { return TOKEN(TCOMMENT); }
 

@@ -5,16 +5,16 @@ namespace giraffe
 {
 /** The different integer types */
 enum class IntegerType : int {
-   CHAR, // Always signed
-   SHORT,
-   INT,
-   LONG,
-   LONGLONG,
-   UCHAR,
-   USHORT,
-   UINT,
-   ULONG,
-   ULONGLONG
+   CHAR      = 0, // Always signed
+   SHORT     = 1,
+   INT       = 2,
+   LONG      = 3,
+   LONGLONG  = 4,
+   UCHAR     = 5,
+   USHORT    = 6,
+   UINT      = 7,
+   ULONG     = 8,
+   ULONGLONG = 9
 };
 
 } // namespace giraffe
