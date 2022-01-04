@@ -124,12 +124,46 @@ Integer parse_integer(string_view text) noexcept(false)
 
 // ---------------------------------------------------------------------------------- evalutate expr
 
-Integer evaluate_expr(const SymbolTable& symbols, const ExpressionNode* expr) noexcept(false)
+Integer evaluate_expr(Context& context, const ExpressionNode* expr) noexcept(false)
 {
-   auto eval_binary = [&symbols, expr]() -> Integer {
+   auto eval_symbol = [&context, expr]() -> Integer {
+      if(!context.symbols().has(expr->text())) {
+         context.push_error(expr->loc0(), expr->src_range(), "failed to resolve symbol");
+         return Integer::make_invalid();
+      }
+      const auto resolved = context.symbols().eval(expr->text());
+      try {
+         return parse_integer(resolved);
+      } catch(std::exception& e) {
+         context.push_error(
+             expr->loc0(),
+             expr->src_range(),
+             format("failed to parse symbol (which evaluated to {}): {}", resolved, e.what()));
+      }
+      return Integer::make_invalid();
+   };
+
+   auto eval_unary = [&context, expr]() -> Integer {
+      assert(expr->size() == 1);
+      const Integer child = evaluate_expr(context, expr->child(0));
+      if(child.is_invalid()) return child;
+      switch(expr->op()) {
+      case TSHOUT: return child.unot();
+      case TPLUS: return child.uplus();
+      case TMINUS: return child.uminus();
+      case TTILDE: return child.utilde();
+      }
+      context.push_error(expr->op_loc(),
+                         format("unexpected unary operator: '{}'", token_id_to_str(expr->op())));
+      return Integer::make_invalid();
+   };
+
+   auto eval_binary = [&context, expr]() -> Integer {
       assert(expr->size() == 2);
-      const auto lhs = evaluate_expr(symbols, expr->lhs());
-      const auto rhs = evaluate_expr(symbols, expr->rhs());
+      const auto lhs = evaluate_expr(context, expr->lhs());
+      const auto rhs = evaluate_expr(context, expr->rhs());
+      if(lhs.is_invalid() || rhs.is_invalid()) return Integer::make_invalid();
+
       switch(expr->op()) {
       case TPLUS: return lhs.plus(rhs);
       case TMINUS: return lhs.minus(rhs);
@@ -150,35 +184,18 @@ Integer evaluate_expr(const SymbolTable& symbols, const ExpressionNode* expr) no
       case TANDAND: return lhs.logical_and(rhs);
       case TOROR: return lhs.logical_or(rhs);
       }
-      throw std::logic_error{
-          format("unexpected binary operator: '{}'", token_id_to_str(expr->op()))};
-      return Integer{0};
+      context.push_error(expr->op_loc(),
+                         format("unexpected binary operator: '{}'", token_id_to_str(expr->op())));
+      return Integer::make_invalid();
    };
 
    switch(expr->expr_type()) {
-   case ExprType::NONE: //
-      throw std::logic_error{"attempt to evaluate a 'none' expression"};
-   case ExprType::EMPTY: //
-      throw std::logic_error{"attempt to evaluate an 'empty' expression"};
-   case ExprType::IDENTIFIER:
-      if(!symbols.has(expr->text()))
-         throw std::runtime_error{format("failed to resolve symbol: '{}'", expr->text())};
-      return parse_integer(symbols.eval(expr->text())); // throws parser/cannot eval
-   case ExprType::INTEGER:                              //
-      return parse_integer(expr->text());               // throws parser type errors
-   case ExprType::SUBEXPR:                              //
-      assert(expr->size() == 1);
-      return evaluate_expr(symbols, expr->child(0));
-   case ExprType::UNARY:
-      assert(expr->size() == 1);
-      switch(expr->op()) {
-      case TSHOUT: return evaluate_expr(symbols, expr->child(0)).unot();
-      case TPLUS: return evaluate_expr(symbols, expr->child(0)).uplus();
-      case TMINUS: return evaluate_expr(symbols, expr->child(0)).uminus();
-      case TTILDE: return evaluate_expr(symbols, expr->child(0)).utilde();
-      }
-      throw std::logic_error{
-          format("unexpected unary operator: '{}'", token_id_to_str(expr->op()))};
+   case ExprType::NONE: throw std::logic_error{"attempt to evaluate a 'none' expression"};
+   case ExprType::EMPTY: throw std::logic_error{"attempt to evaluate an 'empty' expression"};
+   case ExprType::IDENTIFIER: return eval_symbol();
+   case ExprType::INTEGER: return parse_integer(expr->text());
+   case ExprType::SUBEXPR: assert(expr->size() == 1); return evaluate_expr(context, expr->child(0));
+   case ExprType::UNARY: return eval_unary();
    case ExprType::BINARY: return eval_binary();
    }
    assert(false); // logic error

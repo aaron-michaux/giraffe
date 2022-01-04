@@ -182,16 +182,14 @@ class AstNode
 #ifdef NDEBUG
    static auto get_node_count() noexcept { return 0; }
 #else
-   static auto get_node_count() noexcept
-   {
-      return node_count_.load(std::memory_order_relaxed);
-   }
+   static auto get_node_count() noexcept { return node_count_.load(std::memory_order_relaxed); }
 #endif
 
    auto parent() const noexcept { return parent_; }
    const auto& children() const noexcept { return children_; }
    auto index_in_parent() const noexcept { return index_in_parent_; }
    const auto location() const noexcept { return loc_; }
+   const auto src_range() const noexcept { return loc_; }
    const auto loc0() const noexcept { return loc_.first; }
    const auto loc1() const noexcept { return loc_.second; }
 

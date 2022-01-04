@@ -135,7 +135,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    //@{ Compare
    constexpr bool operator==(const basic_string& rhs) const noexcept
    {
-      return std::equal(begin(), end(), rhs.begin(), rhs.end(q));
+      return std::equal(begin(), end(), rhs.begin(), rhs.end());
    }
 
    constexpr bool operator!=(const basic_string& rhs) const noexcept { return !(*this == rhs); }

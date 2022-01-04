@@ -103,6 +103,13 @@ BINARY_OP_(logical_or_, ||)
 namespace giraffe
 {
 
+Integer This::make_invalid() noexcept
+{
+   Integer ret{0};
+   ret.is_valid_ = false;
+   return ret;
+}
+
 bool This::is_signed() const noexcept { return detail::is_signed_(type()); }
 int64_t This::signed_value() const noexcept { return detail::sc_<int64_t>(*this); }
 uint64_t This::unsigned_value() const noexcept { return detail::sc_<uint64_t>(*this); }

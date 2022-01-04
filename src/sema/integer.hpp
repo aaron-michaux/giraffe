@@ -4,7 +4,7 @@
 namespace giraffe
 {
 /** The different integer types */
-enum class IntegerType : int {
+enum class IntegerType : uint8_t {
    CHAR      = 0, // Always signed
    SHORT     = 1,
    INT       = 2,
@@ -46,6 +46,7 @@ struct Integer
    } data_;
 
    IntegerType type_ = IntegerType::INT;
+   bool is_valid_    = true; //!< If `false` then the integer is invalid
 
  public:
    constexpr Integer() noexcept
@@ -56,6 +57,7 @@ struct Integer
    constexpr explicit Integer(T value) noexcept \
        : data_{.member = {value}}               \
        , type_{IntegerType::type}               \
+       , is_valid_{true}                        \
    {}
    EXPLICIT_CONST(char, c, CHAR)
    EXPLICIT_CONST(short, s, SHORT)
@@ -75,6 +77,10 @@ struct Integer
    constexpr Integer& operator=(const Integer&) = default;
    constexpr Integer& operator=(Integer&&) = default;
 
+   static Integer make_invalid() noexcept;
+
+   constexpr auto is_valid() const noexcept { return is_valid_; }
+   constexpr auto is_invalid() const noexcept { return !is_valid_; }
    constexpr auto type() const noexcept { return type_; }
    constexpr auto data() const noexcept { return data_; }
 
