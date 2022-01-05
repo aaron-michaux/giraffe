@@ -262,6 +262,31 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    {
       return insert(size(), t);
    }
+
+   constexpr basic_string operator+(const basic_string& rhs) const
+   {
+      basic_string ret = *this;
+      ret += rhs;
+      return ret;
+   }
+   constexpr basic_string operator+(CharT rhs) const
+   {
+      basic_string ret = *this;
+      ret += rhs;
+      return ret;
+   }
+   constexpr basic_string operator+(const CharT* rhs) const
+   {
+      basic_string ret = *this;
+      ret += rhs;
+      return ret;
+   }
+   template<class T> constexpr _enable_if_sv<T, basic_string> operator+(const T& rhs) const
+   {
+      basic_string ret = *this;
+      ret += rhs;
+      return ret;
+   }
    //@}
 
    //@{ Append
@@ -380,20 +405,6 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    //@}
 
    //@{ Friends
-   friend constexpr auto begin(basic_string& o) noexcept { return o.begin(); }
-   friend constexpr auto begin(const basic_string& o) noexcept { return o.begin(); }
-   friend constexpr auto cbegin(const basic_string& o) noexcept { return o.cbegin(); }
-   friend constexpr auto end(basic_string& o) noexcept { return o.end(); }
-   friend constexpr auto end(const basic_string& o) noexcept { return o.end(); }
-   friend constexpr auto cend(const basic_string& o) noexcept { return o.cend(); }
-
-   friend constexpr auto rbegin(basic_string& o) noexcept { return o.rbegin(); }
-   friend constexpr auto rbegin(const basic_string& o) noexcept { return o.rbegin(); }
-   friend constexpr auto crbegin(const basic_string& o) noexcept { return o.crbegin(); }
-   friend constexpr auto rend(basic_string& o) noexcept { return o.rend(); }
-   friend constexpr auto rend(const basic_string& o) noexcept { return o.rend(); }
-   friend constexpr auto crend(const basic_string& o) noexcept { return o.crend(); }
-
    friend constexpr void swap(basic_string& lhs, basic_string& rhs) noexcept
    {
       std::swap(lhs.data_, rhs.data_);
