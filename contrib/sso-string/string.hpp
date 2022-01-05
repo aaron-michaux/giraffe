@@ -208,19 +208,19 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    //@}
 
    //@{ Iterators
-   auto begin() noexcept { return data(); }
-   auto begin() const noexcept { return data(); }
-   auto rbegin() noexcept { return std::make_reverse_iterator(end()); }
-   auto rbegin() const noexcept { return std::make_reverse_iterator(end()); }
-   auto cbegin() const noexcept { return data(); }
-   auto crbegin() const noexcept { return std::make_reverse_iterator(cend()); }
+   iterator begin() noexcept { return data(); }
+   const_iterator begin() const noexcept { return data(); }
+   const_iterator cbegin() const noexcept { return data(); }
+   iterator end() noexcept { return data() + size(); }
+   const_iterator end() const noexcept { return data() + size(); }
+   const_iterator cend() const noexcept { return data() + size(); }
 
-   auto end() noexcept { return data() + size(); }
-   auto end() const noexcept { return data() + size(); }
-   auto rend() noexcept { return std::make_reverse_iterator(begin()); }
-   auto rend() const noexcept { return std::make_reverse_iterator(begin()); }
-   auto cend() const noexcept { return data() + size(); }
-   auto crend() const noexcept { return std::make_reverse_iterator(cbegin()); }
+   reverse_iterator rbegin() noexcept { return std::make_reverse_iterator(end()); }
+   const_reverse_iterator rbegin() const noexcept { return std::make_reverse_iterator(end()); }
+   const_reverse_iterator crbegin() const noexcept { return std::make_reverse_iterator(cend()); }
+   reverse_iterator rend() noexcept { return std::make_reverse_iterator(begin()); }
+   const_reverse_iterator rend() const noexcept { return std::make_reverse_iterator(begin()); }
+   const_reverse_iterator crend() const noexcept { return std::make_reverse_iterator(cbegin()); }
    //@}
 
    //@{ Capacity
@@ -237,7 +237,6 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    constexpr void clear() noexcept { set_new_size_(0); }
    constexpr void push_back(CharT ch) { push_back_(ch); }
    constexpr void pop_back(CharT ch) { set_new_size_(size() == 0 ? 0 : size() - 1); }
-
    constexpr void resize(size_type new_size) { set_new_size_(new_size); }
    constexpr void resize(size_type new_size, CharT ch)
    {
@@ -380,10 +379,31 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    }
    //@}
 
+   //@{ Friends
+   friend constexpr auto begin(basic_string& o) noexcept { return o.begin(); }
+   friend constexpr auto begin(const basic_string& o) noexcept { return o.begin(); }
+   friend constexpr auto cbegin(const basic_string& o) noexcept { return o.cbegin(); }
+   friend constexpr auto end(basic_string& o) noexcept { return o.end(); }
+   friend constexpr auto end(const basic_string& o) noexcept { return o.end(); }
+   friend constexpr auto cend(const basic_string& o) noexcept { return o.cend(); }
+
+   friend constexpr auto rbegin(basic_string& o) noexcept { return o.rbegin(); }
+   friend constexpr auto rbegin(const basic_string& o) noexcept { return o.rbegin(); }
+   friend constexpr auto crbegin(const basic_string& o) noexcept { return o.crbegin(); }
+   friend constexpr auto rend(basic_string& o) noexcept { return o.rend(); }
+   friend constexpr auto rend(const basic_string& o) noexcept { return o.rend(); }
+   friend constexpr auto crend(const basic_string& o) noexcept { return o.crend(); }
+
    friend constexpr void swap(basic_string& lhs, basic_string& rhs) noexcept
    {
       std::swap(lhs.data_, rhs.data_);
    }
+
+   friend std::ostream& operator<<(std::ostream& stream, const basic_string& string)
+   {
+      return stream << string.data();
+   }
+   //@}
 
    constexpr std::size_t hash() const noexcept
    {
@@ -405,7 +425,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 
    constexpr auto lex_comp_(const string_view_type& rhs) const noexcept
    {
-      return std::lexicographical_compare_three_way(begin(), end(), begin(rhs), end(rhs));
+      return std::lexicographical_compare_three_way(begin(), end(), std::begin(rhs), std::end(rhs));
    }
 
    constexpr CharT* data_ptr_() noexcept
@@ -601,12 +621,6 @@ constexpr auto operator<=>(const basic_string<CharT, Traits>& lhs,
                            const basic_string<CharT, Traits>& rhs) noexcept
 {
    return lhs <=> rhs;
-}
-
-template<typename CharT, typename Traits>
-std::ostream& operator<<(std::ostream& stream, const basic_string<CharT, Traits>& string)
-{
-   return stream << string.data();
 }
 
 using string = basic_string<char>;
