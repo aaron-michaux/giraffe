@@ -137,16 +137,20 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    //@{ Assignment
    constexpr basic_string& operator=(basic_string const& other)
    {
-      auto copy = other;
-      swap(copy, *this);
+      if(this != &other) {
+         auto copy = other;
+         swap(copy, *this);
+      }
       return *this;
    }
 
    constexpr basic_string& operator=(basic_string&& other) noexcept
    {
-      this->~basic_string();
-      data_ = other.data_;
-      other.set_moved_from_();
+      if(this != &other) {
+         this->~basic_string();
+         data_ = other.data_;
+         other.set_moved_from_();
+      }
       return *this;
    }
 
@@ -230,8 +234,68 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    //@}
 
    //@{ Operations
+   constexpr void clear() noexcept { set_new_size_(0); }
    constexpr void push_back(CharT ch) { push_back_(ch); }
+   constexpr void pop_back(CharT ch) { set_new_size_(size() == 0 ? 0 : size() - 1); }
 
+   constexpr void resize(size_type new_size) { set_new_size_(new_size); }
+   constexpr void resize(size_type new_size, CharT ch)
+   {
+      const auto current_size = size();
+      if(new_size < current_size) {
+         set_new_size_(new_size);
+      } else if(new_size > current_size) {
+         insert(cend(), new_size - current_size, ch);
+      }
+   }
+   //@}
+
+   //@{ Operator +=
+   constexpr basic_string& operator+=(const basic_string& str) { return insert(size(), str); }
+   constexpr basic_string& operator+=(CharT ch) { return insert(size(), 1, ch); }
+   constexpr basic_string& operator+=(const CharT* s) { return insert(size(), s); }
+   constexpr basic_string& operator+=(std::initializer_list<CharT> ilist)
+   {
+      insert(cend(), ilist);
+      return *this;
+   }
+   template<class T> constexpr _enable_if_sv<T, basic_string&> operator+=(const T& t)
+   {
+      return insert(size(), t);
+   }
+   //@}
+
+   //@{ Append
+   constexpr basic_string& append(size_type count, CharT ch) { return *this += ch; }
+   constexpr basic_string& append(const basic_string& str) { return *this += str; }
+   constexpr basic_string& append(const basic_string& str, size_type pos, size_type count = npos)
+   {
+      return insert(size(), str, pos, count);
+   }
+   constexpr basic_string& append(const CharT* s, size_type count)
+   {
+      return insert(size(), s, count);
+   }
+   constexpr basic_string& append(const CharT* s) { return insert(size(), s); }
+   template<class InputIt> constexpr basic_string& append(InputIt first, InputIt last)
+   {
+      insert(cend(), first, last);
+      return *this;
+   }
+   constexpr basic_string& append(std::initializer_list<CharT> ilist) { return *this += ilist; }
+   template<class T> constexpr _enable_if_sv<T, basic_string&> append(const T& t)
+   {
+      return insert(size(), t);
+   }
+   template<class T>
+   constexpr _enable_if_sv<T, basic_string&>
+   append(const T& t, size_type pos, size_type count = npos)
+   {
+      return insert(size(), t, pos, count);
+   }
+   //@}
+
+   //@{ Insert
    constexpr basic_string& insert(size_type index, size_type count, CharT ch)
    {
       insert(cbegin() + index, count, ch);
@@ -314,7 +378,6 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       insert(index, sv.data() + index_str, count);
       return *this;
    }
-
    //@}
 
    friend constexpr void swap(basic_string& lhs, basic_string& rhs) noexcept
