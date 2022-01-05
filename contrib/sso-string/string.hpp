@@ -149,6 +149,36 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       other.set_moved_from_();
       return *this;
    }
+
+   constexpr basic_string& assign(size_type count, CharT ch) { return insert(cbegin(), count, ch); }
+   constexpr basic_string& assign(const basic_string& str) { return *this = str; }
+   constexpr basic_string& assign(const basic_string& str, size_type pos, size_type count = npos)
+   {
+      return insert(0, str, pos, count);
+   }
+   constexpr basic_string& assign(basic_string&& str) noexcept { return *this == std::move(str); }
+   constexpr basic_string& assign(const CharT* s, size_type count) { return insert(0, s, count); }
+   constexpr basic_string& assign(const CharT* s) { return insert(0, s); }
+   template<class InputIt> constexpr basic_string& assign(InputIt first, InputIt last)
+   {
+      insert(cbegin(), first, last);
+      return *this;
+   }
+   constexpr basic_string& assign(std::initializer_list<CharT> ilist)
+   {
+      insert(cbegin(), ilist);
+      return *this;
+   }
+   template<class T> constexpr _enable_if_sv<T, basic_string&> assign(const T& t)
+   {
+      return insert(0, t);
+   }
+   template<class T>
+   constexpr _enable_if_sv<T, basic_string&>
+   assign(const T& t, size_type pos, size_type count = npos)
+   {
+      return insert(0, t, pos, count);
+   }
    //@}
 
    //@{ Compare
@@ -156,7 +186,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    constexpr bool operator!=(const basic_string& rhs) const noexcept { return !(*this == rhs); }
    constexpr auto operator<=>(const string_view_type& rhs) const noexcept { return lex_comp_(rhs); }
    constexpr auto operator<=>(const CharT* rhs) const noexcept { return lex_comp_(rhs); }
-   constexpr auto operator<=>(const basic_string& rhs) const noexcept { lex_comp_(rhs_); }
+   constexpr auto operator<=>(const basic_string& rhs) const noexcept { lex_comp_(rhs); }
    //@}
 
    //@{ Element Access
@@ -333,14 +363,6 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    constexpr size_type capacity_() const noexcept
    {
       return is_sso_() ? (sizeof(data_) - 1) : read_non_sso_data_().second;
-   }
-
-   constexpr void assign_ptr_(CharT* ptr, size_type size, size_type capacity)
-   {
-      data_.non_sso.ptr = new CharT[size + 1];
-      Traits::move(data_.non_sso.ptr, string, size);
-      Traits::assign(data_.non_sso.ptr[size], static_cast<CharT>(0));
-      set_non_sso_data_(size, size);
    }
 
    constexpr void set_capacity_(size_type new_cap)
