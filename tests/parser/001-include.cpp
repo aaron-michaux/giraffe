@@ -33,11 +33,11 @@ constexpr static const char* test_text_001_result =
 #include <file2>
 )V0G0N";
 
-constexpr auto test_001_token_seq = to_array<int>(
-    {TNEWLINE, TNEWLINE,   TINCLUDE,  TSTR_DELIM, TSTR_PART, TSTR_DELIM, TNEWLINE,
-     TINCLUDE, TSTR_DELIM, TSTR_PART, TSTR_PART,  TSTR_PART, TSTR_DELIM, TNEWLINE,
-     TINCLUDE, TSTR_DELIM, TSTR_PART, TSTR_DELIM, TNEWLINE,  TINCLUDE,   TSPACESHIP,
-     TNEWLINE, TINCLUDE,   TSTRING,   TNEWLINE,   TNEWLINE,  TEOF});
+constexpr auto test_001_token_seq
+    = to_array<int>({TNEWLINE, TNEWLINE,   TINCLUDE,  TSTR_DELIM, TSTR_PART, TSTR_DELIM, TNEWLINE,
+                     TINCLUDE, TSTR_DELIM, TSTR_PART, TSTR_PART,  TSTR_PART, TSTR_DELIM, TNEWLINE,
+                     TINCLUDE, TSTR_DELIM, TSTR_PART, TSTR_DELIM, TNEWLINE,  TINCLUDE,   TSPACESHIP,
+                     TNEWLINE, TINCLUDE,   TSTRING,   TNEWLINE,   TNEWLINE,  TEOF});
 
 constexpr auto test_001_results = to_array<std::pair<string_view, bool>>(
     {{"file0", true}, {" \"!", true}, {"file1", true}, {"=", false}, {"file2", false}});

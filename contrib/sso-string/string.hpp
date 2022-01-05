@@ -1,13 +1,8 @@
 /******************************************************************/
 /**
  * \file   string.hpp
- * \author Elliot Goodrich
+ * \author Elliot Goodrich -- initial proof-of-concept
  * \author Aaron Michaux
- *           constexpr everything
- *           removed reinterpret_cast
- *           initialize from iterators
- *           initialize from string_view
- *           constant iterators
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -38,6 +33,7 @@
 
 #include <algorithm>
 #include <bit>
+#include <cassert>
 #include <climits>
 #include <cstddef>
 #include <cstring>
@@ -65,32 +61,52 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    using reverse_iterator       = std::reverse_iterator<iterator>;
    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
+   using string_view_type = std::basic_string_view<CharT, Traits>;
+
+   static constexpr size_type npos = -1;
+
+ private:
+   template<typename T, typename ResultT>
+   using _enable_if_sv = std::enable_if_t<
+       std::conjunction_v<std::is_convertible_v<const T&, string_view_type>,
+                          std::negation_v<std::is_convertible<const T*, const basic_string*>>,
+                          std::negation_v<std::is_convertible<const T&, const CharT*>>>,
+       ResultT>;
+
+   /** Create a string with a given capacity */
+   constexpr basic_string(CharT const* string, size_type size, size_type capacity)
+   {
+      if(capacity < size) capacity = size;
+
+      if(capacity <= sso_capacity) {
+         Traits::move(data_.sso.string, string, size);
+         Traits::assign(data_.sso.string[size], static_cast<CharT>(0));
+         set_sso_size_(size);
+      } else {
+         data_.non_sso.ptr = new CharT[capacity + 1];
+         Traits::move(data_.non_sso.ptr, string, size);
+         Traits::assign(data_.non_sso.ptr[size], static_cast<CharT>(0));
+         set_non_sso_data_(size, capacity);
+      }
+   }
+
  public:
+   //@{ Construction
    constexpr basic_string() noexcept
        : basic_string{"", static_cast<size_type>(0)}
    {}
 
    constexpr basic_string(CharT const* string, size_type size)
-   {
-      if(size <= sso_capacity) {
-         Traits::move(data_.sso.string, string, size);
-         Traits::assign(data_.sso.string[size], static_cast<CharT>(0));
-         set_sso_size(size);
-      } else {
-         data_.non_sso.ptr = new CharT[size + 1];
-         Traits::move(data_.non_sso.ptr, string, size);
-         Traits::assign(data_.non_sso.ptr[size], static_cast<CharT>(0));
-         set_non_sso_data(size, size);
-      }
-   }
+       : basic_string{string, size, size}
+   {}
 
-   constexpr basic_string(std::basic_string_view<CharT, Traits> sv)
+   constexpr basic_string(string_view_type sv)
        : basic_string{sv.data(), sv.size()}
    {}
 
    template<std::input_iterator InputIt>
    constexpr basic_string(InputIt first, InputIt last)
-       : basic_string{std::basic_string_view<CharT, Traits>{first, last}}
+       : basic_string{string_view_type{first, last}}
    {}
 
    constexpr basic_string(CharT const* string)
@@ -99,7 +115,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 
    constexpr basic_string(const basic_string& string)
    {
-      if(string.sso()) {
+      if(string.is_sso_()) {
          data_.sso = string.data_.sso;
       } else {
          new(this) basic_string{string.data(), string.size()};
@@ -109,14 +125,16 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    constexpr basic_string(basic_string&& string) noexcept
    {
       data_ = string.data_;
-      string.set_moved_from();
+      string.set_moved_from_();
    }
 
    constexpr ~basic_string()
    {
-      if(!sso()) { delete[] data_.non_sso.ptr; }
+      if(!is_sso_()) { delete[] data_.non_sso.ptr; }
    }
+   //@}
 
+   //@{ Assignment
    constexpr basic_string& operator=(basic_string const& other)
    {
       auto copy = other;
@@ -128,66 +146,31 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    {
       this->~basic_string();
       data_ = other.data_;
-      other.set_moved_from();
+      other.set_moved_from_();
       return *this;
-   }
-
-   //@{ Compare
-   constexpr bool operator==(const basic_string& rhs) const noexcept
-   {
-      return std::equal(begin(), end(), rhs.begin(), rhs.end());
-   }
-
-   constexpr bool operator!=(const basic_string& rhs) const noexcept { return !(*this == rhs); }
-
-   constexpr auto operator<=>(const std::basic_string_view<CharT, Traits>& rhs) const noexcept
-   {
-      return std::lexicographical_compare_three_way(begin(), end(), begin(rhs), end(rhs));
-   }
-
-   constexpr auto operator<=>(const CharT* rhs) const noexcept
-   {
-      return std::lexicographical_compare_three_way(begin(), end(), rhs, rhs + strlen(rhs));
-   }
-
-   constexpr auto operator<=>(const basic_string<CharT, Traits>& rhs) const noexcept
-   {
-      return std::lexicographical_compare_three_way(begin(), end(), begin(rhs), end(rhs));
    }
    //@}
 
-   //@{ Element Access
-   constexpr reference at(size_type pos) noexcept
-   {
-      if(pos >= size()) throw std::out_of_range{};
-      return data()[pos];
-   }
-   constexpr const_reference at(size_type pos) const noexcept
-   {
-      if(pos >= size()) throw std::out_of_range{};
-      return data()[pos];
-   }
+   //@{ Compare
+   constexpr bool operator==(const basic_string& rhs) const noexcept { return lex_comp_(rhs) == 0; }
+   constexpr bool operator!=(const basic_string& rhs) const noexcept { return !(*this == rhs); }
+   constexpr auto operator<=>(const string_view_type& rhs) const noexcept { return lex_comp_(rhs); }
+   constexpr auto operator<=>(const CharT* rhs) const noexcept { return lex_comp_(rhs); }
+   constexpr auto operator<=>(const basic_string& rhs) const noexcept { lex_comp_(rhs_); }
+   //@}
 
+   //@{ Element Access
+   constexpr reference at(size_type pos) noexcept { return at_(pos); }
+   constexpr const_reference at(size_type pos) const noexcept { return at_(pos); }
    constexpr reference operator[](size_type pos) noexcept { return data()[pos]; }
    constexpr const_reference operator[](size_type pos) const noexcept { return data()[pos]; }
-
    constexpr reference front() noexcept { return data()[0]; }
    constexpr const_reference front() const noexcept { return data()[0]; }
-
    constexpr reference back() noexcept { return data()[size() - 1]; }
    constexpr const_reference back() const noexcept { return data()[size() - 1]; }
-
-   constexpr CharT* data() noexcept { return sso() ? data_.sso.string : data_.non_sso.ptr; }
-
-   constexpr CharT const* data() const noexcept
-   {
-      return sso() ? data_.sso.string : data_.non_sso.ptr;
-   }
-
-   operator std::basic_string_view<CharT, Traits>() const noexcept
-   {
-      return std::basic_string_view<CharT, Traits>{data(), size()};
-   }
+   constexpr CharT* data() noexcept { return data_ptr_(); }
+   constexpr CharT const* data() const noexcept { return data_ptr_(); }
+   operator string_view_type() const noexcept { return string_view_type{data(), size()}; }
    //@}
 
    //@{ Iterators
@@ -208,18 +191,100 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 
    //@{ Capacity
    constexpr bool empty() const noexcept { return size() == 0; }
-
-   constexpr size_type size() const noexcept
-   {
-      return sso() ? sso_size() : read_non_sso_data().first;
-   }
-
+   constexpr size_type size() const noexcept { return size_(); }
    constexpr size_type length() const noexcept { return size(); }
+   constexpr size_type capacity() const noexcept { return capacity_(); }
+   constexpr void reserve() { shrink_to_fit(); }
+   constexpr void reserve(size_type new_cap) { set_capacity_(new_cap); }
+   constexpr void shrink_to_fit() { set_capacity_(size()); }
+   //@}
 
-   constexpr size_type capacity() const noexcept
+   //@{ Operations
+   constexpr void push_back(CharT ch) { push_back_(ch); }
+
+   constexpr basic_string& insert(size_type index, size_type count, CharT ch)
    {
-      return sso() ? (sizeof(data_) - 1) : read_non_sso_data().second;
+      insert(cbegin() + index, count, ch);
+      return *this;
    }
+
+   constexpr basic_string& insert(size_type index, const CharT* s)
+   {
+      return insert(index, s, Traits::length(s));
+   }
+
+   constexpr basic_string& insert(size_type index, const CharT* s, size_type count)
+   {
+      set_new_size_(std::min(size(), index + count));
+      Traits::move(data() + index, s, count);
+      return *this;
+   }
+
+   constexpr basic_string& insert(size_type index, const basic_string& str)
+   {
+      set_new_size_(std::min(size(), index + str.size()));
+      Traits::move(data() + index, str.data(), str.size());
+      return *this;
+   }
+
+   constexpr basic_string&
+   insert(size_type index, const basic_string& str, size_type index_str, size_type count = npos)
+   {
+      assert(index_str <= str.size());
+      if(count == npos) count = str.size() - index_str;
+      return insert(index, str.data() + index_str, count);
+   }
+
+   constexpr iterator insert(const_iterator pos, CharT ch)
+   {
+      auto ptr = &ch;
+      return insert(pos, ptr, ptr + 1);
+   }
+
+   constexpr iterator insert(const_iterator pos, size_type count, CharT ch)
+   {
+      const auto index = std::distance(cbegin(), pos);
+      set_new_size_(std::min(size(), index + count));
+      auto ptr       = data() + index;
+      const auto end = ptr + count;
+      while(ptr != end) *ptr++ = ch;
+      return *this;
+   }
+
+   template<class InputIt>
+   constexpr iterator insert(const_iterator pos, InputIt first, InputIt last)
+   {
+      const auto delta = std::distance(cbegin(), pos);
+      const auto len   = std::distance(first, last);
+      set_new_size_(std::min(size(), delta + len));
+      std::copy(first, last, pos);
+      return begin() + delta;
+   }
+
+   constexpr iterator insert(const_iterator pos, std::initializer_list<CharT> ilist)
+   {
+      return insert(pos, ilist.begin(), ilist.end());
+   }
+
+   template<typename T> constexpr _enable_if_sv<T, basic_string&> insert(size_type pos, const T& t)
+   {
+      string_view_type sv = t;
+      insert(pos, sv.data(), sv.size());
+      return *this;
+   }
+
+   template<class T>
+   constexpr _enable_if_sv<T, basic_string&>
+   insert(size_type index, const T& t, size_type index_str, size_type count = npos)
+   {
+      string_view_type sv = t;
+      if(index > size() || index_str > sv.size()) throw std::out_of_range{};
+      if(count == npos) count = sv.size() - index_str;
+      if(index_str + count > sv.size()) throw std::out_of_range{};
+      insert(index, sv.data() + index_str, count);
+      return *this;
+   }
+
    //@}
 
    friend constexpr void swap(basic_string& lhs, basic_string& rhs) noexcept
@@ -229,33 +294,110 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 
    constexpr std::size_t hash() const noexcept
    {
-      using sv = std::basic_string_view<CharT, Traits>;
+      using sv = string_view_type;
       auto f   = std::hash<sv>{};
       return f(sv{data(), size()});
    }
 
  private:
-   constexpr void set_moved_from() noexcept { set_sso_size(0); }
+   constexpr reference at_(size_type pos) noexcept
+   {
+      if(pos >= size()) throw std::out_of_range{};
+      return data()[pos];
+   }
+   constexpr const_reference at_(size_type pos) const noexcept
+   {
+      return const_cast<basic_string*>(this)->at_(pos);
+   }
+
+   constexpr auto lex_comp_(const string_view_type& rhs) const noexcept
+   {
+      return std::lexicographical_compare_three_way(begin(), end(), begin(rhs), end(rhs));
+   }
+
+   constexpr CharT* data_ptr_() noexcept
+   {
+      return is_sso_() ? data_.sso.string : data_.non_sso.ptr;
+   }
+
+   constexpr const CharT* data_ptr_() const noexcept
+   {
+      return is_sso_() ? data_.sso.string : data_.non_sso.ptr;
+   }
+
+   constexpr size_type size_() const noexcept
+   {
+      return is_sso_() ? sso_size_() : read_non_sso_data_().first;
+   }
+
+   constexpr size_type capacity_() const noexcept
+   {
+      return is_sso_() ? (sizeof(data_) - 1) : read_non_sso_data_().second;
+   }
+
+   constexpr void assign_ptr_(CharT* ptr, size_type size, size_type capacity)
+   {
+      data_.non_sso.ptr = new CharT[size + 1];
+      Traits::move(data_.non_sso.ptr, string, size);
+      Traits::assign(data_.non_sso.ptr[size], static_cast<CharT>(0));
+      set_non_sso_data_(size, size);
+   }
+
+   constexpr void set_capacity_(size_type new_cap)
+   {
+      if(new_cap <= size()) return;       // nothing to do
+      if(new_cap <= sso_capacity) return; // also nothing to do
+      *this = basic_string{data(), size(), new_cap};
+   }
+
+   constexpr void increase_capacity_(size_type min_new_cap = 0)
+   {
+      const auto new_cap = 7 + size_t(capacity() * 2.1);
+      set_capacity_(std::max(new_cap, min_new_cap + 1));
+   }
+
+   constexpr void set_new_size_(size_t size) noexcept
+   {
+      if(size > capacity()) increase_capacity_(size);
+      if(is_sso_()) {
+         set_sso_size_(size);
+         Traits::assign(data_.sso.string[size], static_cast<CharT>(0));
+      } else {
+         set_non_sso_data_(size, capacity());
+         Traits::assign(data_.non_sso.ptr[size], static_cast<CharT>(0));
+      }
+   }
+
+   constexpr void set_null_byte_() noexcept { data()[size()] = static_cast<CharT>(0); }
+
+   constexpr void push_back_(CharT ch)
+   {
+      const auto pos = size();
+      set_new_size_(pos + 1);
+      data()[pos] = ch;
+   }
+
+   constexpr void set_moved_from_() noexcept { set_sso_size_(0); }
 
    // We are using sso if the last two bits are 0
-   constexpr bool sso() const noexcept
+   constexpr bool is_sso_() const noexcept
    {
       return !lsb_<0>(data_.sso.size) && !lsb_<1>(data_.sso.size);
    }
 
    // good
-   constexpr void set_sso_size(unsigned char size) noexcept
+   constexpr void set_sso_size_(unsigned char size) noexcept
    {
       data_.sso.size = static_cast<UCharT>(sso_capacity - size) << 2;
    }
 
    // good
-   constexpr size_type sso_size() const noexcept
+   constexpr size_type sso_size_() const noexcept
    {
       return sso_capacity - ((data_.sso.size >> 2) & 63u);
    }
 
-   constexpr void set_non_sso_data(size_type size, size_type capacity)
+   constexpr void set_non_sso_data_(size_type size, size_type capacity)
    {
       auto& size_hsb           = most_sig_byte_(size);
       auto const size_high_bit = msb_<0>(size_hsb);
@@ -274,7 +416,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       data_.non_sso.capacity = capacity;
    }
 
-   constexpr std::pair<size_type, size_type> read_non_sso_data() const
+   constexpr std::pair<size_type, size_type> read_non_sso_data_() const
    {
       auto size     = data_.non_sso.size;
       auto capacity = data_.non_sso.capacity;

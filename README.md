@@ -1,59 +1,22 @@
 # giraffe
-Scanning dependencies
 
-## TODO
+Discover `module` and `#include` dependencies for a given file.
 
- * We can use [https://github.com/gcc-mirror/gcc/tree/releases/gcc-11.2.0/gcc/testsuite/gcc.dg/cpp](https://github.com/gcc-mirror/gcc/tree/releases/gcc-11.2.0/gcc/testsuite/gcc.dg/cpp)
- * Run each testcase through gcc -E
- * Use some bash magic to turn this into a set of tests that can be run through catch
+## Usage
 
-A Grammar
+## Example Project
 
- * https://docs.microsoft.com/en-us/cpp/preprocessor/grammar-summary-c-cpp?view=msvc-170
+## Limitations
 
-``` c++
-# if     constant-expression NL
-# ifdef  identifier NL
-# ifndef identifier NL
-# elif   constant-expression NL
-# else   NL
-# endif  NL
+ * Intended for `gcc` -- would not be hard to support clang.
+ * Have to supply the installation path for system libraries.
+ * No `sizeof` operator in constant expressions.
+ * All constant expressions are treated as integers.
 
-# include include-arg NL
-# define identifier ... NL
-# undef
-# line pp-tokens
-# error pp-tokens
-# pramga p-tokens
+# TODO
 
-
-__FILE__
-__LINE__
-__DATE__
-__TIME__
-__STDC__
-__STDC_VERSION__
-__STDC_HOSTED__
-__cplusplus
-__OBJC__
-__ASSEMBLER__
-
-constant-expression:
-    '(' constant-expression ')'
-    '!'? defined identifier
-
-X > 3
-
-#if __GNUC__ > 3 || \
-    (__GNUC__ == 3 && (__GNUC_MINOR__ > 2 || \
-                       (__GNUC_MINOR__ == 2 && \
-                        __GNUC_PATCHLEVEL__ > 0))
-or this
-
-#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-
-
-"foo" "bar" => "foobar"
-
-```
-
+ * Modules tests
+ * Expressions tests
+ * #if-then evaluation
+ * #include evaluation: requires a new scanner
+ 
