@@ -258,6 +258,9 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       insert(cend(), ilist);
       return *this;
    }
+   //@}
+
+   //@{ Operator +
    template<class T> constexpr _enable_if_sv<T, basic_string&> operator+=(const T& t)
    {
       return insert(size(), t);
@@ -418,9 +421,8 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 
    constexpr std::size_t hash() const noexcept
    {
-      using sv = string_view_type;
-      auto f   = std::hash<sv>{};
-      return f(sv{data(), size()});
+      auto f = std::hash<string_view_type>{};
+      return f(string_view_type{data(), size()});
    }
 
  private:
