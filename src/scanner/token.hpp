@@ -46,10 +46,7 @@ struct Token final
    constexpr auto length() const noexcept { return text_.size(); }
    constexpr auto offset() const noexcept { return loc_.offset; }
    constexpr auto line_no() const noexcept { return loc_.line_no; }
-   constexpr auto text() const noexcept
-   {
-      return string_view{text_.data(), text_.size()};
-   }
+   constexpr auto text() const noexcept { return string_view{text_.data(), text_.size()}; }
    constexpr auto is_space_delimited() const noexcept { return is_space_delimited_; }
 
    /// The source location just past the end of the token
@@ -61,10 +58,7 @@ struct Token final
       return loc;
    }
 
-   constexpr auto source_range() const noexcept
-   {
-      return SourceRange{location(), end_location()};
-   }
+   constexpr auto source_range() const noexcept { return SourceRange{location(), end_location()}; }
 
    // -- Methods -- //
 

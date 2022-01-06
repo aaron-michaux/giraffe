@@ -28,8 +28,7 @@ class Scanner final
    /// Initialize a scanner -- i.e., Token producer.
    /// Text memory is STORED here. Tokens don't store text
    Scanner(); //!< reads from stdin
-   Scanner(unique_ptr<ScannerInputInterface>&& source,
-           ScannerOptions opts = {}) noexcept; //!<
+   Scanner(unique_ptr<ScannerInputInterface>&& source, ScannerOptions opts = {}) noexcept; //!<
    Scanner(string_view name,                   //!< How should we refer to this text?
            string_view text_data,              //!< text to scan
            ScannerOptions opts = {}) noexcept; //!< reads `text_data`
@@ -43,8 +42,7 @@ class Scanner final
    Scanner& operator                  =(Scanner&&) noexcept;
 
    /// Initialize from a single text...
-   void initialize(unique_ptr<ScannerInputInterface>&& source,
-                   ScannerOptions opts = {}) noexcept;
+   void initialize(unique_ptr<ScannerInputInterface>&& source, ScannerOptions opts = {}) noexcept;
 
    //@{ Scanning
    /// EOF is appened when the end of all `text-data` is processed
@@ -94,6 +92,6 @@ class Scanner final
    //@}
 };
 
-string token_info(const Scanner&, const Token&) noexcept;
+std::string token_info(const Scanner&, const Token&) noexcept;
 
 } // namespace giraffe

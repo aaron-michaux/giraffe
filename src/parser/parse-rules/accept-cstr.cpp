@@ -7,7 +7,7 @@ namespace giraffe
 
 // ----------------------------------------------------------------- accept-cstr
 
-std::pair<string, SourceRange> accept_cstr(Context& context) noexcept
+std::pair<sso23::string, SourceRange> accept_cstr(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
@@ -20,7 +20,7 @@ std::pair<string, SourceRange> accept_cstr(Context& context) noexcept
 
    if(scanner.current().id() != TSTR_DELIM) {
       context.push_error(format("unexpected token while parsing string"));
-      return {""s, {}};
+      return {"", {}};
    }
    const auto loc1 = scanner.consume().location();
 
@@ -28,13 +28,12 @@ std::pair<string, SourceRange> accept_cstr(Context& context) noexcept
    auto estimate_length = [&](const auto pos0, const auto pos1) {
       size_t len = 0;
       for(auto i = pos0; i != pos1; ++i) len += scanner.at(i).text().size();
-      scanner.set_position(pos1);
       return len;
    };
    const auto approx_length = estimate_length(pos0, pos1);
 
    // Append tokens to internal string representation
-   auto append = [&](string& s, const auto& token) {
+   auto append = [&](auto& s, const auto& token) {
       const auto text = token.text();
       auto carrot_pos = [&](auto ii) {
          const auto loc = token.location();
@@ -46,7 +45,7 @@ std::pair<string, SourceRange> accept_cstr(Context& context) noexcept
       if(out_pos != cend(text))
          context.push_error(carrot_pos(out_pos), format("error decoded string"));
    };
-   std::string ret;
+   sso23::string ret;
    ret.reserve(approx_length);
    for(auto i = pos0; i != pos1; ++i) append(ret, scanner.at(i));
    return {ret, {loc0, loc1}};

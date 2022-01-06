@@ -11,8 +11,7 @@ vector<sso23::string> accept_arglist(Context& context) noexcept
    Scanner& scanner = context.scanner();
    vector<sso23::string> args;
 
-   auto push_arg
-       = [&args](const auto text) { args.emplace_back(text.begin(), text.end()); };
+   auto push_arg = [&args](const auto text) { args.emplace_back(text.begin(), text.end()); };
 
    assert(expect(scanner, TLPAREN));
    scanner.consume(); // '('
@@ -52,7 +51,7 @@ AstNode* accept_define(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
-   auto on_error = [&](string&& message) {
+   auto on_error = [&](std::string&& message) {
       context.push_error(std::move(message));
       skip_to_sequence(scanner, TNEWLINE); // Skip to newline
       return make_empty_node();
@@ -61,15 +60,13 @@ AstNode* accept_define(Context& context) noexcept
    assert(expect(scanner, TDEFINE));
    scanner.consume();
    const auto& ident_token = scanner.current();
-   if(ident_token.id() != TIDENTIFIER) {
-      return on_error("expected identifier after #define");
-   }
+   if(ident_token.id() != TIDENTIFIER) { return on_error("expected identifier after #define"); }
    scanner.consume(); // identifier
 
    vector<sso23::string> arglist = {};
    if(scanner.current().id() == TLPAREN) arglist = accept_arglist(context);
 
-   string text = accept_to_newline(context);
+   sso23::string text = accept_to_newline(context);
 
    return new DefineNode{ident_token.text(), text, std::move(arglist)};
 }

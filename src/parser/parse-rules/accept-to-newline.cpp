@@ -5,7 +5,7 @@
 namespace giraffe
 {
 
-string accept_to_newline(Context& context) noexcept
+sso23::string accept_to_newline(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
@@ -19,12 +19,11 @@ string accept_to_newline(Context& context) noexcept
       approx_len += token.text().size();
    }
    const auto pos1 = scanner.position(); // text = [pos0, pos1)
-   if(pos0 == pos1) { return ""s; }
+   if(pos0 == pos1) { return ""; }
 
    // Concatenate the tokens
-   auto append
-       = [](auto& dst, const auto& s) { dst.insert(end(dst), s.begin(), s.end()); };
-   string text = {};
+   auto append        = [](auto& dst, const auto& s) { dst.append(s.begin(), s.end()); };
+   sso23::string text = {};
    text.reserve(size_t(approx_len * 1.25));
    append(text, scanner.at(pos0).text());
    for(auto i = pos0 + 1; i < pos1; ++i) { //

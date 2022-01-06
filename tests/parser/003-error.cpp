@@ -22,8 +22,8 @@ constexpr static const char* test_text_003_result =
 #warning "And \t\b\r\n\v\f\\\"'that was something!"
 )V0G0N";
 
-constexpr auto test_003_token_seq = to_array<int>(
-    {TNEWLINE, TERROR, TLINE_PART, TNEWLINE, TWARNING, TLINE_PART, TNEWLINE, TEOF});
+constexpr auto test_003_token_seq
+    = to_array<int>({TNEWLINE, TERROR, TLINE_PART, TNEWLINE, TWARNING, TLINE_PART, TNEWLINE, TEOF});
 
 // -------------------------------------------------------------------- testcase
 
@@ -85,8 +85,7 @@ CATCH_TEST_CASE("003 errors", "[003-errors]")
             CATCH_REQUIRE(child->node_type() == NodeType::ERROR);
             auto node = cast_ast_node<ErrorNode>(child);
             CATCH_REQUIRE(node->is_error() == true);
-            CATCH_REQUIRE(node->message()
-                          == " Here is some stuff that could be part of an error!");
+            CATCH_REQUIRE(node->message() == " Here is some stuff that could be part of an error!");
          }
 
          {

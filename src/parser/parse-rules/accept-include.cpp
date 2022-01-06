@@ -8,7 +8,7 @@ AstNode* accept_include(Context& context) noexcept
 {
    Scanner& scanner = context.scanner();
 
-   auto on_error = [&](string&& message) {
+   auto on_error = [&](std::string&& message) {
       context.push_error(std::move(message));
       skip_to_sequence(scanner, TNEWLINE); // Skip to newline
       return make_empty_node();
@@ -21,8 +21,8 @@ AstNode* accept_include(Context& context) noexcept
    if(token.id() == TSTRING) {
       scanner.consume();
       assert(token.text().size() >= 2);
-      auto filename = string{token.text().begin() + 1,
-                             token.text().begin() + token.text().size() - 1};
+      auto filename
+          = sso23::string{token.text().begin() + 1, token.text().begin() + token.text().size() - 1};
       return new IncludeNode{token.source_range(), move(filename), false};
    } else if(token.id() == TSTR_DELIM) {
       auto [filename, src_range] = accept_cstr(context);

@@ -13,9 +13,20 @@ std::ostream& This::stream(std::ostream& ss, const int indent) const noexcept
    for(auto i = 0; i < indent; ++i) ss << ' ';
    if(is_export()) ss << "export ";
    if(is_import()) ss << "import ";
-   if(is_module()) ss << "module ";
-   ss << identifier();
-   ss << '\n';
+   if(is_module()) {
+      ss << "module";
+      if(text().size() > 0) ss << ' ';
+   }
+
+   if(is_local_include()) {
+      ss << '"' << text() << '"';
+   } else if(is_system_include()) {
+      ss << '<' << text() << '>';
+   } else {
+      ss << text();
+   }
+
+   ss << ";\n";
    return ss;
 }
 

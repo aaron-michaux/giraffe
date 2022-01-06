@@ -22,17 +22,15 @@ class ScannerInputInterface
 class FILE_ScannerInput final : public ScannerInputInterface
 {
  private:
-   string name_      = ""s;
+   std::string name_ = ""s;
    FILE* fp_         = nullptr;
    bool interactive_ = false; // FALSE => reading block by block
    bool close_fp_    = false;
 
    void trace_stmt_()
    {
-      TRACE(format("input source = '{}', interactive = {}, close-fp = {}",
-                   name_,
-                   interactive_,
-                   close_fp_));
+      TRACE(format(
+          "input source = '{}', interactive = {}, close-fp = {}", name_, interactive_, close_fp_));
    }
 
  public:
@@ -42,8 +40,7 @@ class FILE_ScannerInput final : public ScannerInputInterface
       fp_          = fopen(name.data(), "rb");
       interactive_ = interactive;
       close_fp_    = true;
-      if(fp_ == nullptr)
-         throw std::runtime_error(format("could not open file '{}'", name));
+      if(fp_ == nullptr) throw std::runtime_error(format("could not open file '{}'", name));
       // trace_stmt_();
    }
 
@@ -83,14 +80,11 @@ class FILE_ScannerInput final : public ScannerInputInterface
 class StringScannerInput final : public ScannerInputInterface
 {
  private:
-   string name_   = ""s;
-   string buffer_ = ""s;
-   size_t pos_    = 0;
+   std::string name_   = ""s;
+   std::string buffer_ = ""s;
+   size_t pos_         = 0;
 
-   void trace_stmt_()
-   {
-      TRACE(format("input source = '{}', size = {}", name_, buffer_.size()));
-   }
+   void trace_stmt_() { TRACE(format("input source = '{}', size = {}", name_, buffer_.size())); }
 
  public:
    StringScannerInput(string_view name, string_view buffer)
@@ -99,7 +93,7 @@ class StringScannerInput final : public ScannerInputInterface
    {
       // trace_stmt_();
    }
-   StringScannerInput(string_view name, string&& buffer)
+   StringScannerInput(string_view name, std::string&& buffer)
        : name_(begin(name), end(name))
        , buffer_(std::move(buffer))
    {

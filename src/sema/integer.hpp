@@ -91,7 +91,7 @@ struct Integer
    bool operator==(const Integer& rhs) const noexcept;
    bool operator!=(const Integer& rhs) const noexcept { return !(*this == rhs); }
 
-   string to_string() const noexcept;
+   std::string to_string() const noexcept;
 
    //@{ Unary operators
    Integer unot() const noexcept;

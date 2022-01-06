@@ -17,15 +17,15 @@ struct Diagnostic final
       FATAL  // halts parsing
    };
 
-   static constexpr auto k_color_none   = string_view("\x1b[0m");
-   static constexpr auto k_light_green  = string_view("\x1b[92m");
-   static constexpr auto k_color_white  = string_view("\x1b[97m");
-   static constexpr auto k_level_colors = to_array<string_view>(
-       {"\x1b[0m", "\x1b[34m", "\x1b[33m", "\x1b[91m", "\x1b[41m\x1b[97m"});
+   static constexpr auto k_color_none  = string_view("\x1b[0m");
+   static constexpr auto k_light_green = string_view("\x1b[92m");
+   static constexpr auto k_color_white = string_view("\x1b[97m");
+   static constexpr auto k_level_colors
+       = to_array<string_view>({"\x1b[0m", "\x1b[34m", "\x1b[33m", "\x1b[91m", "\x1b[41m\x1b[97m"});
    static constexpr auto k_level_names
        = to_array<string_view>({"none", "info", "warning", "error", "fatal"});
 
-   string message          = ""s;
+   std::string message     = ""s;
    SourceLocation location = {};
    SourceRange range       = {};
    uint32_t length         = 0; // from `loc`
@@ -39,7 +39,7 @@ struct Diagnostic final
    Diagnostic& operator=(const Diagnostic&) = default;
    Diagnostic& operator=(Diagnostic&&) = default;
 
-   Diagnostic(Level lv, SourceLocation loc, SourceRange rng, string&& msg) noexcept
+   Diagnostic(Level lv, SourceLocation loc, SourceRange rng, std::string&& msg) noexcept
        : message(std::move(msg))
        , location(loc)
        , range(rng)
@@ -72,8 +72,7 @@ class Diagnostics
    vector<Diagnostic> diagnostics_ = {};
 
  public:
-   void
-   push_diagnostic(Diagnostic::Level, SourceLocation, SourceRange, string&&) noexcept;
+   void push_diagnostic(Diagnostic::Level, SourceLocation, SourceRange, std::string&&) noexcept;
 
    size_t size() const noexcept { return diagnostics_.size(); }
 
@@ -92,7 +91,7 @@ class Diagnostics
    auto cend() const noexcept { return diagnostics_.cend(); }
    auto crend() const noexcept { return diagnostics_.crend(); }
 
-   string to_string(const Context& context) const noexcept;
+   std::string to_string(const Context& context) const noexcept;
 };
 
 } // namespace giraffe

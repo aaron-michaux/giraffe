@@ -51,7 +51,7 @@ inline std::string encode_string(std::string_view val) noexcept
 /**
  * @return The iterator position where decodeing stops... i.e., end if no error
  */
-inline auto decode_string(std::string& s, auto begin, auto end) noexcept
+inline auto decode_string(auto& s, auto begin, auto end) noexcept
 {
    auto decode_octal_sequence = [&end](auto& ii) -> char {
       // octal sequence, [0-7]{1,3}

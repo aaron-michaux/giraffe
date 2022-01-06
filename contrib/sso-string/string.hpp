@@ -372,8 +372,8 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    {
       const auto delta = std::distance(cbegin(), pos);
       const auto len   = std::distance(first, last);
-      set_new_size_(std::min(size(), delta + len));
-      std::copy(first, last, pos);
+      set_new_size_(std::max(size(), size_type(delta + len)));
+      std::copy(first, last, begin() + delta);
       return begin() + delta;
    }
 

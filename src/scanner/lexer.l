@@ -175,14 +175,13 @@ PP      {WS}*#{WS}*
 [\x00-\xff]		     { TOKEN(TBADCHAR); }
 }
 
-"import"({WS}{NNL}*)?        { yyless(6); PUSH_STATE(MODULE); return TOKEN(TIMPORT); }
-"export"({WS}{NNL}*)?        { yyless(6); PUSH_STATE(MODULE); return TOKEN(TEXPORT); }
-"module"({WS}{NNL}*)?        { yyless(6); PUSH_STATE(MODULE); return TOKEN(TMODULE); }
-
 <MODULE>{
 "import"                     { return TOKEN(TIMPORT); }
 "export"                     { return TOKEN(TEXPORT); }
 "module"                     { return TOKEN(TMODULE); }
+"\""                         { PUSH_STATE(CSTR); return TOKEN(TSTR_DELIM); }
+"<>"    	             { return TOKEN(TSTRING); }
+"<"{NA}+">"	             { return TOKEN(TSTRING); }
 {ML}{MD}*                    { return TOKEN(TIDENTIFIER); }
 {WS}+			     { return TOKEN(TWHITESPACE); }
 ";"                          { return TOKEN(TSEMICOLON); }
@@ -190,6 +189,10 @@ PP      {WS}*#{WS}*
 {NL}                         { POP_STATE(); return TOKEN(TNEWLINE); }
 [\x00-\xff]		     { return TOKEN(TBADCHAR); }
 }
+
+"import"({WS}{NNL}*)?        { yyless(6); PUSH_STATE(MODULE); return TOKEN(TIMPORT); }
+"export"({WS}{NNL}*)?        { yyless(6); PUSH_STATE(MODULE); return TOKEN(TEXPORT); }
+"module"(({WS}|";"){NNL}*)?  { yyless(6); PUSH_STATE(MODULE); return TOKEN(TMODULE); }
 
 {NNL}+                       { return TOKEN(TLINE_PART); }
 

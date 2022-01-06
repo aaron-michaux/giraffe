@@ -11,7 +11,7 @@ struct CliConfig final
    bool has_error = false;
 
    bool dump_tokens          = false;
-   string filename           = ""s;
+   std::string filename      = ""s;
    DriverOptions driver_opts = {};
 
    friend ostream& operator<<(ostream&, const CliConfig&);

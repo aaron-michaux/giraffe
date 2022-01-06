@@ -24,40 +24,25 @@ struct SourceLocation final
    {
       return (offset == o.offset);
    }
-   constexpr bool operator!=(const SourceLocation& o) const noexcept
-   {
-      return !(*this == o);
-   }
-   constexpr bool operator<(const SourceLocation& o) const noexcept
-   {
-      return (offset < o.offset);
-   }
-   constexpr bool operator<=(const SourceLocation& o) const noexcept
-   {
-      return !(o < *this);
-   }
+   constexpr bool operator!=(const SourceLocation& o) const noexcept { return !(*this == o); }
+   constexpr bool operator<(const SourceLocation& o) const noexcept { return (offset < o.offset); }
+   constexpr bool operator<=(const SourceLocation& o) const noexcept { return !(o < *this); }
    constexpr bool operator>(const SourceLocation& o) const noexcept { return o < *this; }
-   constexpr bool operator>=(const SourceLocation& o) const noexcept
-   {
-      return !(*this < o);
-   }
+   constexpr bool operator>=(const SourceLocation& o) const noexcept { return !(*this < o); }
 };
 
 static_assert(sizeof(SourceLocation) == 8);
 
-inline string str(SourceLocation loc) noexcept
+inline std::string str(SourceLocation loc) noexcept
 {
    return format("[{}, {}]", int(loc.offset), int(loc.line_no));
 }
 
 using SourceRange = std::pair<SourceLocation, SourceLocation>; // [start..end)
 
-constexpr inline bool is_empty(const SourceRange& s) noexcept
-{
-   return !(s.first < s.second);
-}
+constexpr inline bool is_empty(const SourceRange& s) noexcept { return !(s.first < s.second); }
 
-inline string str(SourceRange range) noexcept
+inline std::string str(SourceRange range) noexcept
 {
    return format("Range {} => {}", str(range.first), str(range.second));
 }

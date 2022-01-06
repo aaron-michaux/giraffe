@@ -27,8 +27,8 @@ class Context final
    unique_ptr<Scanner> scanner_ = {};
    SymbolTable symbols_         = {};
 
-   void push_diagnostic_(Diagnostic::Level, SourceLocation, SourceRange, string&&) noexcept;
-   void push_diagnostic_(Diagnostic::Level, SourceLocation, string&&) noexcept;
+   void push_diagnostic_(Diagnostic::Level, SourceLocation, SourceRange, std::string&&) noexcept;
+   void push_diagnostic_(Diagnostic::Level, SourceLocation, std::string&&) noexcept;
 
    Context() = default;
 
@@ -61,25 +61,25 @@ class Context final
    //@}
 
    //@{ Pushing Diagnostics
-   void push_info(SourceLocation, SourceRange, string&& message) noexcept;
-   void push_warn(SourceLocation, SourceRange, string&& message) noexcept;
-   void push_error(SourceLocation, SourceRange, string&& message) noexcept;
-   void push_fatal(SourceLocation, SourceRange, string&& message) noexcept;
+   void push_info(SourceLocation, SourceRange, std::string&& message) noexcept;
+   void push_warn(SourceLocation, SourceRange, std::string&& message) noexcept;
+   void push_error(SourceLocation, SourceRange, std::string&& message) noexcept;
+   void push_fatal(SourceLocation, SourceRange, std::string&& message) noexcept;
 
-   void push_info(SourceLocation location, string&& message) noexcept;
-   void push_warn(SourceLocation location, string&& message) noexcept;
-   void push_error(SourceLocation location, string&& message) noexcept;
-   void push_fatal(SourceLocation location, string&& message) noexcept;
+   void push_info(SourceLocation location, std::string&& message) noexcept;
+   void push_warn(SourceLocation location, std::string&& message) noexcept;
+   void push_error(SourceLocation location, std::string&& message) noexcept;
+   void push_fatal(SourceLocation location, std::string&& message) noexcept;
 
    // Uses the location of the current token
-   void push_info(string&& message) noexcept;
-   void push_warn(string&& message) noexcept;
-   void push_error(string&& message) noexcept;
-   void push_fatal(string&& message) noexcept;
+   void push_info(std::string&& message) noexcept;
+   void push_warn(std::string&& message) noexcept;
+   void push_error(std::string&& message) noexcept;
+   void push_fatal(std::string&& message) noexcept;
    //@}
 
    std::ostream& stream(std::ostream&) const noexcept;
-   string to_string() const noexcept;
+   std::string to_string() const noexcept;
 };
 
 } // namespace giraffe

@@ -19,7 +19,7 @@
 
 namespace giraffe
 {
-static string read_stream(auto&& in)
+static std::string read_stream(auto&& in)
 {
    in >> std::noskipws;
    std::istream_iterator<char> bb(in);
@@ -41,8 +41,8 @@ static void add_define(auto& map, string_view arg) noexcept
    // symbol=value
    const auto pos    = arg.find('=');
    const auto has_eq = (pos != string_view::npos);
-   string key        = string(begin(arg), has_eq ? begin(arg) + pos : end(arg));
-   string val        = has_eq ? string(begin(arg) + pos + 1, end(arg)) : ""s;
+   sso23::string key = sso23::string(begin(arg), has_eq ? begin(arg) + pos : end(arg));
+   sso23::string val = has_eq ? sso23::string(begin(arg) + pos + 1, end(arg)) : "";
    map.insert_or_assign(std::move(key), std::move(val));
 }
 
@@ -79,17 +79,9 @@ compiler-opts
                 conf.driver_opts.w_error,
                 range::implode(conf.driver_opts.include_paths, ", "),
                 range::implode(conf.driver_opts.defines, ", ", [](auto& x) {
-                   if(x.second.empty()) return x.first;
+                   if(x.second.empty()) { return format("{}", x.first); }
                    return format("{}={}", x.first, x.second);
                 }));
-
-   // print_range(os, "', '", conf.include_paths, [] (auto& x) { return x; });
-   // os << "\ndefines:   '";
-   // print_range(os, ", ", conf.defines, [] (auto& x) {
-   //       if(x.second.empty()) return x.first;
-   //       return format("{}={}", x.first, x.second);
-   //    });
-   // os << '\n';
    return os;
 }
 
@@ -148,7 +140,7 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
          else if(arg.starts_with("-isystem"))
             config.driver_opts.include_paths.emplace_back(begin(arg) + 8, end(arg));
          else if(is_regular_file(arg) && config.filename.empty())
-            config.filename = string(begin(arg), end(arg));
+            config.filename = std::string(begin(arg), end(arg));
          else if(arg == "-" && config.filename.empty()) // i.e., stdin
             config.filename = "-"s;
          else {
@@ -156,8 +148,7 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
             config.has_error = true;
          }
       } catch(std::exception& e) {
-         std::cerr << format(
-             "Exception at command-line argument '{}': {}\n", arg, e.what());
+         std::cerr << format("Exception at command-line argument '{}': {}\n", arg, e.what());
          config.has_error = true;
       }
    }
@@ -182,14 +173,12 @@ static unique_ptr<Context> init_compiler_context(const CliConfig& config) noexce
    if(config.has_error) return nullptr;
 
    try {
-      auto source  = (config.filename == "-")
-                         ? make_unique<FILE_ScannerInput>("<stdin>", stdin)
-                         : make_unique<FILE_ScannerInput>(config.filename);
+      auto source  = (config.filename == "-") ? make_unique<FILE_ScannerInput>("<stdin>", stdin)
+                                              : make_unique<FILE_ScannerInput>(config.filename);
       auto scanner = make_unique<giraffe::Scanner>(std::move(source));
       return Context::make(std::move(scanner), config.driver_opts);
    } catch(std::exception& e) {
-      std::cerr << format("Exception while reading '{}': {}", config.filename, e.what())
-                << endl;
+      std::cerr << format("Exception while reading '{}': {}", config.filename, e.what()) << endl;
    }
    return nullptr; // error
 }

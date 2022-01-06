@@ -121,7 +121,7 @@ bool This::operator==(const Integer& rhs) const noexcept
                         : unsigned_value() == rhs.unsigned_value();
 }
 
-string This::to_string() const noexcept
+std::string This::to_string() const noexcept
 {
    switch(type()) {
    case IntegerType::CHAR: return format("{}", detail::sc_<char>(*this));

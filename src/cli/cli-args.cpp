@@ -30,10 +30,10 @@ std::string safe_arg_str(int argc, char** argv, int& i) noexcept(false)
 {
    assert(argc >= 0);
    assert(i >= 0 && i < argc);
-   string out = ""s;
+   std::string out = ""s;
    try {
       {
-         string arg = argv[i];
+         std::string arg = argv[i];
          ++i;
 
          if(i >= argc) {

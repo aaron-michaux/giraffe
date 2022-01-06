@@ -54,11 +54,10 @@ std::ostream& Diagnostic::stream(std::ostream& ss, const Context& context) const
          assert(location.line_no <= range.second.line_no);
          const auto carrot_col = col_no;
          const auto col0
-             = (location.line_no == range.first.line_no ? range.first.offset - ldat.offset
-                                                        : 0);
-         const auto col1 = (location.line_no == range.first.line_no
-                                ? range.second.offset - ldat.offset
-                                : ldat.line.size());
+             = (location.line_no == range.first.line_no ? range.first.offset - ldat.offset : 0);
+         const auto col1
+             = (location.line_no == range.first.line_no ? range.second.offset - ldat.offset
+                                                        : ldat.line.size());
          if(carrot_col < col0) {
             print_space(carrot_col);
             print_carrot();
@@ -89,7 +88,7 @@ std::ostream& Diagnostic::stream(std::ostream& ss, const Context& context) const
 void Diagnostics::push_diagnostic(Diagnostic::Level level,
                                   SourceLocation location,
                                   SourceRange range,
-                                  string&& message) noexcept
+                                  std::string&& message) noexcept
 {
    switch(level) {
    case Diagnostic::NONE:
@@ -132,7 +131,7 @@ DiagnosticCounts Diagnostics::totals(Range ij) const noexcept
 
 // ------------------------------------------------------------------- to-string
 
-string Diagnostics::to_string(const Context& context) const noexcept
+std::string Diagnostics::to_string(const Context& context) const noexcept
 {
    std::stringstream ss{""};
    for(const auto& diagnostic : diagnostics_) diagnostic.stream(ss, context);
