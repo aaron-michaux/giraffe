@@ -63,7 +63,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 
    using string_view_type = std::basic_string_view<CharT, Traits>;
 
-   static constexpr size_type npos = -1;
+   static constexpr size_type npos = string_view_type::npos;
 
  private:
    template<typename T, typename ResultT>
@@ -460,8 +460,8 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 
    constexpr void set_capacity_(size_type new_cap)
    {
-      if(new_cap <= size()) return;       // nothing to do
-      if(new_cap <= sso_capacity) return; // also nothing to do
+      if(new_cap <= size()) return;                    // nothing to do
+      if(new_cap <= sso_capacity && is_sso_()) return; // also nothing to do
       *this = basic_string{data(), size(), new_cap};
    }
 
@@ -483,7 +483,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       }
    }
 
-   constexpr void resize_fill_(size_type size, CharT ch) noexcept
+   constexpr void resize_fill_(size_type new_size, CharT ch) noexcept
    {
       const auto current_size = size();
       if(new_size < current_size) {
