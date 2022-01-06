@@ -67,7 +67,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
 
  private:
    template<typename T, typename ResultT>
-   using _enable_if_sv = std::enable_if_t<
+   using _if_sv = std::enable_if_t<
        std::conjunction_v<std::is_convertible_v<const T&, string_view_type>,
                           std::negation_v<std::is_convertible<const T*, const basic_string*>>,
                           std::negation_v<std::is_convertible<const T&, const CharT*>>>,
@@ -173,13 +173,9 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       insert(cbegin(), ilist);
       return *this;
    }
-   template<class T> constexpr _enable_if_sv<T, basic_string&> assign(const T& t)
-   {
-      return insert(0, t);
-   }
+   template<class T> constexpr _if_sv<T, basic_string&> assign(const T& t) { return insert(0, t); }
    template<class T>
-   constexpr _enable_if_sv<T, basic_string&>
-   assign(const T& t, size_type pos, size_type count = npos)
+   constexpr _if_sv<T, basic_string&> assign(const T& t, size_type pos, size_type count = npos)
    {
       return insert(0, t, pos, count);
    }
@@ -238,57 +234,53 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    constexpr void push_back(CharT ch) { push_back_(ch); }
    constexpr void pop_back(CharT ch) { set_new_size_(size() == 0 ? 0 : size() - 1); }
    constexpr void resize(size_type new_size) { set_new_size_(new_size); }
-   constexpr void resize(size_type new_size, CharT ch)
-   {
-      const auto current_size = size();
-      if(new_size < current_size) {
-         set_new_size_(new_size);
-      } else if(new_size > current_size) {
-         insert(cend(), new_size - current_size, ch);
-      }
-   }
+   constexpr void resize(size_type new_size, CharT ch) { resize_fill_(new_size, ch); }
    //@}
 
    //@{ Operator +=
    constexpr basic_string& operator+=(const basic_string& str) { return insert(size(), str); }
    constexpr basic_string& operator+=(CharT ch) { return insert(size(), 1, ch); }
    constexpr basic_string& operator+=(const CharT* s) { return insert(size(), s); }
-   constexpr basic_string& operator+=(std::initializer_list<CharT> ilist)
+   constexpr basic_string& operator+=(std::initializer_list<CharT> ilist) { return append(ilist); }
+   template<class T> constexpr _if_sv<T, basic_string&> operator+=(const T& t)
    {
-      insert(cend(), ilist);
-      return *this;
+      return insert(size(), t);
    }
    //@}
 
    //@{ Operator +
-   template<class T> constexpr _enable_if_sv<T, basic_string&> operator+=(const T& t)
+   constexpr basic_string operator+(const basic_string& rhs) const { return plus_(rhs); }
+   constexpr basic_string operator+(CharT rhs) const { return plus_(rhs); }
+   constexpr basic_string operator+(const CharT* rhs) const { return plus_(rhs); }
+   template<class T> constexpr _if_sv<T, basic_string> operator+(const T& rhs) const
    {
-      return insert(size(), t);
+      return plus_(rhs);
    }
+   //@}
 
-   constexpr basic_string operator+(const basic_string& rhs) const
+   //@{ Search
+   constexpr bool starts_with(string_view_type sv) const noexcept { return sv_().starts_with(sv); }
+   constexpr bool starts_with(CharT c) const noexcept { return sv_().starts_with(c); }
+   constexpr bool starts_with(const CharT* s) const { return sv_().starts_with(s); }
+   constexpr bool ends_with(string_view_type sv) const noexcept { return sv_().ends_with(sv); }
+   constexpr bool ends_with(CharT c) const noexcept { return sv_().ends_with(c); }
+   constexpr bool ends_with(const CharT* s) const { return sv_().ends_with(s); }
+   constexpr bool contains(string_view_type sv) const noexcept { return find(sv) != npos; }
+   constexpr bool contains(CharT c) const noexcept { return find(c) != npos; }
+   constexpr bool contains(const CharT* s) const noexcept { return find(s) != npos; }
+
+   constexpr size_type find(const basic_string& str, size_type pos = 0) const noexcept
    {
-      basic_string ret = *this;
-      ret += rhs;
-      return ret;
+      return sv_().find(str.sv_(), pos);
    }
-   constexpr basic_string operator+(CharT rhs) const
+   constexpr size_type find(const CharT* s, size_type pos, size_type count) const
    {
-      basic_string ret = *this;
-      ret += rhs;
-      return ret;
+      return sv_().find(s, pos, count);
    }
-   constexpr basic_string operator+(const CharT* rhs) const
+   constexpr size_type find(const CharT* s, size_type pos = 0) const { return sv_().find(s, pos); }
+   constexpr size_type find(CharT ch, size_type pos = 0) const noexcept
    {
-      basic_string ret = *this;
-      ret += rhs;
-      return ret;
-   }
-   template<class T> constexpr _enable_if_sv<T, basic_string> operator+(const T& rhs) const
-   {
-      basic_string ret = *this;
-      ret += rhs;
-      return ret;
+      return sv_().find(ch, pos);
    }
    //@}
 
@@ -309,14 +301,17 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       insert(cend(), first, last);
       return *this;
    }
-   constexpr basic_string& append(std::initializer_list<CharT> ilist) { return *this += ilist; }
-   template<class T> constexpr _enable_if_sv<T, basic_string&> append(const T& t)
+   constexpr basic_string& append(std::initializer_list<CharT> ilist)
+   {
+      insert(cend(), ilist);
+      return *this;
+   }
+   template<class T> constexpr _if_sv<T, basic_string&> append(const T& t)
    {
       return insert(size(), t);
    }
    template<class T>
-   constexpr _enable_if_sv<T, basic_string&>
-   append(const T& t, size_type pos, size_type count = npos)
+   constexpr _if_sv<T, basic_string&> append(const T& t, size_type pos, size_type count = npos)
    {
       return insert(size(), t, pos, count);
    }
@@ -387,7 +382,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       return insert(pos, ilist.begin(), ilist.end());
    }
 
-   template<typename T> constexpr _enable_if_sv<T, basic_string&> insert(size_type pos, const T& t)
+   template<typename T> constexpr _if_sv<T, basic_string&> insert(size_type pos, const T& t)
    {
       string_view_type sv = t;
       insert(pos, sv.data(), sv.size());
@@ -395,7 +390,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    }
 
    template<class T>
-   constexpr _enable_if_sv<T, basic_string&>
+   constexpr _if_sv<T, basic_string&>
    insert(size_type index, const T& t, size_type index_str, size_type count = npos)
    {
       string_view_type sv = t;
@@ -426,6 +421,8 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    }
 
  private:
+   constexpr string_view_type sv_() const noexcept { return string_view_type{data(), size()}; }
+
    constexpr reference at_(size_type pos) noexcept
    {
       if(pos >= size()) throw std::out_of_range{};
@@ -474,7 +471,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       set_capacity_(std::max(new_cap, min_new_cap + 1));
    }
 
-   constexpr void set_new_size_(size_t size) noexcept
+   constexpr void set_new_size_(size_type size) noexcept
    {
       if(size > capacity()) increase_capacity_(size);
       if(is_sso_()) {
@@ -483,6 +480,16 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
       } else {
          set_non_sso_data_(size, capacity());
          Traits::assign(data_.non_sso.ptr[size], static_cast<CharT>(0));
+      }
+   }
+
+   constexpr void resize_fill_(size_type size, CharT ch) noexcept
+   {
+      const auto current_size = size();
+      if(new_size < current_size) {
+         set_new_size_(new_size);
+      } else if(new_size > current_size) {
+         insert(cend(), new_size - current_size, ch);
       }
    }
 
@@ -501,6 +508,13 @@ template<typename CharT, typename Traits = std::char_traits<CharT>> class basic_
    constexpr bool is_sso_() const noexcept
    {
       return !lsb_<0>(data_.sso.size) && !lsb_<1>(data_.sso.size);
+   }
+
+   template<typename T> constexpr basic_string plus_(T&& rhs) const
+   {
+      basic_string ret = *this;
+      ret += rhs;
+      return ret;
    }
 
    // good
