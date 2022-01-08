@@ -12,61 +12,24 @@ namespace giraffe::test
 
 // -----------------------------------------------------------------------------
 
-constexpr static const char* test_text_007 = R"V0G0N(
-module;
-
-// This is the global module fragment
-// Only preprocessor commands allowed
-
-// Regular module (appears ONCE per module)
-export module speech;
-
-// This is the module purview for 'speech'
-
-// All imports must appear before and declarations
-// Import must be at global scope
-// No cyclic dependencies!
-// Can only import module partitions belonging to the parent module
-import speech;
-import <iostream>;
-import <=>;
-import "some/stuff.hpp";
-
-// Re-export interface partitions
-export import :english;
-export import :spanish;
-
-// Submodule
-export module speech:spanish;
-
-// This is a "submodule" that is really a module
-export module speech.english;
-
-// A module "implementation" unit
-module speech;
-
-// The start of the "private" module fragment
-module :private;
-
+constexpr static const char* test_text_008 = R"V0G0N(
+#define SOMETHING
+#define
+#define 1
+#define X(a)
+#define X(a, b) (a + b)
 )V0G0N";
 
-constexpr static const char* test_text_007_result = R"V0G0N(module;
-export module speech;
-import speech;
-import <iostream>;
-import <=>;
-import "some/stuff.hpp";
-export import :english;
-export import :spanish;
-export module speech:spanish;
-export module speech.english;
-module speech;
-module :private;
+constexpr static const char* test_text_008_result = R"V0G0N(#define SOMETHING
+<empty-node>
+<empty-node>
+#define X(a)
+#define X(a, b) (a + b)
 )V0G0N";
 
 // -------------------------------------------------------------------- testcase
 
-CATCH_TEST_CASE("007 module", "[module]")
+CATCH_TEST_CASE("008 module", "[module]")
 {
    auto dump_parse = [&](Context& context) {
       auto& scanner = context.scanner();
@@ -103,13 +66,13 @@ CATCH_TEST_CASE("007 module", "[module]")
       CATCH_REQUIRE(AstNode::get_node_count() == 0);
    };
 
-   auto context_ptr = Context::make(make_unique<Scanner>("test-007", test_text_007));
+   auto context_ptr = Context::make(make_unique<Scanner>("test-008", test_text_008));
    auto& context    = *context_ptr;
    auto& scanner    = context.scanner();
 
    // dump_parse(context);
 
-   CATCH_SECTION("007")
+   CATCH_SECTION("008")
    {
       {
          scanner.set_position(0);
@@ -117,9 +80,9 @@ CATCH_TEST_CASE("007 module", "[module]")
 
          std::stringstream ss;
          node->stream(ss, 0);
-         CATCH_REQUIRE(ss.str() == test_text_007_result);
+         CATCH_REQUIRE(ss.str() == test_text_008_result);
       }
-      CATCH_REQUIRE(context.diagnostics().size() == 0);
+      CATCH_REQUIRE(context.diagnostics().size() == 2);
       CATCH_REQUIRE(AstNode::get_node_count() == 0);
    }
 }
