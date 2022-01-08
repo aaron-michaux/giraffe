@@ -35,6 +35,11 @@ int execute(Context& context) noexcept // once set upt
                    encode_string(token.text()));
    };
 
+   // There's a 'Context' for every file, but only one 'SymbolTable'
+   //
+   // (1) Get a stmt list
+   // (2) For each statement eval(context,
+
    auto& scanner = context.scanner();
    while(scanner.has_next()) { print_token(cout, scanner.consume()); }
    print_token(cout, scanner.current());

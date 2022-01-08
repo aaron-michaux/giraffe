@@ -12,16 +12,7 @@ namespace giraffe
 //   child[1] = statement-list
 //   child[2..n] = #elif, #elifdef, #elifndef, #else parts
 
-enum class IfThenType : uint8_t {
-   NONE = 0,
-   IF,
-   IFDEF,
-   IFNDEF,
-   ELIF,
-   ELIFDEF,
-   ELIFNDEF,
-   ELSE
-};
+enum class IfThenType : uint8_t { NONE = 0, IF, IFDEF, IFNDEF, ELIF, ELIFDEF, ELIFNDEF, ELSE };
 
 /**
  */
@@ -39,9 +30,8 @@ class IfThenNode final : public AstNode
    virtual ~IfThenNode() = default;
 
    static IfThenNode* make_if_part(IfThenType type, vector<AstNode*>&& children) noexcept;
-   static IfThenNode* make_elif_part(IfThenType type,
-                                     ExpressionNode* condition,
-                                     StmtListNode* stmt_list) noexcept;
+   static IfThenNode*
+   make_elif_part(IfThenType type, ExpressionNode* condition, StmtListNode* stmt_list) noexcept;
 
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
 
@@ -51,6 +41,9 @@ class IfThenNode final : public AstNode
    const StmtListNode* stmts() const noexcept;
    bool is_if() const noexcept;
    bool has_condition() const noexcept;
+   string_view symbol() const noexcept;          // IFDEF, IFNDEF, ELIFDEF, ELIFNDEF only
+   size_t n_if_elif_else_parts() const noexcept; // #if, #elif, ..., #else #fi
+   const IfThenNode* if_elif_part(size_t index) const noexcept;
    //@}
 };
 } // namespace giraffe

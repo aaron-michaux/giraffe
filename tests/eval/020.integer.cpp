@@ -1,5 +1,4 @@
 
-
 #include "stdinc.hpp"
 
 #include <random>
@@ -7,9 +6,9 @@
 #include <catch2/catch.hpp>
 
 #include "driver/context.hpp"
+#include "eval/integer.hpp"
 #include "parser/parser-internal.hpp"
 #include "scanner/scanner.hpp"
-#include "sema/integer.hpp"
 
 namespace giraffe::test
 {

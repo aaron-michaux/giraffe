@@ -88,6 +88,12 @@ struct Integer
    int64_t signed_value() const noexcept;
    uint64_t unsigned_value() const noexcept;
 
+   bool is_true() const noexcept
+   {
+      return is_signed() ? (signed_value() != 0) : (unsigned_value() != 0);
+   }
+   bool is_false() const noexcept { return !is_true(); }
+
    bool operator==(const Integer& rhs) const noexcept;
    bool operator!=(const Integer& rhs) const noexcept { return !(*this == rhs); }
 

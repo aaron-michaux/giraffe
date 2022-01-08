@@ -4,7 +4,6 @@
 #include "diagnostic.hpp"
 #include "driver-options.hpp"
 #include "scanner/scanner.hpp"
-#include "symbol-table.hpp"
 
 namespace giraffe
 {
@@ -25,7 +24,6 @@ class Context final
    DriverOptions driver_opts_   = {};
    Diagnostics diags_           = {};
    unique_ptr<Scanner> scanner_ = {};
-   SymbolTable symbols_         = {};
 
    void push_diagnostic_(Diagnostic::Level, SourceLocation, SourceRange, std::string&&) noexcept;
    void push_diagnostic_(Diagnostic::Level, SourceLocation, std::string&&) noexcept;
@@ -48,15 +46,8 @@ class Context final
    const auto& driver_opts() const noexcept { return driver_opts_; }
    const auto& scanner() const noexcept { return *scanner_; }
    auto& scanner() noexcept { return *scanner_.get(); }
-   const auto& symbols() const noexcept { return symbols_; }
-   auto& symbols() noexcept { return symbols_; }
-
-   // const auto& totals() const noexcept { return diags_.totals(); }
-   // auto totals(auto range) const noexcept { return diags_.totals(range); }
    const auto& diagnostics() const noexcept { return diags_; }
    Diagnostics::Range diagnostics_from(uint32_t) const noexcept;
-
-   // TRUE if there's an error/fatal message in the range.
    bool has_error(Diagnostics::Range = {}) const noexcept;
    //@}
 

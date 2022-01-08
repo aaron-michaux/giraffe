@@ -18,15 +18,15 @@ IfThenNode* This::make_if_part(IfThenType type, vector<AstNode*>&& children) noe
    assert(children.size() >= 2);
    assert(children[0]->node_type() == NodeType::EXPRESSION);
    assert(children[1]->node_type() == NodeType::STMT_LIST);
+   for(size_t i = 2; i < children.size(); ++i) assert(children[i]->node_type() == NodeType::IFTHEN);
    node->set_children_(std::move(children));
    return node.release();
 }
 
 // -------------------------------------------------------------- make-elif-part
 
-IfThenNode* This::make_elif_part(IfThenType type,
-                                 ExpressionNode* condition,
-                                 StmtListNode* stmt_list) noexcept
+IfThenNode*
+This::make_elif_part(IfThenType type, ExpressionNode* condition, StmtListNode* stmt_list) noexcept
 {
    auto node = unique_ptr<IfThenNode>(new IfThenNode(type));
    assert(!node->is_if());
@@ -48,13 +48,35 @@ const StmtListNode* This::stmts() const noexcept
 
 bool This::is_if() const noexcept
 {
-   return type() == IfThenType::IF || type() == IfThenType::IFDEF
-          || type() == IfThenType::IFNDEF;
+   return type() == IfThenType::IF || type() == IfThenType::IFDEF || type() == IfThenType::IFNDEF;
 }
 
 bool This::has_condition() const noexcept
 {
    return type() != IfThenType::ELSE && type() != IfThenType::NONE;
+}
+
+string_view This::symbol() const noexcept
+{
+   // IFDEF, IFNDEF, ELIFDEF, ELIFNDEF only
+   if(children().size() >= 2 && condition()->expr_type() == ExprType::IDENTIFIER) {
+      return condition()->text();
+   }
+   return "";
+}
+
+size_t This::n_if_elif_else_parts() const noexcept
+{
+   // #if, #elif, ..., #else #fi
+   assert(children().size() >= 2);
+   return is_if() ? (1 + children().size() - 2) : 0;
+}
+
+const IfThenNode* This::if_elif_part(size_t index) const noexcept
+{
+   assert(is_if());
+   if(index == 0) { return this; }
+   return cast_ast_node<IfThenNode>(children()[index + 2 - 1]);
 }
 
 // ---------------------------------------------------------------------- stream

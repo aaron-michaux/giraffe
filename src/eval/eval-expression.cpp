@@ -124,14 +124,16 @@ Integer parse_integer(string_view text) noexcept(false)
 
 // ---------------------------------------------------------------------------------- evalutate expr
 
-Integer evaluate_expr(Context& context, const ExpressionNode* expr) noexcept(false)
+Integer evaluate_expr(Context& context,
+                      const SymbolTable& symbols,
+                      const ExpressionNode* expr) noexcept(false)
 {
-   auto eval_symbol = [&context, expr]() -> Integer {
-      if(!context.symbols().has(expr->text())) {
+   auto eval_symbol = [&context, &symbols, expr]() -> Integer {
+      if(!symbols.has(expr->text())) {
          context.push_error(expr->loc0(), expr->src_range(), "failed to resolve symbol");
          return Integer::make_invalid();
       }
-      const auto resolved = context.symbols().eval(expr->text());
+      const auto resolved = symbols.eval(expr->text());
       try {
          return parse_integer(resolved);
       } catch(std::exception& e) {
@@ -143,9 +145,9 @@ Integer evaluate_expr(Context& context, const ExpressionNode* expr) noexcept(fal
       return Integer::make_invalid();
    };
 
-   auto eval_unary = [&context, expr]() -> Integer {
+   auto eval_unary = [&context, &symbols, expr]() -> Integer {
       assert(expr->size() == 1);
-      const Integer child = evaluate_expr(context, expr->child(0));
+      const Integer child = evaluate_expr(context, symbols, expr->child(0));
       if(child.is_invalid()) return child;
       switch(expr->op()) {
       case TSHOUT: return child.unot();
@@ -158,10 +160,10 @@ Integer evaluate_expr(Context& context, const ExpressionNode* expr) noexcept(fal
       return Integer::make_invalid();
    };
 
-   auto eval_binary = [&context, expr]() -> Integer {
+   auto eval_binary = [&context, &symbols, expr]() -> Integer {
       assert(expr->size() == 2);
-      const auto lhs = evaluate_expr(context, expr->lhs());
-      const auto rhs = evaluate_expr(context, expr->rhs());
+      const auto lhs = evaluate_expr(context, symbols, expr->lhs());
+      const auto rhs = evaluate_expr(context, symbols, expr->rhs());
       if(lhs.is_invalid() || rhs.is_invalid()) return Integer::make_invalid();
 
       switch(expr->op()) {
@@ -194,7 +196,9 @@ Integer evaluate_expr(Context& context, const ExpressionNode* expr) noexcept(fal
    case ExprType::EMPTY: throw std::logic_error{"attempt to evaluate an 'empty' expression"};
    case ExprType::IDENTIFIER: return eval_symbol();
    case ExprType::INTEGER: return parse_integer(expr->text());
-   case ExprType::SUBEXPR: assert(expr->size() == 1); return evaluate_expr(context, expr->child(0));
+   case ExprType::SUBEXPR:
+      assert(expr->size() == 1);
+      return evaluate_expr(context, symbols, expr->child(0));
    case ExprType::UNARY: return eval_unary();
    case ExprType::BINARY: return eval_binary();
    }

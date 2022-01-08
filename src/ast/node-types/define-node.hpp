@@ -17,8 +17,11 @@ class DefineNode final : public AstNode
    vector<sso23::string> arglist_ = {};
 
  public:
-   DefineNode(string_view identifier, string_view text, vector<sso23::string> arglist)
-       : AstNode(NodeType::DEFINE)
+   DefineNode(SourceRange loc,
+              string_view identifier,
+              string_view text,
+              vector<sso23::string> arglist)
+       : AstNode(NodeType::DEFINE, loc)
        , identifier_{identifier}
        , text_{text}
        , arglist_{std::move(arglist)}
@@ -28,10 +31,7 @@ class DefineNode final : public AstNode
    std::ostream& stream(std::ostream& ss, const int indent) const noexcept override;
 
    //@{ Getters
-   auto identifier() const noexcept
-   {
-      return string_view{identifier_.data(), identifier_.size()};
-   }
+   auto identifier() const noexcept { return string_view{identifier_.data(), identifier_.size()}; }
    auto text() const noexcept { return string_view{text_.data(), text_.size()}; }
    const auto& arglist() const noexcept { return arglist_; }
    //@}

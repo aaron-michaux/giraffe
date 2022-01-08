@@ -58,17 +58,17 @@ AstNode* accept_define(Context& context) noexcept
    };
 
    assert(expect(scanner, TDEFINE));
-   scanner.consume();
+   const auto loc0         = scanner.consume().location();
    const auto& ident_token = scanner.current();
    if(ident_token.id() != TIDENTIFIER) { return on_error("expected identifier after #define"); }
-   scanner.consume(); // identifier
+   const auto loc1 = scanner.consume().end_location(); // identifier
 
    vector<sso23::string> arglist = {};
    if(scanner.current().id() == TLPAREN) arglist = accept_arglist(context);
 
    sso23::string text = accept_to_newline(context);
 
-   return new DefineNode{ident_token.text(), text, std::move(arglist)};
+   return new DefineNode{{loc0, loc1}, ident_token.text(), text, std::move(arglist)};
 }
 
 } // namespace giraffe
