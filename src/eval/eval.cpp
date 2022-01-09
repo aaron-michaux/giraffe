@@ -39,7 +39,7 @@ void eval_stmt(Context& context, SymbolTable& symbols, const AstNode* node) noex
          } else {
             return !symbols.has(symbol);
          }
-      case IfThenType::ELSE: return false;
+      case IfThenType::ELSE: return true; // Always execute an else statment!
       }
       assert(false); // logic error
       return false;
