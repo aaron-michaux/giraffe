@@ -18,6 +18,12 @@ unique_ptr<Context> This::make(unique_ptr<Scanner>&& scanner, DriverOptions opts
    return context;
 }
 
+unique_ptr<Context> This::make(string_view filename, DriverOptions opts)
+{
+   auto scanner = make_unique<Scanner>(make_unique<FILE_ScannerInput>(filename));
+   return make(std::move(scanner), opts);
+}
+
 // ------------------------------------------------------------ diagnostics from
 
 Diagnostics::Range This::diagnostics_from(uint32_t from_idx) const noexcept

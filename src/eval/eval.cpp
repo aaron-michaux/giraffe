@@ -15,7 +15,6 @@ void eval_undef_node(EvalContext& eval_ctx, const UndefNode* node);
 void eval_error_node(EvalContext& eval_ctx, const ErrorNode* node);
 void eval_module_node(EvalContext& eval_ctx, const ModuleNode* node);
 void eval_include_node(EvalContext& eval_ctx, const IncludeNode* node);
-void eval_stmt(EvalContext& eval_ctx, const AstNode* node) noexcept;
 
 // ------------------------------------------------------------------------------ Evaluate Condition
 
@@ -63,7 +62,7 @@ void eval_ifthen_node(EvalContext& eval_ctx, const IfThenNode* node)
    for(size_t i = 0; i < node->n_if_elif_else_parts(); ++i) {
       auto child = node->if_elif_part(i);
       if(evaluate_condition(context, eval_ctx.symbols(), child)) {
-         eval_stmt(eval_ctx, child->stmts());
+         eval_node(eval_ctx, child->stmts());
          break;
       }
    }
@@ -117,13 +116,19 @@ void eval_module_node(EvalContext& eval_ctx, const ModuleNode* node)
 void eval_include_node(EvalContext& eval_ctx, const IncludeNode* node)
 {
    // Find the file (using the include path)
+   const auto filename = eval_ctx.resolve_include_path(node->filename(), node->is_local_include());
+   if(filename.empty()) {
+      eval_ctx.current_context().push_error(node->loc0(), "could not resolve include");
+      return;
+   }
+
    // Note the dependency in the EvalContext
-   // Boot up a new context, and parse-evaluate
+   eval_ctx.process_file(filename);
 }
 
 // --------------------------------------------------------------------------------------- eval stmt
 
-void eval_stmt(EvalContext& eval_ctx, const AstNode* node) noexcept
+void eval_node(EvalContext& eval_ctx, const AstNode* node) noexcept
 {
    auto& context = eval_ctx.current_context();
 
@@ -134,7 +139,7 @@ void eval_stmt(EvalContext& eval_ctx, const AstNode* node) noexcept
       break;
    case NodeType::STMT_LIST: [[fallthrough]];
    case NodeType::TRANSLATION_UNIT:
-      for(auto child : *node) eval_stmt(eval_ctx, child);
+      for(auto child : *node) eval_node(eval_ctx, child);
       break;
    case NodeType::MODULE: eval_module_node(eval_ctx, cast_ast_node<ModuleNode>(node)); break;
    case NodeType::IFTHEN: eval_ifthen_node(eval_ctx, cast_ast_node<IfThenNode>(node)); break;
@@ -147,11 +152,6 @@ void eval_stmt(EvalContext& eval_ctx, const AstNode* node) noexcept
       break;
    }
    assert(false);
-}
-
-void eval_stmts(EvalContext& eval_ctx, const StmtListNode* stmt_list) noexcept
-{
-   eval_stmt(eval_ctx, stmt_list);
 }
 
 } // namespace giraffe

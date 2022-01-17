@@ -39,6 +39,7 @@ class Context final
 
    //@{ Construction
    static unique_ptr<Context> make(unique_ptr<Scanner>&&, DriverOptions opts = {});
+   static unique_ptr<Context> make(string_view filename, DriverOptions opts = {});
    //@}
 
    //@{ Getters
