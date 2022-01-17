@@ -650,17 +650,18 @@ constexpr auto operator<=>(const basic_string<CharT, Traits>& lhs,
    return lhs <=> rhs;
 }
 
+template<typename T> struct hash
+{
+   std::size_t operator()(const T& o) const { return o.hash(); }
+};
+
 using string = basic_string<char>;
+using hasher = hash<string>;
 
 static_assert(sizeof(string) == 3 * sizeof(std::size_t));
 static_assert(std::is_nothrow_default_constructible<string>::value);
 static_assert(std::is_nothrow_move_constructible<string>::value);
 static_assert(std::is_nothrow_move_assignable<string>::value);
 static_assert(std::is_nothrow_swappable<string>::value);
-
-template<typename T> struct hash
-{
-   std::size_t operator()(const T& o) const { return o.hash(); }
-};
 
 } // namespace sso23

@@ -18,6 +18,7 @@
 #include <string_view>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #ifdef CATCH_BUILD
@@ -48,6 +49,7 @@ using std::make_unique;
 using std::string_view;
 using std::unique_ptr;
 using std::unordered_map;
+using std::unordered_set;
 using std::vector;
 
 using fmt::format;
