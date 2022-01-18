@@ -116,14 +116,14 @@ void eval_module_node(EvalContext& eval_ctx, const ModuleNode* node)
 void eval_include_node(EvalContext& eval_ctx, const IncludeNode* node)
 {
    // Find the file (using the include path)
-   const auto filename = eval_ctx.resolve_include_path(node->filename(), node->is_local_include());
-   if(filename.empty()) {
+   const auto path = eval_ctx.resolve_include_path(node->filename(), node->is_local_include());
+   if(!path.found) {
       eval_ctx.current_context().push_error(node->loc0(), "could not resolve include");
       return;
    }
 
    // Note the dependency in the EvalContext
-   eval_ctx.process_file(filename);
+   eval_ctx.process_include(path.filename, path.is_isystem_path);
 }
 
 // --------------------------------------------------------------------------------------- eval stmt

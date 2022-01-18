@@ -15,7 +15,7 @@
 #include "cli-args.hpp"
 
 #include "driver/context.hpp"
-#include "driver/execute.hpp"
+#include "eval/eval-context.hpp"
 
 namespace giraffe
 {
@@ -168,15 +168,15 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
 
 // ---------------------------------------------------------------- init context
 
-static unique_ptr<Context> init_compiler_context(const CliConfig& config) noexcept
+static unique_ptr<ScannerInputInterface> init_input_source(const CliConfig& config) noexcept
 {
+   using namespace giraffe;
+
    if(config.has_error) return nullptr;
 
    try {
-      auto source  = (config.filename == "-") ? make_unique<FILE_ScannerInput>("<stdin>", stdin)
-                                              : make_unique<FILE_ScannerInput>(config.filename);
-      auto scanner = make_unique<giraffe::Scanner>(std::move(source));
-      return Context::make(std::move(scanner), config.driver_opts);
+      return (config.filename == "-") ? make_unique<FILE_ScannerInput>("<stdin>", stdin)
+                                      : make_unique<FILE_ScannerInput>(config.filename);
    } catch(std::exception& e) {
       std::cerr << format("Exception while reading '{}': {}", config.filename, e.what()) << endl;
    }
@@ -193,13 +193,17 @@ int run(int argc, char** argv) noexcept
       return EXIT_SUCCESS;
    }
 
-   auto context = init_compiler_context(config);
-   if(context == nullptr) {
+   auto input_source = init_input_source(config);
+   if(input_source == nullptr) {
       cout << "Aborting due to previous errors." << endl;
       return EXIT_FAILURE;
    }
 
-   const auto success = execute(*context);
+   const auto success = execute(std::move(input_source),
+                                config.include_paths,
+                                initial_symbol_table,
+                                output_stream,
+                                config.driver_opts);
    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 

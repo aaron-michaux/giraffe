@@ -5,10 +5,10 @@ namespace giraffe
 {
 struct DriverOptions final
 {
-   bool color_diagnostics                                                          = true;
-   bool w_error                                                                    = false;
-   vector<sso23::string> include_paths                                             = {};
-   unordered_map<sso23::string, sso23::string, sso23::hash<sso23::string>> defines = {};
+   bool color_diagnostics = true;
+   bool w_error           = false;
+   bool suppress_warnings = false;
+   bool skip_isystem      = false
 };
 
 } // namespace giraffe

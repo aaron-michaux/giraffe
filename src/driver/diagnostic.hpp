@@ -54,6 +54,12 @@ struct Diagnostic final
    std::ostream& stream(std::ostream&, const Context&) const noexcept;
 };
 
+struct DiagnosticMessage final
+{
+   std::string message     = {};               //!< The formated message
+   Diagnostic::Level level = Diagnostic::NONE; //!< Info/Warn/etc.
+};
+
 struct DiagnosticCounts
 {
    uint32_t infos  = 0;

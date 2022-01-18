@@ -5,5 +5,9 @@
 
 namespace giraffe
 {
-int execute(Context& context) noexcept;
+bool execute(unique_ptr<ScannerInputInterface>&& input,
+             vector<IncludePath> include_paths,
+             SymbolTable initial_symbol_table,
+             std::ostream* output_stream,
+             DriverOptions opts = {}) noexcept;
 }

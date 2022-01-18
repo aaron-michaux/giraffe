@@ -34,6 +34,7 @@
 #include "utils/for-each-adjacent-pair.hpp"
 #include "utils/implode.hpp"
 #include "utils/in-list.hpp"
+#include "utils/include-path.hpp"
 #include "utils/is-reverse-iterator.hpp"
 #include "utils/remove-duplicates.hpp"
 #include "utils/to-array.hpp"
