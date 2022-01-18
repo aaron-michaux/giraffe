@@ -117,7 +117,7 @@ void eval_include_node(EvalContext& eval_ctx, const IncludeNode* node)
 {
    // Find the file (using the include path)
    const auto path = eval_ctx.resolve_include_path(node->filename(), node->is_local_include());
-   if(!path.found) {
+   if(!path.is_found) {
       eval_ctx.current_context().push_error(node->loc0(), "could not resolve include");
       return;
    }

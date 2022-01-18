@@ -14,15 +14,15 @@ namespace giraffe
 
 // -------------------------------------------------------------------------------------------- make
 
-unique_ptr<EvalContext> This::make(vector<IncludePath>&& include_paths,
-                                   SymbolTable&& initial_symbol_table,
+unique_ptr<EvalContext> This::make(vector<IncludePath> include_paths,
+                                   SymbolTable initial_symbol_table,
                                    std::ostream* output_stream,
                                    DriverOptions opts) noexcept
 {
    auto ctx            = make_unique<EvalContext>();
    ctx->include_paths_ = std::move(include_paths);
-   ctx->symbols_       = std::move(symbol_table);
-   ctx->output_stream_ = output_stream;
+   ctx->symbols_       = std::move(initial_symbol_table);
+   ctx->ostream_       = output_stream;
    ctx->driver_opts_   = opts;
    return ctx;
 }
@@ -41,28 +41,21 @@ ResolvedPath This::resolve_include_path(string_view filename, bool is_local_incl
 {
    ResolvedPath ret = {};
 
-   auto test_it = [&filename](string_view dir, bool is_isystem) -> bool {
+   auto test_it = [&filename, &ret](string_view dir, bool is_isystem) {
       std::string path = format("{}{}{}", dir, (dir.empty() ? "" : "/"), filename);
       if(std::filesystem::exists(path)) {
-         ret.path            = std::move(path);
+         ret.filename        = std::move(path);
          ret.is_found        = true;
          ret.is_isystem_path = is_isystem;
-         return true;
       }
-      return false;
    };
 
    // Test for local include if `is_local_include`
-   if(is_local_include) {
-      if(test_it("", false)) break;
-   }
+   if(is_local_include) test_it("", false);
 
    // Test other paths
-   if(!ret.found) {
-      for(const auto& ipath : include_paths_) {
-         if(test_it(ipath.path, ipath.is_isystem)) break;
-      }
-   }
+   for(auto ii = begin(include_paths_); !ret.is_found && ii != end(include_paths_); ++ii)
+      test_it(ii->path, ii->is_isystem);
 
    return ret;
 }
@@ -71,13 +64,13 @@ ResolvedPath This::resolve_include_path(string_view filename, bool is_local_incl
 
 void This::process_include(string_view filename, bool is_isystem_path) noexcept
 {
-   if(driver_opts_.skip_isystem && is_isystem_path) {
+   if(driver_opts_.skip_system_includes && is_isystem_path) {
       return; // nothing to do
    }
 
    // Update the options... remember to suppress warnings on -isystem paths
-   auto opts             = driver_opts_;
-   opt.suppress_warnings = opt.suppress_warnings || is_isystem_path;
+   auto opts              = driver_opts_;
+   opts.suppress_warnings = opts.suppress_warnings || is_isystem_path;
 
    assert(std::filesystem::exists(filename));
    process_context_(Context::make(filename, opts));
@@ -96,7 +89,7 @@ void This::process_context_(unique_ptr<Context>&& context_ptr) noexcept
    unique_ptr<TranslationUnitNode> tu_node = parse(context);
 
    // Render
-   for(const auto& diagnostic : diagnostics) {
+   for(const auto& diagnostic : context.diagnostics()) {
       diagnostic.stream(std::cerr, context);
       switch(diagnostic.level) {
       case Diagnostic::NONE: FATAL("logic error: diagnostic of type NONE"); break;

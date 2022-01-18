@@ -12,6 +12,13 @@
 namespace giraffe
 {
 
+struct ResolvedPath
+{
+   std::string filename = {};
+   bool is_found        = false;
+   bool is_isystem_path = false;
+};
+
 /**
  * Contains:
  *  1. A Symbol Table
@@ -37,8 +44,8 @@ class EvalContext
 
  public:
    //@{ Constructor
-   static unique_ptr<EvalContext> make(vector<IncludePath>&& include_paths,
-                                       SymbolTable&& initial_symbol_table,
+   static unique_ptr<EvalContext> make(vector<IncludePath> include_paths,
+                                       SymbolTable initial_symbol_table,
                                        std::ostream* output_stream,
                                        DriverOptions opts = {}) noexcept;
    //@}
@@ -54,12 +61,6 @@ class EvalContext
 
    //@{ Actions
    //! Returns ""s if the file cannot be found.
-   struct ResolvedPath
-   {
-      std::string filename = {};
-      bool is_found        = false;
-      bool is_isystem_path = false;
-   };
    ResolvedPath resolve_include_path(string_view filename, bool is_local_include) const noexcept;
 
    void process_include(string_view filename, bool is_isystem_path) noexcept;

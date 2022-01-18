@@ -7,7 +7,7 @@ namespace giraffe
 {
 struct IncludePath
 {
-   std::string path = ""s;
+   std::string path = {};
    bool is_isystem  = false;
 };
 } // namespace giraffe
