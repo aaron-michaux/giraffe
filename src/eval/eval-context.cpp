@@ -12,18 +12,18 @@
 namespace giraffe
 {
 
-// -------------------------------------------------------------------------------------------- make
+// ---------------------------------------------------------------------------------------- evaluate
 
-unique_ptr<EvalContext> This::make(vector<IncludePath> include_paths,
-                                   SymbolTable initial_symbol_table,
-                                   std::ostream* output_stream,
-                                   DriverOptions opts) noexcept
+unique_ptr<EvalContext> This::evaluate(unique_ptr<ScannerInputInterface>&& input,
+                                       vector<IncludePath> include_paths,
+                                       SymbolTable initial_symbol_table,
+                                       DriverOptions opts) noexcept
 {
    auto ctx            = make_unique<EvalContext>();
    ctx->include_paths_ = std::move(include_paths);
    ctx->symbols_       = std::move(initial_symbol_table);
-   ctx->ostream_       = output_stream;
    ctx->driver_opts_   = opts;
+   ctx->process_context_(Context::make(make_unique<Scanner>(std::move(input)), opts));
    return ctx;
 }
 
@@ -68,27 +68,32 @@ void This::process_include(string_view filename, bool is_isystem_path) noexcept
       return; // nothing to do
    }
 
+   // Record the include dependency
+   include_deps_.insert(sso23::string{filename});
+
    // Update the options... remember to suppress warnings on -isystem paths
    auto opts              = driver_opts_;
    opts.suppress_warnings = opts.suppress_warnings || is_isystem_path;
 
+   // Process the include file
    assert(std::filesystem::exists(filename));
    process_context_(Context::make(filename, opts));
 }
 
-void This::process_input(unique_ptr<ScannerInputInterface>&& input) noexcept
-{
-   process_context_(Context::make(make_unique<Scanner>(std::move(input)), driver_opts_));
-}
+// --------------------------------------------------------------------------------- process context
 
 void This::process_context_(unique_ptr<Context>&& context_ptr) noexcept
 {
+   if(context_stack_.size() > 100) {
+      FATAL(format("suspect infinite #include recusion, aborting!"));
+   }
+
    context_stack_.push(std::move(context_ptr));
 
    auto& context                           = current_context();
    unique_ptr<TranslationUnitNode> tu_node = parse(context);
 
-   // Render
+   // Render diagnostics
    for(const auto& diagnostic : context.diagnostics()) {
       diagnostic.stream(std::cerr, context);
       switch(diagnostic.level) {
@@ -100,14 +105,15 @@ void This::process_context_(unique_ptr<Context>&& context_ptr) noexcept
       }
    }
 
+   // Evaluate the node
    if(!context.has_error()) { eval_node(*this, tu_node.get()); }
-
-   if(!context.has_error()) {
-      // TODO, stream output dependencies here (if
-   }
 
    context_stack_.pop();
 }
+
+// ------------------------------------------------------------------------------- stream make rules
+
+void This::stream_make_rules(std::ostream& os) noexcept { os << "Hello world!" << endl; }
 
 } // namespace giraffe
 

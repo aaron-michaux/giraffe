@@ -200,6 +200,50 @@ static unique_ptr<ScannerInputInterface> init_input_source(const CliConfig& conf
 
 // --------------------------------------------------------------------------------------------- run
 
+bool run_config(const auto& config) noexcept
+{
+   bool has_error = false;
+
+   // -- Create the input stream
+   auto input_source = init_input_source(config);
+   if(input_source == nullptr) has_error = true;
+
+   // -- Get the output stream
+   std::ofstream of; // RAII cleanup
+   if(!config.output_filename.empty()) {
+      of.open(config.output_filename);
+      if(!of.is_open()) {
+         std::cerr << format("Failed to open '{}' for writing", config.output_filename) << endl;
+         has_error = true;
+      }
+   }
+   std::ostream& ostream = config.output_filename.empty() ? std::cout : of;
+
+   // -- Create the initial symbol table
+   SymbolTable initial_symbol_table;
+   for(const auto& [key, value] : config.defines) { initial_symbol_table.insert(key, {}, value); }
+
+   // -- Final error check
+   if(has_error) {
+      cout << "Aborting due to previous errors." << endl;
+      return EXIT_FAILURE;
+   }
+
+   // -- Evaluate the input source
+   auto ctx = EvalContext::evaluate(std::move(input_source),
+                                    config.include_paths,
+                                    std::move(initial_symbol_table),
+                                    config.driver_opts);
+
+   // -- Produce output
+   if(!ctx->has_error()) { ctx->stream_make_rules(ostream); }
+
+   const auto success = !ctx->has_error();
+   return success;
+}
+
+// --------------------------------------------------------------------------------------------- run
+
 int run(int argc, char** argv) noexcept
 {
    const auto config = parse_command_line(argc, argv);
@@ -214,40 +258,7 @@ int run(int argc, char** argv) noexcept
       return EXIT_FAILURE;
    }
 
-   bool has_error = false;
-
-   // -- Create the input stream
-   auto input_source = init_input_source(config);
-   if(input_source == nullptr) has_error = true;
-
-   // -- Get the output stream
-   std::ofstream of; // RAII cleanup
-   std::ostream* output_stream = &std::cout;
-   if(!config.output_filename.empty()) {
-      of.open(config.output_filename);
-      if(!of.is_open()) {
-         std::cerr << format("Failed to open '{}' for writing", config.output_filename) << endl;
-         has_error = true;
-      }
-      output_stream = &of;
-   }
-
-   // -- Create the initial symbol table
-   SymbolTable initial_symbol_table;
-   for(const auto& [key, value] : config.defines) { initial_symbol_table.insert(key, {}, value); }
-
-   // -- Final error check
-   if(has_error) {
-      cout << "Aborting due to previous errors." << endl;
-      return EXIT_FAILURE;
-   }
-
-   // -- Execute
-   auto ctx = EvalContext::make(
-       config.include_paths, std::move(initial_symbol_table), output_stream, config.driver_opts);
-   ctx->process_input(std::move(input_source)); // Process the input...
-   const auto success = !ctx->has_error();
-
+   const bool success = run_config(config);
    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 

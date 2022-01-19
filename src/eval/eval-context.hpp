@@ -38,16 +38,14 @@ class EvalContext
    string_set_type include_deps_ = {}; //!< The include dependencies for the current file
    std::stack<unique_ptr<Context>> context_stack_ = {}; //!< We keep a stack of context pointers
 
-   std::ostream* ostream_ = nullptr; //!< Not owend
-
    void process_context_(unique_ptr<Context>&&) noexcept;
 
  public:
    //@{ Constructor
-   static unique_ptr<EvalContext> make(vector<IncludePath> include_paths,
-                                       SymbolTable initial_symbol_table,
-                                       std::ostream* output_stream,
-                                       DriverOptions opts = {}) noexcept;
+   static unique_ptr<EvalContext> evaluate(unique_ptr<ScannerInputInterface>&& input,
+                                           vector<IncludePath> include_paths,
+                                           SymbolTable initial_symbol_table,
+                                           DriverOptions opts = {}) noexcept;
    //@}
 
    //@{ Getters
@@ -56,16 +54,17 @@ class EvalContext
    const auto& driver_opts() const noexcept { return driver_opts_; }
    Context& current_context() noexcept;
    bool has_error() const noexcept { return has_error_; }
-   std::ostream& ostream() noexcept { return (ostream_ == nullptr) ? std::cout : *ostream_; }
    //@}
 
    //@{ Actions
    //! Returns ""s if the file cannot be found.
    ResolvedPath resolve_include_path(string_view filename, bool is_local_include) const noexcept;
 
+   //! A #include is being processed
    void process_include(string_view filename, bool is_isystem_path) noexcept;
 
-   void process_input(unique_ptr<ScannerInputInterface>&& input) noexcept;
+   //! Product make-compatible dependency rules for the input
+   void stream_make_rules(std::ostream& os) noexcept;
    //@}
 };
 
