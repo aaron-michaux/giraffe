@@ -31,6 +31,7 @@
 
 #include "utils/concepts.hpp"
 #include "utils/encode-char.hpp"
+#include "utils/file-put-contents.hpp"
 #include "utils/for-each-adjacent-pair.hpp"
 #include "utils/implode.hpp"
 #include "utils/in-list.hpp"

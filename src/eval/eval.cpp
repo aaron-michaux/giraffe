@@ -151,7 +151,6 @@ void eval_node(EvalContext& eval_ctx, const AstNode* node) noexcept
       context.push_error(node->loc0(), "attempt to evaluate expression as statement");
       break;
    }
-   assert(false);
 }
 
 } // namespace giraffe

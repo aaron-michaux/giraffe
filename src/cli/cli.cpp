@@ -260,8 +260,6 @@ bool run_config(const auto& config) noexcept
       return EXIT_FAILURE;
    }
 
-   return true;
-
    // -- Evaluate the input source
    auto ctx = EvalContext::evaluate(
        std::move(input_source), include_paths, std::move(initial_symbol_table), config.driver_opts);
