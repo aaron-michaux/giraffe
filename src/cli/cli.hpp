@@ -3,11 +3,13 @@
 
 #include "driver/driver-options.hpp"
 
+#include "read-config-file.hpp"
+
 namespace giraffe
 {
 struct CliConfig final
 {
-   using string_pair_type = std::pair<sso23::string, sso23::string>;
+   using string_pair_type = ConfigFileData::string_pair_type;
    bool show_help         = false;
    bool has_error         = false;
 
@@ -15,6 +17,7 @@ struct CliConfig final
    bool print_config_and_exit  = false;
    std::string input_filename  = ""s;
    std::string output_filename = ""s;
+   std::string config_filename = ""s;
 
    // {{ "-I", "/path/to/somewhere" }, { "-isystem", "/path/to/somewhere" }, ...
    vector<IncludePath> include_paths = {};

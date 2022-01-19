@@ -37,6 +37,7 @@
 #include <climits>
 #include <cstddef>
 #include <cstring>
+#include <istream>
 #include <iterator>
 #include <ostream>
 #include <type_traits>
@@ -654,6 +655,17 @@ template<typename T> struct hash
 {
    std::size_t operator()(const T& o) const { return o.hash(); }
 };
+
+template<typename CharT, typename Traits>
+inline std::istream& operator>>(std::istream& in, basic_string<CharT, Traits>& out)
+{
+   std::istream::sentry sentry(in);
+   if(!sentry) return in;
+   int next                  = 0;
+   constexpr auto eof_marker = std::istream::traits_type::eof();
+   while((next = in.get()) != eof_marker && !std::isspace(next)) out.push_back(next);
+   return in;
+}
 
 using string = basic_string<char>;
 using hasher = hash<string>;

@@ -55,6 +55,7 @@ dump-tokens:       {}
 print-config:      {}
 input-filename:    {}
 output-filename:   {}
+sys-config:        {}
 compiler-opts
    color-diag:     {}
    w-error:        {}
@@ -71,6 +72,7 @@ defines:
                 conf.print_config_and_exit,
                 conf.input_filename,
                 conf.output_filename,
+                conf.config_filename,
                 conf.driver_opts.color_diagnostics,
                 conf.driver_opts.w_error,
                 conf.driver_opts.suppress_warnings,
@@ -90,7 +92,10 @@ void show_help(char* argv0) noexcept
 
    Options:
 
-      -o <filename>               Output file. (Output printed to stdout by default.)
+      -o <filename>               Output file. (stdout by default.)
+
+      --sys-config <filename>     Config file produced by gcc, showing defines 
+                                  and includes. See README.md.
 
       -Dsymbol(=value)?           Define a symbol.
       -Ipath                      Add an include path.
@@ -147,6 +152,8 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
             config.include_paths.emplace_back(make_include_path(arg));
          else if(arg == "-o" || arg == "--output")
             config.output_filename = cli::safe_arg_str(argc, argv, i);
+         else if(arg == "--sys-config")
+            config.config_filename = cli::safe_arg_str(argc, argv, i);
          else if(is_regular_file(arg) && config.input_filename.empty())
             config.input_filename = std::string(begin(arg), end(arg));
          else if(arg == "-" && config.input_filename.empty()) // i.e., stdin
@@ -168,6 +175,11 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
 
    if(config.input_filename.empty()) {
       std::cerr << format("Must specify at an input file!\n");
+      config.has_error = true;
+   }
+
+   if(!config.config_filename.empty() && !is_regular_file(config.config_filename)) {
+      std::cerr << format("File not found: '{}'\n", config.config_filename);
       config.has_error = true;
    }
 
@@ -219,9 +231,28 @@ bool run_config(const auto& config) noexcept
    }
    std::ostream& ostream = config.output_filename.empty() ? std::cout : of;
 
+   // -- Load the system config file
+   ConfigFileData sys_config = {};
+   try {
+      sys_config = ConfigFileData::read(config.config_filename);
+   } catch(std::exception& e) {
+      std::cerr << format("Error reading config file '{}': {}\n", config.config_filename, e.what());
+      has_error = true;
+   }
+
    // -- Create the initial symbol table
    SymbolTable initial_symbol_table;
-   for(const auto& [key, value] : config.defines) { initial_symbol_table.insert(key, {}, value); }
+   for(const auto& [key, value] : sys_config.defines) initial_symbol_table.insert(key, {}, value);
+   for(const auto& [key, value] : config.defines) initial_symbol_table.insert(key, {}, value);
+
+   // -- Join the include paths together
+   vector<IncludePath> include_paths = config.include_paths;
+   include_paths.insert(
+       end(include_paths), cbegin(sys_config.include_paths), cend(sys_config.include_paths));
+
+   for(const auto& ipath : include_paths) {
+      cout << format("{:10s} '{}'", ipath.is_isystem, ipath.path) << endl;
+   }
 
    // -- Final error check
    if(has_error) {
@@ -229,11 +260,11 @@ bool run_config(const auto& config) noexcept
       return EXIT_FAILURE;
    }
 
+   return true;
+
    // -- Evaluate the input source
-   auto ctx = EvalContext::evaluate(std::move(input_source),
-                                    config.include_paths,
-                                    std::move(initial_symbol_table),
-                                    config.driver_opts);
+   auto ctx = EvalContext::evaluate(
+       std::move(input_source), include_paths, std::move(initial_symbol_table), config.driver_opts);
 
    // -- Produce output
    if(!ctx->has_error()) { ctx->stream_make_rules(ostream); }
