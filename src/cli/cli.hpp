@@ -12,6 +12,7 @@ struct CliConfig final
    bool has_error         = false;
 
    bool dump_tokens            = false;
+   bool print_config_and_exit  = false;
    std::string input_filename  = ""s;
    std::string output_filename = ""s;
 

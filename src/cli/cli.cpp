@@ -52,6 +52,7 @@ ostream& operator<<(ostream& os, const CliConfig& conf)
 show-help:         {}
 has-error:         {}
 dump-tokens:       {}
+print-config:      {}
 input-filename:    {}
 output-filename:   {}
 compiler-opts
@@ -60,21 +61,22 @@ compiler-opts
    suppress-warn:  {}
    skip-system:    {}
 includes:
-{}
+   {}
 defines:
-{}
+   {}
 )V0G0N",
                 conf.show_help,
                 conf.has_error,
                 conf.dump_tokens,
+                conf.print_config_and_exit,
                 conf.input_filename,
                 conf.output_filename,
                 conf.driver_opts.color_diagnostics,
                 conf.driver_opts.w_error,
                 conf.driver_opts.suppress_warnings,
                 conf.driver_opts.skip_system_includes,
-                range::implode(conf.include_paths, "   ", format_path),
-                range::implode(conf.defines, "   ", format_define));
+                range::implode(conf.include_paths, "\n   ", format_path),
+                range::implode(conf.defines, "\n   ", format_define));
    return os;
 }
 
@@ -90,13 +92,14 @@ void show_help(char* argv0) noexcept
 
       -o <filename>               Output file. (Output printed to stdout by default.)
 
-      -Dsymbol(=value)?           Define a symbol
-      -Ipath                      Add an include path
-      -isystempath                Add an include path
+      -Dsymbol(=value)?           Define a symbol.
+      -Ipath                      Add an include path.
+      -isystempath                Add an include path.
 
       -fno-color-diagnostics      Turn off color diagnostics.
       -fcolor-diagnostics-always  Color nven no terminal is attached.
       -fno-warn                   Suppress warnings.
+      -Werror                     Warnings are errors.
       -fskip-system-includes      Do not process "isystem" includes.
 
 )V0G0N",
@@ -132,8 +135,12 @@ CliConfig parse_command_line(int argc, char** argv) noexcept
             config.driver_opts.suppress_warnings = true;
          else if(arg == "-fskip-system-includes")
             config.driver_opts.skip_system_includes = true;
+         else if(arg == "-Werror")
+            config.driver_opts.w_error = true;
          else if(arg == "--dump-tokens")
             config.dump_tokens = true;
+         else if(arg == "-p")
+            config.print_config_and_exit = true;
          else if(arg.starts_with("-D"))
             config.defines.emplace_back(make_define(arg));
          else if(arg.starts_with("-I") || arg.starts_with("-isystem"))
@@ -198,6 +205,9 @@ int run(int argc, char** argv) noexcept
    const auto config = parse_command_line(argc, argv);
    if(config.show_help) {
       show_help(argv[0]);
+      return EXIT_SUCCESS;
+   } else if(config.print_config_and_exit) {
+      cout << config << endl;
       return EXIT_SUCCESS;
    } else if(config.has_error) {
       cout << "Aborting due to previous errors." << endl;
