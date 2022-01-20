@@ -81,7 +81,8 @@ CATCH_TEST_CASE("030 Evaluate1", "[030-evaluate-1]")
    CATCH_SECTION("30.1")
    {
       auto source = make_unique<StringScannerInput>("test-30", detail030::file1);
-      auto ctx = EvalContext::evaluate(std::move(source), include_paths, symbol_table, driver_opts);
+      // auto ctx = EvalContext::evaluate(std::move(source), include_paths, symbol_table,
+      // driver_opts);
    }
 }
 

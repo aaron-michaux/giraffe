@@ -64,11 +64,22 @@ AstNode* accept_define(Context& context) noexcept
    const auto loc1 = scanner.consume().end_location(); // identifier
 
    vector<sso23::string> arglist = {};
-   if(scanner.current().id() == TLPAREN) arglist = accept_arglist(context);
+   if(scanner.current().id() == TLPAREN) {
+      // Check to see if there's white-space between the current token and the previous identifier
+      const auto paren_loc = scanner.current().location();
+      if(paren_loc == loc1) arglist = accept_arglist(context);
+   }
 
+   // Grab the token sequence to "new line"
+   const auto pos1    = scanner.position();
    sso23::string text = accept_to_newline(context);
+   const auto pos2    = scanner.position();
+   vector<Token> token_sequence;
+   token_sequence.reserve(pos2 - pos1);
+   for(auto i = pos1; i < pos2; ++i) token_sequence.push_back(scanner.at(i));
 
-   return new DefineNode{{loc0, loc1}, ident_token.text(), text, std::move(arglist)};
+   return new DefineNode{
+       {loc0, loc1}, ident_token.text(), std::move(arglist), std::move(token_sequence)};
 }
 
 } // namespace giraffe

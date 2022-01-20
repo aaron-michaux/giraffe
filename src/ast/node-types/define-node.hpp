@@ -13,18 +13,18 @@ class DefineNode final : public AstNode
 {
  private:
    sso23::string identifier_      = {};
-   sso23::string text_            = {};
    vector<sso23::string> arglist_ = {};
+   vector<Token> token_sequence_  = {};
 
  public:
    DefineNode(SourceRange loc,
               string_view identifier,
-              string_view text,
-              vector<sso23::string> arglist)
+              vector<sso23::string> arglist,
+              vector<Token> token_sequence)
        : AstNode(NodeType::DEFINE, loc)
        , identifier_{identifier}
-       , text_{text}
        , arglist_{std::move(arglist)}
+       , token_sequence_{std::move(token_sequence)}
    {}
    virtual ~DefineNode() = default;
 
@@ -32,7 +32,7 @@ class DefineNode final : public AstNode
 
    //@{ Getters
    auto identifier() const noexcept { return string_view{identifier_.data(), identifier_.size()}; }
-   auto text() const noexcept { return string_view{text_.data(), text_.size()}; }
+   const auto& token_sequence() const noexcept { return token_sequence_; }
    const auto& arglist() const noexcept { return arglist_; }
    //@}
 };
