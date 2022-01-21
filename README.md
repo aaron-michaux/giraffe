@@ -39,8 +39,7 @@ gcc -x c++ -std=c++20 -dM -E -Wp,-v - </dev/null 1>g++-config.text 2>&1
 
 # TODO
 
- * Modules tests
- * Expressions tests
- * #if-then evaluation
- * #include evaluation: requires a new scanner
- 
+ * Roll eval-context into context, including symbol table
+ * Scanner built from token sequence
+ * Diagnostics to store their own error messages
+

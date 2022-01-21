@@ -242,8 +242,10 @@ bool run_config(const auto& config) noexcept
 
    // -- Create the initial symbol table
    SymbolTable initial_symbol_table;
-   for(const auto& [key, value] : sys_config.defines) initial_symbol_table.insert(key, {}, value);
-   for(const auto& [key, value] : config.defines) initial_symbol_table.insert(key, {}, value);
+   FATAL(format("we have to fix this up with parsing!"));
+   // for(const auto& [key, value] : sys_config.defines) initial_symbol_table.insert(key, {},
+   // value); for(const auto& [key, value] : config.defines) initial_symbol_table.insert(key, {},
+   // value);
 
    // -- Join the include paths together
    vector<IncludePath> include_paths = config.include_paths;

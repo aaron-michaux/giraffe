@@ -133,7 +133,11 @@ Integer evaluate_expr(Context& context,
          context.push_error(expr->loc0(), expr->src_range(), "failed to resolve symbol");
          return Integer::make_invalid();
       }
-      const auto resolved = symbols.eval(expr->text());
+
+      FATAL(format("we have to ask context to parse again"));
+      // const auto resolved = symbols.eval(expr->text());
+      const std::string resolved = "123";
+
       try {
          return parse_integer(resolved);
       } catch(std::exception& e) {

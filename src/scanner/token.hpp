@@ -35,10 +35,10 @@ struct Token final
       assert(id_ == id);
    }
 
-   constexpr Token(const Token&)     = delete;
+   constexpr Token(const Token&)     = default;
    constexpr Token(Token&&) noexcept = default;
    constexpr ~Token()                = default;
-   constexpr Token& operator=(const Token&) = delete;
+   constexpr Token& operator=(const Token&) = default;
    constexpr Token& operator=(Token&&) noexcept = default;
 
    constexpr auto id() const noexcept { return id_; }

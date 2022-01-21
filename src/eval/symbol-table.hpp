@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "scanner/token.hpp"
+
 namespace giraffe
 {
 
@@ -8,7 +10,7 @@ struct Symbol
 {
    sso23::string symbol          = {};
    vector<sso23::string> arglist = {};
-   sso23::string text            = {};
+   vector<Token> token_sequence  = {};
 };
 
 struct SymbolTable
@@ -19,11 +21,11 @@ struct SymbolTable
  public:
    bool has(string_view) const noexcept;
 
-   void insert(string_view symbol, string_view text = "") noexcept;
-   void insert(string_view symbol, vector<sso23::string> arglist, string_view text) noexcept;
+   void insert(string_view symbol) noexcept;
+   void insert(string_view symbol, //
+               vector<sso23::string> arglist,
+               vector<Token> token_sequence) noexcept;
    void remove(string_view) noexcept;
-
-   sso23::string eval(string_view) const noexcept(false);
 };
 
 } // namespace giraffe

@@ -66,7 +66,8 @@ std::pair<vector<IncludePath>, SymbolTable> default_testing_config()
    data.include_paths.insert(begin(data.include_paths), {"tests/test-files/include", false});
 
    SymbolTable symbol_table;
-   for(const auto& [key, value] : data.defines) symbol_table.insert(key, {}, value);
+   FATAL("Need a way to parse this");
+   // for(const auto& [key, value] : data.defines) symbol_table.insert(key, {}, value);
 
    return {data.include_paths, symbol_table};
 }
@@ -75,8 +76,8 @@ std::pair<vector<IncludePath>, SymbolTable> default_testing_config()
 
 CATCH_TEST_CASE("030 Evaluate1", "[030-evaluate-1]")
 {
-   const auto driver_opts                   = DriverOptions{};
-   const auto [include_paths, symbol_table] = default_testing_config();
+   const auto driver_opts = DriverOptions{};
+   // const auto [include_paths, symbol_table] = default_testing_config();
 
    CATCH_SECTION("30.1")
    {

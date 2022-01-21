@@ -14,16 +14,16 @@ bool This::has(string_view symbol) const noexcept
    return ii != cend(data_);
 }
 
-void This::insert(string_view symbol, string_view text) noexcept { insert(symbol, {}, text); }
+void This::insert(string_view symbol) noexcept { insert(symbol, {}, {}); }
 
-void This::insert(string_view symbol, vector<sso23::string> arglist, string_view text) noexcept
+void This::insert(string_view symbol,
+                  vector<sso23::string> arglist,
+                  vector<Token> token_sequence) noexcept
 {
-   data_[symbol] = Symbol{symbol, arglist, text};
+   data_[symbol] = {symbol, arglist, token_sequence};
 }
 
 void This::remove(string_view symbol) noexcept { data_.erase(symbol); }
-
-sso23::string This::eval(string_view) const noexcept(false) { return ""; }
 
 } // namespace giraffe
 

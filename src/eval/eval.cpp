@@ -77,7 +77,7 @@ void eval_define_node(EvalContext& eval_ctx, const DefineNode* node)
    if(symbols.has(node->identifier()))
       context.push_error(node->loc1(), format("symbol '{}' already defined", node->identifier()));
    else
-      symbols.insert(node->identifier(), node->arglist(), node->text());
+      symbols.insert(node->identifier(), node->arglist(), node->token_sequence());
 }
 
 // -------------------------------------------------------------------------------------- eval undef
