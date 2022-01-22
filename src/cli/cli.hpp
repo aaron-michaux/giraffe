@@ -2,6 +2,7 @@
 #pragma once
 
 #include "driver/driver-options.hpp"
+#include "driver/include-path.hpp"
 
 #include "read-config-file.hpp"
 

@@ -12,13 +12,6 @@
 namespace giraffe
 {
 
-struct ResolvedPath
-{
-   std::string filename = {};
-   bool is_found        = false;
-   bool is_isystem_path = false;
-};
-
 /**
  * Contains:
  *  1. A Symbol Table
@@ -27,9 +20,6 @@ struct ResolvedPath
  */
 class EvalContext
 {
- public:
-   using string_set_type = unordered_set<sso23::string, sso23::hasher>;
-
  private:
    bool has_error_                    = false;
    SymbolTable symbols_               = {}; //!< Currently active symbol table

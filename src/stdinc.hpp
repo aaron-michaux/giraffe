@@ -35,7 +35,6 @@
 #include "utils/for-each-adjacent-pair.hpp"
 #include "utils/implode.hpp"
 #include "utils/in-list.hpp"
-#include "utils/include-path.hpp"
 #include "utils/is-regular-file.hpp"
 #include "utils/is-reverse-iterator.hpp"
 #include "utils/remove-duplicates.hpp"
@@ -70,6 +69,8 @@ using std::crend;
 using std::end;
 using std::rbegin;
 using std::rend;
+
+using string_set_type = unordered_set<sso23::string, sso23::hasher>;
 
 #ifdef NDEBUG
 #define TRACE(msg)

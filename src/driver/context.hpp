@@ -1,8 +1,14 @@
 
 #pragma once
 
+#include <stack>
+
 #include "diagnostic.hpp"
 #include "driver-options.hpp"
+#include "include-path.hpp"
+
+#include "ast/ast.hpp"
+#include "eval/symbol-table.hpp"
 #include "scanner/scanner.hpp"
 
 namespace giraffe
@@ -20,10 +26,13 @@ class Scope;
 class Context final
 {
  private:
-   ScannerOptions scanner_opts_ = {};
-   DriverOptions driver_opts_   = {};
-   Diagnostics diags_           = {};
-   unique_ptr<Scanner> scanner_ = {};
+   ScannerOptions scanner_opts_                   = {};
+   DriverOptions driver_opts_                     = {};
+   SymbolTable symbols_                           = {}; //!< Currently active symbol table
+   vector<IncludePath> include_paths_             = {}; //!< Configured include paths
+   std::stack<unique_ptr<Scanner>> scanner_stack_ = {}; //!< We keep a stack of context pointers
+   Diagnostics diags_                             = {};
+   string_set_type include_deps_                  = {};
 
    void push_diagnostic_(Diagnostic::Level, SourceLocation, SourceRange, std::string&&) noexcept;
    void push_diagnostic_(Diagnostic::Level, SourceLocation, std::string&&) noexcept;
@@ -45,8 +54,16 @@ class Context final
    //@{ Getters
    const auto& scanner_opts() const noexcept { return scanner_opts_; }
    const auto& driver_opts() const noexcept { return driver_opts_; }
-   const auto& scanner() const noexcept { return *scanner_; }
-   auto& scanner() noexcept { return *scanner_.get(); }
+
+   auto& symbols() noexcept { return symbols_; }
+   const auto& symbols() const noexcept { return symbols_; }
+
+   auto& include_paths() noexcept { return include_paths_; }
+   const auto& include_paths() const noexcept { return include_paths_; }
+
+   auto& scanner() noexcept { return *scanner_stack_.top(); }
+   const auto& scanner() const noexcept { return *scanner_stack_.top(); }
+
    const auto& diagnostics() const noexcept { return diags_; }
    Diagnostics::Range diagnostics_from(uint32_t) const noexcept;
    bool has_error(Diagnostics::Range = {}) const noexcept;
@@ -70,8 +87,22 @@ class Context final
    void push_fatal(std::string&& message) noexcept;
    //@}
 
+   //@{ Actions
+
+   /// Returns ""s if the file cannot be found.
+   ResolvedPath resolve_include_path(string_view filename, bool is_local_include) const noexcept;
+
+   /// A #include is being processed
+   void process_include(string_view filename, bool is_isystem_path) noexcept;
+   //@}
+
+   //@{ Output
    std::ostream& stream(std::ostream&) const noexcept;
    std::string to_string() const noexcept;
+
+   /// Product make-compatible dependency rules for the input
+   void stream_make_rules(std::ostream& os) noexcept;
+   //@}
 };
 
 } // namespace giraffe

@@ -95,7 +95,7 @@ void This::process_context_(unique_ptr<Context>&& context_ptr) noexcept
 
    // Render diagnostics
    for(const auto& diagnostic : context.diagnostics()) {
-      diagnostic.stream(std::cerr, context);
+      std::cerr << diagnostic.to_string();
       switch(diagnostic.level) {
       case Diagnostic::NONE: FATAL("logic error: diagnostic of type NONE"); break;
       case Diagnostic::INFO: [[fallthrough]];

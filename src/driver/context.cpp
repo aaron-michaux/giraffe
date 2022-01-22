@@ -1,6 +1,9 @@
 #include "stdinc.hpp"
 
 #include "context.hpp"
+
+#include "format-diagnostic.hpp"
+
 #include "parser/parser.hpp"
 #include "scanner/scanner.hpp"
 
@@ -8,13 +11,13 @@
 
 namespace giraffe
 {
-// ------------------------------------------------------- make-compiler-context
+// --------------------------------------------------------------------------- make-compiler-context
 
 unique_ptr<Context> This::make(unique_ptr<Scanner>&& scanner, DriverOptions opts)
 {
    auto context          = unique_ptr<Context>(new Context{});
    context->driver_opts_ = opts;
-   context->scanner_     = std::move(scanner);
+   context->scanner_stack_.push(std::move(scanner));
    return context;
 }
 
@@ -24,7 +27,7 @@ unique_ptr<Context> This::make(string_view filename, DriverOptions opts)
    return make(std::move(scanner), opts);
 }
 
-// ------------------------------------------------------------ diagnostics from
+// -------------------------------------------------------------------------------- diagnostics from
 
 Diagnostics::Range This::diagnostics_from(uint32_t from_idx) const noexcept
 {
@@ -38,7 +41,7 @@ bool This::has_error(Diagnostics::Range range) const noexcept
    return tots.fatals > 0 || tots.errors > 0;
 }
 
-// ------------------------------------------------------------ push diagnostics
+// -------------------------------------------------------------------------------- push diagnostics
 
 void This::push_diagnostic_(Diagnostic::Level level,
                             SourceLocation location,
@@ -46,7 +49,9 @@ void This::push_diagnostic_(Diagnostic::Level level,
                             std::string&& message) noexcept
 {
    if(level == Diagnostic::WARN && driver_opts().w_error) level = Diagnostic::ERROR;
-   diags_.push_diagnostic(level, location, rng, std::move(message));
+   const uint32_t carrot = 0;
+   std::string formatted = render_diagnostic(*this, level, location, rng, carrot, message);
+   diags_.push_diagnostic(level, location, rng, std::move(message), std::move(formatted));
 }
 
 void This::push_diagnostic_(Diagnostic::Level level,
@@ -116,11 +121,46 @@ void This::push_fatal(std::string&& message) noexcept
    push_fatal(scanner().current().location(), std::move(message));
 }
 
-// ---------------------------------------------------------------------- stream
+// ----------------------------------------------------------------------------------------- actions
+
+ResolvedPath This::resolve_include_path(string_view filename, bool is_local_include) const noexcept
+{
+   return giraffe::resolve_include_path(include_paths(), filename, is_local_include);
+}
+
+void This::process_include(string_view filename, bool is_isystem_path) noexcept
+{
+   if(scanner_stack_.size() > 100) FATAL(format("suspect infinite #include recusion, aborting!"));
+   if(has_error()) return;
+   if(driver_opts().skip_system_includes && is_isystem_path) return; // nothing to do
+
+   // Record the include dependency
+   include_deps_.insert(sso23::string{filename});
+
+   // Update the options... remember to suppress warnings on -isystem paths
+   const auto suppress_warnings = driver_opts().suppress_warnings || is_isystem_path;
+
+   // Process the include file
+   assert(std::filesystem::exists(filename));
+   auto scanner = make_unique<Scanner>(make_unique<FILE_ScannerInput>(filename));
+   scanner_stack_.push(std::move(scanner));
+
+   {
+      unique_ptr<TranslationUnitNode> tu_node = parse(*this);
+
+      // Evaluate the node if there's no error
+      FATAL("TODO: evaluate the node here");
+      // if(!context.has_error()) { eval_node(*this, tu_node.get()); }
+   }
+
+   scanner_stack_.pop();
+}
+
+// ------------------------------------------------------------------------------------------ stream
 
 std::ostream& This::stream(std::ostream& ss) const noexcept
 {
-   for(const auto& diagnostic : diagnostics()) diagnostic.stream(ss, *this);
+   for(const auto& diagnostic : diagnostics()) ss << diagnostic.to_string();
    return ss;
 }
 
@@ -129,6 +169,11 @@ std::string This::to_string() const noexcept
    std::stringstream ss{""};
    stream(ss);
    return ss.str();
+}
+
+void This::stream_make_rules(std::ostream& os) noexcept
+{
+   os << "Hello world! We're making Stream rules\n";
 }
 
 } // namespace giraffe

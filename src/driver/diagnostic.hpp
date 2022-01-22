@@ -9,6 +9,7 @@ class Context;
 
 struct Diagnostic final
 {
+ public:
    enum Level : uint8_t {
       NONE = 0,
       INFO,
@@ -25,7 +26,8 @@ struct Diagnostic final
    static constexpr auto k_level_names
        = to_array<string_view>({"none", "info", "warning", "error", "fatal"});
 
-   std::string message     = ""s;
+   std::string message     = ""s; //!< The actual error message
+   std::string formatted   = ""s; //!< The full diagnostic, formatted with the relevant line of text
    SourceLocation location = {};
    SourceRange range       = {};
    uint32_t length         = 0; // from `loc`
@@ -39,8 +41,13 @@ struct Diagnostic final
    Diagnostic& operator=(const Diagnostic&) = default;
    Diagnostic& operator=(Diagnostic&&) = default;
 
-   Diagnostic(Level lv, SourceLocation loc, SourceRange rng, std::string&& msg) noexcept
+   Diagnostic(Level lv,
+              SourceLocation loc,
+              SourceRange rng,
+              std::string&& msg,
+              std::string&& formatted_diagnostic) noexcept
        : message(std::move(msg))
+       , formatted(std::move(formatted_diagnostic))
        , location(loc)
        , range(rng)
        , level(lv)
@@ -51,7 +58,7 @@ struct Diagnostic final
       }
    }
 
-   std::ostream& stream(std::ostream&, const Context&) const noexcept;
+   const auto& to_string() const noexcept { return formatted; }
 };
 
 struct DiagnosticMessage final
@@ -78,7 +85,11 @@ class Diagnostics
    vector<Diagnostic> diagnostics_ = {};
 
  public:
-   void push_diagnostic(Diagnostic::Level, SourceLocation, SourceRange, std::string&&) noexcept;
+   void push_diagnostic(Diagnostic::Level,
+                        SourceLocation,
+                        SourceRange,
+                        std::string&&,
+                        std::string&&) noexcept;
 
    size_t size() const noexcept { return diagnostics_.size(); }
 
@@ -97,7 +108,7 @@ class Diagnostics
    auto cend() const noexcept { return diagnostics_.cend(); }
    auto crend() const noexcept { return diagnostics_.crend(); }
 
-   std::string to_string(const Context& context) const noexcept;
+   std::string to_string() const noexcept;
 };
 
 } // namespace giraffe
