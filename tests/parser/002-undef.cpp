@@ -24,16 +24,8 @@ constexpr static const char* test_text_002_result =
 <empty-node>
 )V0G0N";
 
-constexpr auto test_002_token_seq = to_array<int>({TNEWLINE,
-                                                   TUNDEF,
-                                                   TIDENTIFIER,
-                                                   TNEWLINE,
-                                                   TUNDEF,
-                                                   TINTEGER,
-                                                   TNEWLINE,
-                                                   TUNDEF,
-                                                   TNEWLINE,
-                                                   TEOF});
+constexpr auto test_002_token_seq = to_array<int>(
+    {TNEWLINE, TUNDEF, TIDENTIFIER, TNEWLINE, TUNDEF, TINTEGER, TNEWLINE, TUNDEF, TNEWLINE, TEOF});
 
 // ----------------------------------------------------------------- dump-tokens
 
@@ -100,7 +92,7 @@ CATCH_TEST_CASE("002 undef", "[002-undef]")
 
             // Should not throw
             std::stringstream ss;
-            for(const auto& diagnostic : diagnostics) diagnostic.stream(ss, context);
+            for(const auto& diagnostic : diagnostics) ss << diagnostic.to_string();
             // cout << ss.str();
          }
       }

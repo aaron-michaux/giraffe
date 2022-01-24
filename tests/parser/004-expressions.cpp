@@ -84,7 +84,7 @@ CATCH_TEST_CASE("004 expressions", "[004-expressions]")
 
          // Should not throw
          std::stringstream ss;
-         for(const auto& diagnostic : diagnostics) diagnostic.stream(ss, context);
+         for(const auto& diagnostic : diagnostics) ss << diagnostic.to_string();
          // cout << ss.str()
       }
    };
@@ -97,7 +97,7 @@ CATCH_TEST_CASE("004 expressions", "[004-expressions]")
                   ExpressionNode* expr,
                   string_view str,
                   const Diagnostics& diagnostics) {
-                  for(auto& diag : diagnostics) diag.stream(cout, context);
+                  for(auto& diag : diagnostics) cout << diag.to_string();
                   CATCH_REQUIRE(str == "1");
                   CATCH_REQUIRE(expr->size() == 0);
                   CATCH_REQUIRE(expr->expr_type() == ExprType::INTEGER);

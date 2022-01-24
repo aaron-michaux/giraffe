@@ -87,7 +87,7 @@ CATCH_TEST_CASE("006 if then", "[006-if-then]")
       }
 
       {
-         for(const auto& diag : context.diagnostics()) { diag.stream(cout, context); }
+         for(const auto& diag : context.diagnostics()) cout << diag.to_string();
       }
 
       CATCH_REQUIRE(AstNode::get_node_count() == 0);

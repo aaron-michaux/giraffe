@@ -12,7 +12,7 @@ namespace giraffe::test
 
 // -----------------------------------------------------------------------------
 
-constexpr static const char* test_text_008z = R"V0G0N(
+constexpr static const char* test_text_008 = R"V0G0N(
 #define SOMETHING
 #define
 #define 1
@@ -21,15 +21,12 @@ constexpr static const char* test_text_008z = R"V0G0N(
 #  define _GNUC_VER (__GNUC__ * 100 + __GNUC_MINOR__)
 )V0G0N";
 
-constexpr static const char* test_text_008 = R"V0G0N(
-#  define _GNUC_VER (__GNUC__ * 100 + __GNUC_MINOR__)
-)V0G0N";
-
 constexpr static const char* test_text_008_result = R"V0G0N(#define SOMETHING
 <empty-node>
 <empty-node>
 #define X(a)
 #define X(a, b) (a + b)
+#define _GNUC_VER (__GNUC__ * 100 + __GNUC_MINOR__)
 )V0G0N";
 
 // -------------------------------------------------------------------- testcase
@@ -65,7 +62,7 @@ CATCH_TEST_CASE("008 module", "[module]")
       }
 
       {
-         for(const auto& diag : context.diagnostics()) { diag.stream(cout, context); }
+         for(const auto& diag : context.diagnostics()) cout << diag.to_string();
       }
 
       CATCH_REQUIRE(AstNode::get_node_count() == 0);
@@ -75,7 +72,7 @@ CATCH_TEST_CASE("008 module", "[module]")
    auto& context    = *context_ptr;
    auto& scanner    = context.scanner();
 
-   dump_parse(context);
+   // dump_parse(context);
 
    CATCH_SECTION("008")
    {

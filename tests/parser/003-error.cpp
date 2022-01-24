@@ -105,7 +105,8 @@ CATCH_TEST_CASE("003 errors", "[003-errors]")
          CATCH_REQUIRE(diagnostics.size() == 0);
 
          // Should not throw
-         for(const auto& diagnostic : diagnostics) diagnostic.stream(ss, context);
+         for(const auto& diagnostic : diagnostics) ss << diagnostic.to_string();
+
          // cout << ss.str()
       }
       CATCH_REQUIRE(AstNode::get_node_count() == 0);

@@ -8,7 +8,7 @@
 //#include <filesystem>
 
 #include "cli/read-config-file.hpp"
-#include "eval/eval-context.hpp"
+#include "driver/context.hpp"
 
 // #include "eval/integer.hpp"
 // #include "parser/parser-internal.hpp"
@@ -66,8 +66,8 @@ std::pair<vector<IncludePath>, SymbolTable> default_testing_config()
    data.include_paths.insert(begin(data.include_paths), {"tests/test-files/include", false});
 
    SymbolTable symbol_table;
-   FATAL("Need a way to parse this");
-   // for(const auto& [key, value] : data.defines) symbol_table.insert(key, {}, value);
+   TRACE("Need a way to parse this");
+   //  for(const auto& [key, value] : data.defines) symbol_table.insert(key, {}, value);
 
    return {data.include_paths, symbol_table};
 }
