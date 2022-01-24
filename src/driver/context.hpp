@@ -6,9 +6,9 @@
 #include "diagnostic.hpp"
 #include "driver-options.hpp"
 #include "include-path.hpp"
+#include "symbol-table.hpp"
 
 #include "ast/ast.hpp"
-#include "eval/symbol-table.hpp"
 #include "scanner/scanner.hpp"
 
 namespace giraffe
@@ -47,7 +47,10 @@ class Context final
    Context& operator=(Context&&) = default;
 
    //@{ Construction
-   static unique_ptr<Context> make(unique_ptr<Scanner>&&, DriverOptions opts = {});
+   static unique_ptr<Context> make(unique_ptr<Scanner>&&,
+                                   vector<IncludePath> include_paths = {},
+                                   SymbolTable initial_symbol_table  = {},
+                                   DriverOptions opts                = {});
    static unique_ptr<Context> make(string_view filename, DriverOptions opts = {});
    //@}
 

@@ -3,9 +3,9 @@
 
 #include "ast/ast.hpp"
 #include "driver/context.hpp"
+#include "driver/symbol-table.hpp"
 
 #include "integer.hpp"
-#include "symbol-table.hpp"
 
 namespace giraffe
 {
@@ -18,6 +18,6 @@ Integer parse_integer(string_view text) noexcept(false);
 /**
  * All expressions evaluate to an integer type of some form
  */
-Integer evaluate_expr(Context&, const SymbolTable&, const ExpressionNode* expr) noexcept(false);
+Integer evaluate_expr(Context&, const ExpressionNode* expr) noexcept(false);
 
 } // namespace giraffe

@@ -2,7 +2,7 @@
 #pragma once
 
 #include "driver/include-path.hpp"
-#include "eval/symbol-table.hpp"
+#include "driver/symbol-table.hpp"
 
 namespace giraffe
 {

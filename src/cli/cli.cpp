@@ -15,7 +15,6 @@
 #include "cli-args.hpp"
 
 #include "driver/context.hpp"
-#include "eval/eval-context.hpp"
 
 namespace giraffe
 {
@@ -263,8 +262,9 @@ bool run_config(const auto& config) noexcept
    }
 
    // -- Evaluate the input source
-   auto ctx = EvalContext::evaluate(
-       std::move(input_source), include_paths, std::move(initial_symbol_table), config.driver_opts);
+   auto scanner = make_unique<Scanner>(std::move(input_source));
+   auto ctx     = Context::make(
+       std::move(scanner), include_paths, std::move(initial_symbol_table), config.driver_opts);
 
    // -- Produce output
    if(!ctx->has_error()) { ctx->stream_make_rules(ostream); }

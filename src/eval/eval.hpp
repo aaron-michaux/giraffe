@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "eval-context.hpp"
+#include "driver/context.hpp"
 
 namespace giraffe
 {
-void eval_node(EvalContext& eval_ctx, const AstNode* node) noexcept;
+void eval_node(Context& eval_ctx, const AstNode* node) noexcept;
 } // namespace giraffe

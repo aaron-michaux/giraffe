@@ -13,10 +13,15 @@ namespace giraffe
 {
 // --------------------------------------------------------------------------- make-compiler-context
 
-unique_ptr<Context> This::make(unique_ptr<Scanner>&& scanner, DriverOptions opts)
+unique_ptr<Context> This::make(unique_ptr<Scanner>&& scanner,
+                               vector<IncludePath> include_paths,
+                               SymbolTable initial_symbol_table,
+                               DriverOptions opts)
 {
-   auto context          = unique_ptr<Context>(new Context{});
-   context->driver_opts_ = opts;
+   auto context            = unique_ptr<Context>(new Context{});
+   context->driver_opts_   = opts;
+   context->symbols_       = std::move(initial_symbol_table);
+   context->include_paths_ = std::move(include_paths);
    context->scanner_stack_.push(std::move(scanner));
    return context;
 }
@@ -24,7 +29,7 @@ unique_ptr<Context> This::make(unique_ptr<Scanner>&& scanner, DriverOptions opts
 unique_ptr<Context> This::make(string_view filename, DriverOptions opts)
 {
    auto scanner = make_unique<Scanner>(make_unique<FILE_ScannerInput>(filename));
-   return make(std::move(scanner), opts);
+   return make(std::move(scanner), {}, {}, opts);
 }
 
 // -------------------------------------------------------------------------------- diagnostics from

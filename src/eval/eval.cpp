@@ -1,20 +1,22 @@
 
 #include "stdinc.hpp"
 
-#include "eval-expression.hpp"
 #include "eval.hpp"
-#include "symbol-table.hpp"
+
+#include "driver/symbol-table.hpp"
+
+#include "eval-expression.hpp"
 
 namespace giraffe
 {
 
 bool evaluate_condition(Context& context, SymbolTable& symbols, const IfThenNode* node);
-void eval_ifthen_node(EvalContext& eval_ctx, const IfThenNode* node);
-void eval_define_node(EvalContext& eval_ctx, const DefineNode* node);
-void eval_undef_node(EvalContext& eval_ctx, const UndefNode* node);
-void eval_error_node(EvalContext& eval_ctx, const ErrorNode* node);
-void eval_module_node(EvalContext& eval_ctx, const ModuleNode* node);
-void eval_include_node(EvalContext& eval_ctx, const IncludeNode* node);
+void eval_ifthen_node(Context& context, const IfThenNode* node);
+void eval_define_node(Context& context, const DefineNode* node);
+void eval_undef_node(Context& context, const UndefNode* node);
+void eval_error_node(Context& context, const ErrorNode* node);
+void eval_module_node(Context& context, const ModuleNode* node);
+void eval_include_node(Context& context, const IncludeNode* node);
 
 // ------------------------------------------------------------------------------ Evaluate Condition
 
@@ -24,7 +26,7 @@ bool evaluate_condition(Context& context, SymbolTable& symbols, const IfThenNode
    switch(node->type()) {
    case IfThenType::NONE: context.push_error(node->loc0(), "logic error evaluating if-then"); break;
    case IfThenType::IF: [[fallthrough]];
-   case IfThenType::ELIF: return evaluate_expr(context, symbols, node->condition()).is_true();
+   case IfThenType::ELIF: return evaluate_expr(context, node->condition()).is_true();
    case IfThenType::IFDEF: [[fallthrough]];
    case IfThenType::ELIFDEF:
       if(symbol.empty()) {
@@ -49,10 +51,8 @@ bool evaluate_condition(Context& context, SymbolTable& symbols, const IfThenNode
 
 // ------------------------------------------------------------------------------------ eval if-then
 
-void eval_ifthen_node(EvalContext& eval_ctx, const IfThenNode* node)
+void eval_ifthen_node(Context& context, const IfThenNode* node)
 {
-   auto& context = eval_ctx.current_context();
-
    // Must be IF, IFDEF, or IFNDEF
    if(!node->is_if()) {
       context.push_error(node->loc0(), "unexpcted preprocessor directive");
@@ -61,8 +61,8 @@ void eval_ifthen_node(EvalContext& eval_ctx, const IfThenNode* node)
 
    for(size_t i = 0; i < node->n_if_elif_else_parts(); ++i) {
       auto child = node->if_elif_part(i);
-      if(evaluate_condition(context, eval_ctx.symbols(), child)) {
-         eval_node(eval_ctx, child->stmts());
+      if(evaluate_condition(context, context.symbols(), child)) {
+         eval_node(context, child->stmts());
          break;
       }
    }
@@ -70,10 +70,9 @@ void eval_ifthen_node(EvalContext& eval_ctx, const IfThenNode* node)
 
 // ------------------------------------------------------------------------------------- eval define
 
-void eval_define_node(EvalContext& eval_ctx, const DefineNode* node)
+void eval_define_node(Context& context, const DefineNode* node)
 {
-   auto& context = eval_ctx.current_context();
-   auto& symbols = eval_ctx.symbols();
+   auto& symbols = context.symbols();
    if(symbols.has(node->identifier()))
       context.push_error(node->loc1(), format("symbol '{}' already defined", node->identifier()));
    else
@@ -82,10 +81,9 @@ void eval_define_node(EvalContext& eval_ctx, const DefineNode* node)
 
 // -------------------------------------------------------------------------------------- eval undef
 
-void eval_undef_node(EvalContext& eval_ctx, const UndefNode* node)
+void eval_undef_node(Context& context, const UndefNode* node)
 {
-   auto& context = eval_ctx.current_context();
-   auto& symbols = eval_ctx.symbols();
+   auto& symbols = context.symbols();
    if(symbols.has(node->identifier()))
       symbols.remove(node->identifier());
    else
@@ -94,9 +92,8 @@ void eval_undef_node(EvalContext& eval_ctx, const UndefNode* node)
 
 // -------------------------------------------------------------------------------------- eval error
 
-void eval_error_node(EvalContext& eval_ctx, const ErrorNode* node)
+void eval_error_node(Context& context, const ErrorNode* node)
 {
-   auto& context = eval_ctx.current_context();
    if(node->is_error())
       context.push_error(node->loc0(), node->message().data());
    else
@@ -105,33 +102,30 @@ void eval_error_node(EvalContext& eval_ctx, const ErrorNode* node)
 
 // ------------------------------------------------------------------------------------- eval module
 
-void eval_module_node(EvalContext& eval_ctx, const ModuleNode* node)
+void eval_module_node(Context& context, const ModuleNode* node)
 {
    // Note if file depends on a module
    // Note if file provides a module
 }
 
 // ------------------------------------------------------------------------------------ eval include
-
-void eval_include_node(EvalContext& eval_ctx, const IncludeNode* node)
+void eval_include_node(Context& context, const IncludeNode* node)
 {
    // Find the file (using the include path)
-   const auto path = eval_ctx.resolve_include_path(node->filename(), node->is_local_include());
+   const auto path = context.resolve_include_path(node->filename(), node->is_local_include());
    if(!path.is_found) {
-      eval_ctx.current_context().push_error(node->loc0(), "could not resolve include");
+      context.push_error(node->loc0(), "could not resolve include");
       return;
    }
 
-   // Note the dependency in the EvalContext
-   eval_ctx.process_include(path.filename, path.is_isystem_path);
+   // Note the dependency in the Context
+   context.process_include(path.filename, path.is_isystem_path);
 }
 
 // --------------------------------------------------------------------------------------- eval stmt
 
-void eval_node(EvalContext& eval_ctx, const AstNode* node) noexcept
+void eval_node(Context& context, const AstNode* node) noexcept
 {
-   auto& context = eval_ctx.current_context();
-
    switch(node->node_type()) {
    case NodeType::NONE: [[fallthrough]]; // abort
    case NodeType::EMPTY:                 // error: should not be evaluating on a parse error
@@ -139,14 +133,14 @@ void eval_node(EvalContext& eval_ctx, const AstNode* node) noexcept
       break;
    case NodeType::STMT_LIST: [[fallthrough]];
    case NodeType::TRANSLATION_UNIT:
-      for(auto child : *node) eval_node(eval_ctx, child);
+      for(auto child : *node) eval_node(context, child);
       break;
-   case NodeType::MODULE: eval_module_node(eval_ctx, cast_ast_node<ModuleNode>(node)); break;
-   case NodeType::IFTHEN: eval_ifthen_node(eval_ctx, cast_ast_node<IfThenNode>(node)); break;
-   case NodeType::DEFINE: eval_define_node(eval_ctx, cast_ast_node<DefineNode>(node)); break;
-   case NodeType::UNDEF: eval_undef_node(eval_ctx, cast_ast_node<UndefNode>(node)); break;
-   case NodeType::INCLUDE: eval_include_node(eval_ctx, cast_ast_node<IncludeNode>(node)); break;
-   case NodeType::ERROR: eval_error_node(eval_ctx, cast_ast_node<ErrorNode>(node)); break;
+   case NodeType::MODULE: eval_module_node(context, cast_ast_node<ModuleNode>(node)); break;
+   case NodeType::IFTHEN: eval_ifthen_node(context, cast_ast_node<IfThenNode>(node)); break;
+   case NodeType::DEFINE: eval_define_node(context, cast_ast_node<DefineNode>(node)); break;
+   case NodeType::UNDEF: eval_undef_node(context, cast_ast_node<UndefNode>(node)); break;
+   case NodeType::INCLUDE: eval_include_node(context, cast_ast_node<IncludeNode>(node)); break;
+   case NodeType::ERROR: eval_error_node(context, cast_ast_node<ErrorNode>(node)); break;
    case NodeType::EXPRESSION:
       context.push_error(node->loc0(), "attempt to evaluate expression as statement");
       break;
